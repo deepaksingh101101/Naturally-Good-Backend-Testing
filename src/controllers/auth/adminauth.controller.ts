@@ -10,14 +10,16 @@ export const createAdmin = async (req: Request, res: Response) => {
     const superAdminId = req['decodedToken'].id;
 
     try {
-        const admin = await AdminModel.findOne({ email }) as DocumentType<Admin>;
-        if (admin) {
+        const adminExists = await AdminModel.findOne({ email });
+        if (adminExists) {
             return res.status(400).json({ error: 'Admin already exists' });
         }
 
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const newAdmin = new AdminModel({
             email,
-            password,
+            password: hashedPassword,
             firstName,
             lastName,
             phoneNumber,
@@ -29,12 +31,13 @@ export const createAdmin = async (req: Request, res: Response) => {
 
         await newAdmin.save();
 
-        res.status(201).json({ message: 'Admin created successfully', });
+        res.status(201).json({ message: 'Admin created successfully' });
     } catch (error) {
         console.error('Error creating Admin:', error);
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
+
 
 export const getAllAdmins = async (req: Request, res: Response) => {
     try {
