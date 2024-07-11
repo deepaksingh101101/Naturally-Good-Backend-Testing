@@ -6,6 +6,7 @@ import tasksRoutes from "./routes/tasks.routes";
 import vegetable from "./routes/vegetable.routes"
 import auth from "./routes/auth.routes"
 import admin from "./routes/admin.routes"
+import superadmin from "./routes/superadmin.routes"
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -33,6 +34,8 @@ export class Applicaction {
     this.app.use("/auth", auth)
 
     this.app.use("/admin", admin)
+
+    this.app.use("/auth",superadmin)
 
     this.app.use(express.static(path.join(__dirname, "public")));
   }

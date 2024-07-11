@@ -2,5 +2,5 @@ import { config } from "dotenv";
 config();
 
 export const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost/testdb";
+  process.env.MONGODB_URI || "mongodb://localhost/naturally-goods";
 export const PORT = process.env.PORT || 3000;
