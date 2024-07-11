@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { signup, login } from '../controllers/auth/adminauth.controller';
+import {  createAdmin } from '../controllers/auth/adminauth.controller';
+import { superAdminMiddleware } from '../middleware/middleware';
 
 const router = Router();
 
-router.post('/signup', signup);
-router.post('/login', login);
+router.post('/create',superAdminMiddleware, createAdmin);
 
 export default router;
