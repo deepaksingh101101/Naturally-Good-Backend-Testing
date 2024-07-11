@@ -1,5 +1,5 @@
-import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
-import { SuperAdmin } from './superadmin.model';
+import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
+import bcrypt from 'bcrypt';
 
 @ModelOptions({
     schemaOptions: {
@@ -7,37 +7,45 @@ import { SuperAdmin } from './superadmin.model';
     },
 })
 export class Admin {
-    @prop({ type: String, required: true, unique: true })
-    public email: string;
+    @prop({ required: true, unique: true })
+    public email!: string;
 
-    @prop({ type: String, required: true })
-    public password: string;
+    @prop({ required: true })
+    public password!: string;
 
-    @prop({ type: String })
-    public firstName?: string;
+    @prop({ required: true })
+    public firstName!: string;
 
-    @prop({ type: String })
-    public lastName?: string;
+    @prop({ required: true })
+    public lastName!: string;
 
-    @prop({ type: String })
-    public phoneNumber?: string;
+    @prop({ required: true })
+    public phoneNumber!: string;
 
-    @prop({ type: String, ref: 'SuperAdmin', required: true })
-    public superAdminId: Ref<SuperAdmin>;
+    @prop({ required: true })
+    public superAdminId!: string;
 
-    @prop({ type: String, default: 'admin' })
-    public role: string;
+    @prop({ required: true, enum: ['admin'] })
+    public role!: string;
 
-    @prop({ type: Boolean, default: true })
-    public isActive: boolean;
+    @prop({ default: true })
+    public isActive!: boolean;
 
-    @prop({ type: Date, required: true })
-    public updatedAt: Date;
+    @prop({ required: true })
+    public updatedAt!: Date;
 
-    @prop({ type: Date, required: true })
-    public createdAt: Date;
+    @prop({ required: true })
+    public createdAt!: Date;
+
+    public async hashPassword(password: string): Promise<string> {
+        const saltRounds = 10;
+        return await bcrypt.hash(password, saltRounds);
+    }
+
+    public async validatePassword(password: string): Promise<boolean> {
+        return await bcrypt.compare(password, this.password);
+    }
 }
 
 const AdminModel = getModelForClass(Admin);
-
 export default AdminModel;
