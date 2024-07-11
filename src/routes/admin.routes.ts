@@ -7,6 +7,6 @@ const router = Router();
 router.post('/create',superAdminMiddleware, createAdmin);
 router.get("/getalladmin",superAdminMiddleware ,getAllAdmins)
 router.get("/getadminbyid/:adminId",superAdminMiddleware,getAdminById)
-router.put("/update/:adminId",updateAdmin)
+router.put("/update/:id",updateAdmin)
 router.post("/adminlogin",adminLogin)
 export default router;
