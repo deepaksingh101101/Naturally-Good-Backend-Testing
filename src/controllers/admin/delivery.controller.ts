@@ -67,3 +67,40 @@ export const deliveryGuyLogin = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
+
+
+
+export const updateDeliveryGuy = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { email, password, firstName, lastName, phoneNumber, isActive } = req.body;
+
+    if (email) {
+        return res.status(400).json({ error: 'Email cannot be changed' });
+    }
+
+    try {
+        const deliveryGuy = await DeliveryGuyModel.findById(id);
+        if (!deliveryGuy) {
+            return res.status(404).json({ error: 'Delivery guy not found' });
+        }
+
+        if (password) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            deliveryGuy.password = hashedPassword;
+        }
+
+        if (firstName) deliveryGuy.firstName = firstName;
+        if (lastName) deliveryGuy.lastName = lastName;
+        if (phoneNumber) deliveryGuy.phoneNumber = phoneNumber;
+        if (typeof isActive !== 'undefined') deliveryGuy.isActive = isActive;
+
+        deliveryGuy.updatedAt = new Date();
+
+        await deliveryGuy.save();
+
+        res.status(200).json({ message: 'Delivery guy updated successfully' });
+    } catch (error) {
+        console.error('Error updating delivery guy:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+};
