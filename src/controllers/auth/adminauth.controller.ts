@@ -1,7 +1,5 @@
 import { Request, Response } from 'express';
-import { DocumentType } from '@typegoose/typegoose';
 import AdminModel, { Admin } from '../../models/admin.model';
-import SuperAdminModel from '../../models/superadmin.model';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 

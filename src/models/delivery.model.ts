@@ -1,58 +1,51 @@
 import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
+import bcrypt from 'bcrypt';
 
 @ModelOptions({
     schemaOptions: {
         timestamps: true,
     },
 })
-export class Delivery {
+export class DeliveryGuy {
+    @prop({ required: true, unique: true })
+    public email!: string;
 
-    @prop({ type: String, required: true })
-    public deliveryId: string;
+    @prop({ required: true })
+    public password!: string;
 
-    @prop({ type: String, required: true })
-    public orderId: string;
+    @prop({ required: true })
+    public firstName!: string;
 
-    @prop({ type: Date, required: true })
-    public deliveryDate: Date;
+    @prop({ required: true })
+    public lastName!: string;
 
-    @prop({ type: String , required:true})
-    public userId: string;
+    @prop({ required: true })
+    public phoneNumber!: string;
 
-    @prop({ type: String, required: true })
-    public deliveryPersonId: string;
+    @prop({ required: true })
+    public adminId!: string;
 
-    @prop({ type: String , required: true})
-    public deliveryAddress?: string;
+    @prop({ required: true, enum: ['delivery_guy'] })
+    public role!: string;
 
-    @prop({ type: String})
-    public deliveryStatus?: string;
+    @prop({ default: true })
+    public isActive!: boolean;
 
-    @prop({ type: Number})
-    public trackingNumber: number;
+    @prop({ required: true })
+    public updatedAt!: Date;
 
-    @prop({ type: String})
-    public estimatedDeliveryTime: string;
+    @prop({ required: true })
+    public createdAt!: Date;
 
-    @prop({ type: String })
-    public actualDeliveryTime: string;
+    public async hashPassword(password: string): Promise<string> {
+        const saltRounds = 10;
+        return await bcrypt.hash(password, saltRounds);
+    }
 
-    @prop({ type: String , required:true})
-    public deliveryType: String;
-
-    @prop({ type: Number })
-    public deliveryFee: Number;
-    
-    @prop({ type: Number , required:true})
-    public totalPrice: Number;
-
-    @prop({ type: String, required: true })
-    public updatedAt: string;
-
-    @prop({ type: String, required: true })
-    public createdAt: string;
+    public async validatePassword(password: string): Promise<boolean> {
+        return await bcrypt.compare(password, this.password);
+    }
 }
 
-const DeliveryModel = getModelForClass(Delivery);
-
-export default DeliveryModel;
+const DeliveryGuyModel = getModelForClass(DeliveryGuy);
+export default DeliveryGuyModel;
