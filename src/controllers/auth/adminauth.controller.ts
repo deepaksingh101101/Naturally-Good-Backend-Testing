@@ -99,27 +99,22 @@ export const updateAdmin = async (req: Request, res: Response) => {
     const { firstName, lastName, phoneNumber, password, isActive } = req.body;
 
     try {
-        // Find the admin by ID
         const admin = await AdminModel.findById(id);
         console.log("Admin",admin)
         if (!admin) {
             return res.status(404).json({ error: 'Admin not found' });
         }
 
-        // Update fields if they are provided in the request body
         if (firstName !== undefined) admin.firstName = firstName;
         if (lastName !== undefined) admin.lastName = lastName;
         if (phoneNumber !== undefined) admin.phoneNumber = phoneNumber;
         if (isActive !== undefined) admin.isActive = isActive;
         if (password !== undefined) {
-            // Hash the new password before saving
             admin.password = await bcrypt.hash(password, 10);
         }
 
-        // Update the updatedAt timestamp
         admin.updatedAt = new Date();
 
-        // Save the updated admin details
         await admin.save();
 
         res.status(200).json({ message: 'Admin updated successfully' });
@@ -128,39 +123,5 @@ export const updateAdmin = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
-// export const updateAdmin = async (req: Request, res: Response) => {
-//     const { _id } = req.params;
-//     const { firstName, lastName, phoneNumber, password } = req.body;
-
-//     try {
-//         const admin = await AdminModel.findById(_id);
-//         // const admin = await AdminModel.findOne({ email });
-//         console.log("Admin",admin)
-//         if (!admin) {
-//             return res.status(404).json({ error: 'Admin not found' });
-//         }
-
-//         // Update fields if they are provided in the request body
-//         if (firstName !== undefined) admin.firstName = firstName;
-//         if (lastName !== undefined) admin.lastName = lastName;
-//         if (phoneNumber !== undefined) admin.phoneNumber = phoneNumber;
-//         if (password !== undefined) {
-//             // Hash the new password before saving
-//             admin.password = await bcrypt.hash(password, 10);
-//         }
-
-//         // Update the updatedAt timestamp
-//         admin.updatedAt = new Date();
-
-//         // Save the updated admin details
-//         await admin.save();
-
-//         res.status(200).json({ message: 'Admin updated successfully' });
-//     } catch (error) {
-//         console.error('Error updating Admin:', error);
-//         res.status(500).json({ error: 'Internal server error', details: error.message });
-//     }
-// };
-
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
