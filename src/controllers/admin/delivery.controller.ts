@@ -104,3 +104,30 @@ export const updateDeliveryGuy = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
+
+
+export const getAllDeliveryGuys = async (req: Request, res: Response) => {
+    try {
+        const deliveryGuys = await DeliveryGuyModel.find();
+        res.status(200).json(deliveryGuys);
+    } catch (error) {
+        console.error('Error fetching delivery guys:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+};
+
+
+export const getDeliveryGuyById = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        const deliveryGuy = await DeliveryGuyModel.findById(id);
+        if (!deliveryGuy) {
+            return res.status(404).json({ error: 'Delivery guy not found' });
+        }
+        res.status(200).json(deliveryGuy);
+    } catch (error) {
+        console.error('Error fetching delivery guy:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+};
