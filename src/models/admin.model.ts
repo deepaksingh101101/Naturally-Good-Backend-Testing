@@ -8,25 +8,25 @@ import bcrypt from 'bcrypt';
 })
 export class Admin {
     @prop({ required: true, unique: true })
-    public email!: string;
+    public Email!: string;
 
     @prop({ required: true })
-    public password!: string;
+    public Password!: string;
 
     @prop({ required: true })
-    public firstName!: string;
+    public FirstName!: string;
 
     @prop({ required: true })
-    public lastName!: string;
+    public LastName!: string;
 
     @prop({ required: true })
-    public phoneNumber!: string;
+    public PhoneNumber!: string;
 
     @prop({ required: true })
-    public superAdminId!: string;
+    public SuperAdminId!: string;
 
     @prop({ required: true, enum: ['admin'] })
-    public role!: string;
+    public Role!: string;
 
     @prop({ default: true })
     public isActive!: boolean;
@@ -42,8 +42,8 @@ export class Admin {
         return await bcrypt.hash(password, saltRounds);
     }
 
-    public async validatePassword(password: string): Promise<boolean> {
-        return await bcrypt.compare(password, this.password);
+    public async validatePassword(Password: string): Promise<boolean> {
+        return await bcrypt.compare(Password, this.Password);
     }
 }
 

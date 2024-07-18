@@ -1,17 +1,15 @@
 import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
 
 class items {
-  @prop({ required: true })
-  public vegetableId!: String;
 
   @prop({ required: true })
-  public vegetableName!: String;
+  public VegetableName!: String;
 
   @prop({ required: true })
-  public quantity!: Number;
+  public Quantity!: Number;
 
   @prop({ required: true })
-  public price!: string;
+  public Price!: string;
 }
 export enum OderStatus {
   InProgress = 'inprogress',
@@ -24,32 +22,30 @@ export enum OderStatus {
   },
 })
 export class Order {
-  @prop({ type: String, required: true })
-  public orderId: string;
 
   @prop({ type: String, required: true })
-  public userId: string;
+  public UserId: string;
 
   @prop({ type: Date })
-  public orderDate: Date;
+  public OrderDate: Date;
 
   @prop({ required: true })
-  public vegetablesItems!: items;
+  public VegetablesItems!: items;
 
   @prop({ type: String, enum: OderStatus, required: false })
-  public deliveryStatus?: OderStatus;
+  public DeliveryStatus?: OderStatus;
 
   @prop({ type: String })
-  public paymentId?: String;
+  public PaymentId?: String;
 
   @prop({ type: Number, required: true })
-  public totalAmount: number;
+  public TotalAmount: number;
 
   @prop({ type: String, required: true })
-  public updatedAt: string;
+  public UpdatedAt: string;
 
   @prop({ type: String, required: true })
-  public createdAt: string;
+  public CreatedAt: string;
 }
 
 const OrderModel = getModelForClass(Order);

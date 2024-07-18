@@ -5,15 +5,14 @@ import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
     timestamps: true,
   },
 })
-export class Task {
+export class Category {
   @prop({ type: String, required: true })
-  public Title: string;
+  public Name: string;
 
   @prop({ type: String, required: true })
   public Description: string;
 }
 
-const TaskModel = getModelForClass(Task);
+const CategoryModel = getModelForClass(Category);
 
-export default TaskModel;
- 
+export default CategoryModel;

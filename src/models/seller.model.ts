@@ -8,43 +8,40 @@ import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
 export class Seller {
 
     @prop({ type: String, required: true })
-    public supplierId: string;
+    public SellerName: string;
 
     @prop({ type: String, required: true })
-    public sellerName: string;
-
-    @prop({ type: String, required: true })
-    public shopName: string;
+    public ShopName: string;
 
     @prop({ type: String })
-    public email: string;
+    public Email: string;
 
     @prop({ type: Number, required: true })
-    public mobileNo: number;
+    public MobileNo: number;
 
     @prop({ type: String , required: true})
-    public address?: string;
+    public Address?: string;
 
     @prop({ type: String , required:true})
-    public state?: string;
+    public State?: string;
 
     @prop({ type: Number, required: true })
-    public pinCode: number;
+    public PinCode: number;
 
     @prop({ type: String})
-    public supplierType: string;
+    public SupplierType: string;
 
     @prop({ type: Number })
-    public rating: number;
+    public Rating: number;
 
     @prop({ type: String })
-    public bankaccountDetails: String;
+    public BankaccountDetails: String;
 
     @prop({ type: String, required: true })
-    public updatedAt: string;
+    public UpdatedAt: string;
 
     @prop({ type: String, required: true })
-    public createdAt: string;
+    public CreatedAt: string;
 }
 
 const SellerModel = getModelForClass(Seller);

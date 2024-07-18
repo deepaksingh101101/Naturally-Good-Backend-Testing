@@ -28,21 +28,21 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
 export const loginSuperAdmin = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    const { Email, Password } = req.body;
 
     try {
-        const superAdmin = await SuperAdminModel.findOne({ email }) as DocumentType<SuperAdmin>;
+        const superAdmin = await SuperAdminModel.findOne({ Email }) as DocumentType<SuperAdmin>;
         if (!superAdmin) {
             return res.status(400).json({ error: 'Invalid email' });
         }
 
-        const isPasswordValid = await superAdmin.validatePassword(password);
+        const isPasswordValid = await superAdmin.validatePassword(Password);
         if (!isPasswordValid) {
             return res.status(400).json({ error: 'Invalid password' });
         }
 
         const token = jwt.sign(
-            { id: superAdmin._id, email: superAdmin.email, role: superAdmin.role },
+            { id: superAdmin._id, email: superAdmin.Email, role: superAdmin.Role },
             JWT_SECRET,
             { expiresIn: '1h' }
         );

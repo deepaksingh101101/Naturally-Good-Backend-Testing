@@ -3,16 +3,16 @@ import bcrypt from 'bcrypt';
 
 class Address {
   @prop({ type: String, required: true })
-  public houseNumber: string;
+  public HouseNumber: string;
 
   @prop({ type: String, required: true })
-  public city: string;
+  public City: string;
 
   @prop({ type: String, required: true })
-  public state: string;
+  public State: string;
 
   @prop({ type: String, required: true })
-  public zipCode: string;
+  public ZipCode: string;
 }
 
 @ModelOptions({

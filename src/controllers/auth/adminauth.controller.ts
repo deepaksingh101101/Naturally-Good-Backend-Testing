@@ -4,27 +4,27 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 export const createAdmin = async (req: Request, res: Response) => {
-    const { email, password, firstName, lastName, phoneNumber } = req.body;
-    const superAdminId = req['decodedToken'].id;
+    const { Email, Password, FirstName, LastName, PhoneNumber } = req.body;
+    const SuperAdminId = req['decodedToken'].id;
 
     try {
-        const adminExists = await AdminModel.findOne({ email });
+        const adminExists = await AdminModel.findOne({ Email });
         if (adminExists) {
             return res.status(400).json({ error: 'Admin already exists' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(Password, 10);
 
         const newAdmin = new AdminModel({
-            email,
-            password: hashedPassword,
-            firstName,
-            lastName,
-            phoneNumber,
-            superAdminId,
-            role: 'admin',
-            updatedAt: new Date(),
-            createdAt: new Date(),
+            Email,
+            Password: hashedPassword,
+            FirstName,
+            LastName,
+            PhoneNumber,
+            SuperAdminId,
+            Role: 'admin',
+            UpdatedAt: new Date(),
+            CreatedAt: new Date(),
         });
 
         await newAdmin.save();
@@ -36,22 +36,22 @@ export const createAdmin = async (req: Request, res: Response) => {
     }
 };
 export const adminLogin = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    const { Email, Password } = req.body;
 
     try {
-        const admin = await AdminModel.findOne({ email });
+        const admin = await AdminModel.findOne({ Email });
         console.log("Admin", admin)
         if (!admin) {
             return res.status(400).json({ error: 'Invalid email' });
         }
 
-        const isPasswordValid = await bcrypt.compare(password, admin.password);
+        const isPasswordValid = await bcrypt.compare(Password, admin.Password);
         if (!isPasswordValid) {
             return res.status(400).json({ error: 'Invalid password' });
         }
 
         const token = jwt.sign(
-            { id: admin._id, role: admin.role },
+            { id: admin._id, role: admin.Role },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
@@ -103,12 +103,12 @@ export const updateAdmin = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Admin not found' });
         }
 
-        if (firstName !== undefined) admin.firstName = firstName;
-        if (lastName !== undefined) admin.lastName = lastName;
-        if (phoneNumber !== undefined) admin.phoneNumber = phoneNumber;
+        if (firstName !== undefined) admin.FirstName = firstName;
+        if (lastName !== undefined) admin.LastName = lastName;
+        if (phoneNumber !== undefined) admin.PhoneNumber = phoneNumber;
         if (isActive !== undefined) admin.isActive = isActive;
         if (password !== undefined) {
-            admin.password = await bcrypt.hash(password, 10);
+            admin.Password = await bcrypt.hash(password, 10);
         }
 
         admin.updatedAt = new Date();

@@ -7,22 +7,22 @@ import bcrypt from 'bcrypt';
     },
 })
 @pre<SuperAdmin>('save', async function(next) {
-    if (!this.isModified('password')) {
+    if (!this.isModified('Password')) {
         return next();
     }
     const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    this.Password = await bcrypt.hash(this.Password, salt);
     next();
 })
 export class SuperAdmin {
     @prop({ type: String, required: true, unique: true })
-    public email: string;
+    public Email: string;
 
     @prop({ type: String, required: true })
-    public password: string;
+    public Password: string;
 
     @prop({ type: String, required: true })
-    public role: string;
+    public Role: string;
 
     @prop({ type: Boolean, default: true })
     public isActive: boolean;
@@ -34,7 +34,7 @@ export class SuperAdmin {
     public createdAt: Date;
 
     public async validatePassword(inputPassword: string): Promise<boolean> {
-        return await bcrypt.compare(inputPassword, this.password);
+        return await bcrypt.compare(inputPassword, this.Password);
     }
 }
 

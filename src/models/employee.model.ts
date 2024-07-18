@@ -1,27 +1,51 @@
-import { prop, getModelForClass } from '@typegoose/typegoose';
+import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
+import bcrypt from 'bcrypt';
 
-class Employee {
-    @prop({ type: String, required: true })
-    public employeeId!: string;
+@ModelOptions({
+    schemaOptions: {
+        timestamps: true,
+    },
+})
+export class DeliveryGuy {
+    @prop({ required: true, unique: true })
+    public Email!: string;
 
-    @prop({ type: String, required: true })
-    public fullName!: string;
+    @prop({ required: true })
+    public Password!: string;
 
-    @prop({ type: Object, required: true })
-    public role!: object;
+    @prop({ required: true })
+    public FirstName!: string;
 
-    @prop({ type: Number, required: false })
-    public assignedUsers?: number;
+    @prop({ required: true })
+    public LastName!: string;
 
-    @prop({ type: Number, required: true })
-    public contactInformation!: number;
+    @prop({ required: true })
+    public PhoneNumber!: string;
 
-    @prop({ type: Date, default: Date.now })
-    public createdAt!: Date;
+    @prop({ required: true })
+    public AdminId!: string;
 
-    @prop({ type: Date, default: Date.now })
-    public updatedAt!: Date;
+    @prop({ required: true, enum: ['delivery_guy'] })
+    public Role!: string;
+
+    @prop({ default: true })
+    public isActive!: boolean;
+
+    @prop({ required: true })
+    public UpdatedAt!: Date;
+
+    @prop({ required: true })
+    public CreatedAt!: Date;
+
+    public async hashPassword(Password: string): Promise<string> {
+        const saltRounds = 10;
+        return await bcrypt.hash(Password, saltRounds);
+    }
+
+    public async validatePassword(Password: string): Promise<boolean> {
+        return await bcrypt.compare(Password, this.Password);
+    }
 }
 
-const EmployeeModel = getModelForClass(Employee);
-export default EmployeeModel;
+const DeliveryGuyModel = getModelForClass(DeliveryGuy);
+export default DeliveryGuyModel;

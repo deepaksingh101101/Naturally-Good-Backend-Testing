@@ -8,22 +8,19 @@ import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
 export class Report {
 
     @prop({ type: String, required: true })
-    public ReportId: string;
+    public ReportType: string;
 
     @prop({ type: String, required: true })
-    public reportType: string;
-
-    @prop({ type: String, required: true })
-    public content: string;
+    public Content: string;
 
     @prop({ type: String , required:true})
-    public bufferNumber: string;
+    public BufferNumber: string;
 
     @prop({ type: String, required: true })
-    public updatedAt: string;
+    public UpdatedAt: string;
 
     @prop({ type: String, required: true })
-    public createdAt: string;
+    public CreatedAt: string;
 }
 
 const ReportModel = getModelForClass(Report);

@@ -2,10 +2,10 @@ import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
 
 class SubscriptionPlan {
   @prop({ type: String, required: true })
-  public houseNumber: string;
+  public HouseNumber: string;
 
   @prop({ type: String, required: true })
-  public city: string;
+  public City: string;
 }
 
 @ModelOptions({
@@ -14,35 +14,30 @@ class SubscriptionPlan {
   },
 })
 export class Subscription {
-  @prop({ type: String, required: true })
-  public subscriptionID: string;
-
-  @prop({ type: String, required: true })
-  public userId: string;
 
   @prop({ type: () => SubscriptionPlan, required: true })
-  public subscriptionPlan: SubscriptionPlan;
+  public SubscriptionPlan: SubscriptionPlan;
 
   @prop({ type: Date })
-  public subscriptionStartDate?: Date;
+  public SubscriptionStartDate?: Date;
 
   @prop({ type: Date })
-  public subscriptionEndDate?: Date;
+  public SubscriptionEndDate?: Date;
 
   @prop({ type: String })
-  public paymentStatus?: String;
+  public PaymentStatus?: String;
 
   @prop({ type: Boolean, })
-  public subscriptionStatus: boolean;
+  public SubscriptionStatus: boolean;
 
   @prop({ type: String, required: true })
-  public completedAt: string;
+  public CompletedAt: string;
 
   @prop({ type: String, required: true })
-  public updatedAt: string;
+  public UpdatedAt: string;
 
   @prop({ type: String, required: true })
-  public createdAt: string;
+  public CreatedAt: string;
 }
 
 const SubscriptionModel = getModelForClass(Subscription);

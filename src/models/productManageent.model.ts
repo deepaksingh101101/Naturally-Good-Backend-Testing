@@ -1,44 +1,39 @@
 import { prop, getModelForClass } from '@typegoose/typegoose';
 
 class ProductManagement {
-    @prop({ type: String, required: true })
-    public productID!: string;
 
     @prop({ type: String, required: true })
-    public productName!: string;
-
-    @prop({ type: Date, required: true })
-    public orderDate!: Date;
+    public ProductName!: string;
 
     @prop({ type: Object, required: true })
-    public type!: object;
+    public Type!: object;
 
     @prop({ type: String, required: false })
-    public group?: string;
+    public Group?: string;
 
     @prop({ type: String, required: false })
-    public season?: string;
+    public Season?: string;
 
     @prop({ type: String, required: false })
-    public priority?: string;
+    public Priority?: string;
 
     @prop({ type: Number, required: false })
-    public roster?: number;
+    public Roster?: number;
 
     @prop({ type: String, required: true })
-    public veggieNameInHindi!: string;
+    public VeggieNameInHindi!: string;
 
     @prop({ type: Number, required: true })
-    public unitQuantity!: number;
+    public UnitQuantity!: number;
 
     @prop({ type: Number, required: false })
-    public pieces?: number;
+    public Pieces?: number;
 
     @prop({ type: String, required: true })
-    public updatedAt!: string; 
+    public UpdatedAt!: string; 
 
     @prop({ type: String, required: true })
-    public createdAt!: string;
+    public CreatedAt!: string;
 }
 
 const ProductManagementModel = getModelForClass(ProductManagement);

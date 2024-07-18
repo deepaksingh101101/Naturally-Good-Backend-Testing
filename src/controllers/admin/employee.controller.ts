@@ -1,30 +1,30 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import DeliveryGuyModel from '../../models/delivery.model';
+import DeliveryGuyModel from '../../models/employee.model';
 import jwt from 'jsonwebtoken';
 
 export const createDeliveryGuy = async (req: Request, res: Response) => {
-    const { email, password, firstName, lastName, phoneNumber } = req.body;
-    const adminId = req['adminId'];
+    const { Email, Password, FirstName, LastName, PhoneNumber } = req.body;
+    const AdminId = req['adminId'];
 
     try {
-        const deliveryGuyExists = await DeliveryGuyModel.findOne({ email });
+        const deliveryGuyExists = await DeliveryGuyModel.findOne({ Email });
         if (deliveryGuyExists) {
             return res.status(400).json({ error: 'Delivery guy already exists' });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(Password, 10);
 
         const newDeliveryGuy = new DeliveryGuyModel({
-            email,
-            password: hashedPassword,
-            firstName,
-            lastName,
-            phoneNumber,
-            adminId,
-            role: 'delivery_guy',
-            updatedAt: new Date(),
-            createdAt: new Date(),
+            Email,
+            Password: hashedPassword,
+            FirstName,
+            LastName,
+            PhoneNumber,
+            AdminId,
+            Role: 'delivery_guy',
+            UpdatedAt: new Date(),
+            CreatedAt: new Date(),
         });
 
         await newDeliveryGuy.save();
@@ -41,22 +41,22 @@ export const createDeliveryGuy = async (req: Request, res: Response) => {
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
 export const deliveryGuyLogin = async (req: Request, res: Response) => {
-    const { email, password } = req.body;
+    const { Email, Password } = req.body;
 
     try {
-        const deliveryGuy = await DeliveryGuyModel.findOne({ email });
+        const deliveryGuy = await DeliveryGuyModel.findOne({ Email });
 
         if (!deliveryGuy) {
             return res.status(400).json({ error: 'Invalid email' });
         }
 
-        const isPasswordValid = await bcrypt.compare(password, deliveryGuy.password);
+        const isPasswordValid = await bcrypt.compare(Password, deliveryGuy.Password);
         if (!isPasswordValid) {
             return res.status(400).json({ error: 'Invalid password' });
         }
 
         const token = jwt.sign(
-            { id: deliveryGuy._id, role: deliveryGuy.role },
+            { id: deliveryGuy._id, Role: deliveryGuy.Role },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
@@ -72,9 +72,9 @@ export const deliveryGuyLogin = async (req: Request, res: Response) => {
 
 export const updateDeliveryGuy = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { email, password, firstName, lastName, phoneNumber, isActive } = req.body;
+    const { Email, Password, FirstName, LastName, PhoneNumber, isActive } = req.body;
 
-    if (email) {
+    if (Email) {
         return res.status(400).json({ error: 'Email cannot be changed' });
     }
 
@@ -84,17 +84,17 @@ export const updateDeliveryGuy = async (req: Request, res: Response) => {
             return res.status(404).json({ error: 'Delivery guy not found' });
         }
 
-        if (password) {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            deliveryGuy.password = hashedPassword;
+        if (Password) {
+            const hashedPassword = await bcrypt.hash(Password, 10);
+            deliveryGuy.Password = hashedPassword;
         }
 
-        if (firstName) deliveryGuy.firstName = firstName;
-        if (lastName) deliveryGuy.lastName = lastName;
-        if (phoneNumber) deliveryGuy.phoneNumber = phoneNumber;
+        if (FirstName) deliveryGuy.FirstName = FirstName;
+        if (LastName) deliveryGuy.LastName = LastName;
+        if (PhoneNumber) deliveryGuy.PhoneNumber = PhoneNumber;
         if (typeof isActive !== 'undefined') deliveryGuy.isActive = isActive;
 
-        deliveryGuy.updatedAt = new Date();
+        deliveryGuy.UpdatedAt = new Date();
 
         await deliveryGuy.save();
 

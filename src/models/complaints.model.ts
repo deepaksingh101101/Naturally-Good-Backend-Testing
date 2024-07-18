@@ -1,35 +1,33 @@
 import { prop, getModelForClass } from '@typegoose/typegoose';
 
 class Compliments {
-    @prop({ type: String, required: true })
-    public complimentId!: string;
 
     @prop({ type: Date, required: true })
-    public orderId!: Date;
+    public OrderId!: Date;
 
     @prop({ type: Number, required: true })
-    public userId!: number;
+    public UserId!: number;
 
     @prop({ type: String })
-    public complaintType!: string;
+    public ComplaintType!: string;
 
     @prop({ type: Number, default: 1 })
-    public description!: number;
+    public Description!: number;
 
     @prop({ type: String, required: true })
-    public status!: string;
+    public Status!: string;
 
     @prop({ type: String })
-    public resolution?: string;
+    public Resolution?: string;
 
     @prop({ type: String })
-    public complimentDate?: string;
+    public ComplimentDate?: string;
 
     @prop({ type: Date, default: Date.now })
-    public createdAt!: Date;
+    public CreatedAt!: Date;
 
     @prop({ type: Date, default: Date.now })
-    public updatedAt!: Date;
+    public UpdatedAt!: Date;
 }
 const ComplimentsModel = getModelForClass(Compliments);
 export default ComplimentsModel;

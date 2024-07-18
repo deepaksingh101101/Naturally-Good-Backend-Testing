@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import {  adminLogin, createAdmin  , getAdminById, getAllAdmins,updateAdmin} from '../controllers/auth/adminauth.controller';
+import {  adminLogin, createAdmin  , getAdminById, getAllAdmins, updateAdmin} from '../controllers/auth/adminauth.controller';
 import { superAdminMiddleware } from '../middleware/superadmin.middleware';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
-import { createDeliveryGuy, deliveryGuyLogin, getAllDeliveryGuys, updateDeliveryGuy ,getDeliveryGuyById} from '../controllers/admin/delivery.controller';
+import { createDeliveryGuy, deliveryGuyLogin, getAllDeliveryGuys, updateDeliveryGuy ,getDeliveryGuyById} from '../controllers/admin/employee.controller';
 
 const router = Router();
 

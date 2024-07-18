@@ -15,35 +15,32 @@ export enum PaymentStatus {
 }
 class Payment {
 
-    @prop({ type: String, required: true })
-    public paymentId!: string;
-
     @prop({ type: String, required:true })
     public UserId!: string;
 
     @prop({ type: String})
-    public subscriptionId!: string;
+    public SubscriptionId!: string;
 
     @prop({ type: Date })
-    public paymentDate!: Date;
+    public PaymentDate!: Date;
 
     @prop({ type: Number, required: true })
-    public paymentAmount!: number;
+    public PaymentAmount!: number;
 
     @prop({ type: String, enum: PaymentMethod, required: true })
-    public paymentMethod!: PaymentMethod;
+    public PaymentMethod!: PaymentMethod;
 
     @prop({ type: String, enum: PaymentStatus, required: false })
-    public paymentStatus?: PaymentStatus;
+    public PaymentStatus?: PaymentStatus;
 
     @prop({ type: Boolean, default: false })
-    public paymentConfirmation!: boolean;
+    public PaymentConfirmation!: boolean;
 
     @prop({ type: Date, default: Date.now })
-    public createdAt!: Date;
+    public CreatedAt!: Date;
 
     @prop({ type: Date, default: Date.now })
-    public updatedAt!: Date;
+    public UpdatedAt!: Date;
 }
 
 const PaymentModel = getModelForClass(Payment);
