@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt';
         timestamps: true,
     },
 })
+
 export class DeliveryGuy {
     @prop({ required: true, unique: true })
     public Email!: string;
