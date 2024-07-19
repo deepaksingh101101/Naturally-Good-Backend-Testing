@@ -23,8 +23,8 @@ export const createAdmin = async (req: Request, res: Response) => {
             PhoneNumber,
             SuperAdminId,
             Role: 'admin',
-            UpdatedAt: new Date(),
-            CreatedAt: new Date(),
+            updatedAt: new Date(),
+            createdAt: new Date(),
         });
 
         await newAdmin.save();

@@ -7,6 +7,7 @@ import auth from "./routes/auth.routes"
 import admin from "./routes/admin.routes"
 import superadmin from "./routes/superadmin.routes"
 import category from "./routes/category.routes"
+import product from "./routes/product.routes"
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -36,6 +37,8 @@ export class Applicaction {
     this.app.use("/auth",superadmin)
 
     this.app.use("/category",category)
+
+    this.app.use("/product",product)
 
     this.app.use(express.static(path.join(__dirname, "public")));
   }
