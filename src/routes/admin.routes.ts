@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import {  loginRole, createRole ,updateRole , getRoleById, getAllRole} from '../controllers/auth/role.controller';
+import {  loginRole, createRole ,updateRole , getRoleById, getAllRole, handleAdminFilter, handleUserFilter, handleEmployeeFilter} from '../controllers/auth/role.controller';
 import { superAdminMiddleware } from '../middleware/superadmin.middleware';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
 import { createDeliveryGuy, deliveryGuyLogin, getAllDeliveryGuys, updateDeliveryGuy ,getDeliveryGuyById} from '../controllers/admin/employee.controller';
@@ -16,5 +16,9 @@ router.post("/login/delivery"  , deliveryGuyLogin);
 router.put('/update/delivery/:id', updateDeliveryGuy);
 router.get('/getall/delivery',adminMiddleware,getAllDeliveryGuys)
 router.get("/deliveryGuy/:id",adminMiddleware,getDeliveryGuyById)
+router.post('/filterAdmins/',handleAdminFilter)
+router.post('/filterUsers/',handleUserFilter)
+router.post('/filterEmployees/',handleEmployeeFilter)
+
 
 export default router;
