@@ -1,10 +1,15 @@
-import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
+import { getModelForClass, ModelOptions, prop, pre } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
 
 @ModelOptions({
     schemaOptions: {
         timestamps: true,
     },
+})
+@pre<Admin>('save', async function() {
+    if (this.isModified('Password')) {
+        this.Password = await this.hashPassword(this.Password);
+    }
 })
 export class Admin {
     @prop({ required: true, unique: true })
@@ -25,25 +30,19 @@ export class Admin {
     @prop({ required: true })
     public SuperAdminId!: string;
 
-    @prop({ required: true, enum: ['admin'] })
+    @prop({ required: true, enum: ['Admin', 'Subadmin'] })
     public Role!: string;
 
     @prop({ default: true })
     public isActive!: boolean;
-
-    @prop({ required: true })
-    public updatedAt!: Date;
-
-    @prop({ required: true })
-    public createdAt!: Date;
 
     public async hashPassword(password: string): Promise<string> {
         const saltRounds = 10;
         return await bcrypt.hash(password, saltRounds);
     }
 
-    public async validatePassword(Password: string): Promise<boolean> {
-        return await bcrypt.compare(Password, this.Password);
+    public async validatePassword(password: string): Promise<boolean> {
+        return await bcrypt.compare(password, this.Password);
     }
 }
 

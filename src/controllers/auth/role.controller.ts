@@ -1,57 +1,62 @@
 import { Request, Response } from 'express';
-import AdminModel, { Admin } from '../../models/admin.model';
+import AdminModel, { Admin } from '../../models/role.model';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
-export const createAdmin = async (req: Request, res: Response) => {
-    const { Email, Password, FirstName, LastName, PhoneNumber } = req.body;
+export const createRole = async (req: Request, res: Response) => {
+    const { Email, Password, FirstName, LastName, PhoneNumber, Role } = req.body;
     const SuperAdminId = req['decodedToken'].id;
+
+    const validRoles = ['Admin', 'Subadmin'];
+    if (Role && !validRoles.includes(Role)) {
+        return res.status(400).json({ error: 'Invalid role' });
+    }
 
     try {
         const adminExists = await AdminModel.findOne({ Email });
         if (adminExists) {
-            return res.status(400).json({ error: 'Admin already exists' });
+            return res.status(400).json({ error: `${adminExists.Role} already exists` });
         }
-
-        const hashedPassword = await bcrypt.hash(Password, 10);
 
         const newAdmin = new AdminModel({
             Email,
-            Password: hashedPassword,
+            Password,
             FirstName,
             LastName,
             PhoneNumber,
             SuperAdminId,
-            Role: 'admin',
-            updatedAt: new Date(),
-            createdAt: new Date(),
+            Role: Role || 'Admin',
+            isActive: true
         });
 
         await newAdmin.save();
 
-        res.status(201).json({ message: 'Admin created successfully' });
+        res.status(201).json({ message: `${newAdmin.Role} created successfully` });
     } catch (error) {
         console.error('Error creating Admin:', error);
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
-export const adminLogin = async (req: Request, res: Response) => {
+
+export const loginRole = async (req: Request, res: Response) => {
     const { Email, Password } = req.body;
 
     try {
         const admin = await AdminModel.findOne({ Email });
-        console.log("Admin", admin)
         if (!admin) {
-            return res.status(400).json({ error: 'Invalid email' });
+            return res.status(400).json({ error: 'Invalid email or password' });
         }
 
-        const isPasswordValid = await bcrypt.compare(Password, admin.Password);
+        const isPasswordValid = await admin.validatePassword(Password);
         if (!isPasswordValid) {
-            return res.status(400).json({ error: 'Invalid password' });
+            return res.status(400).json({ error: 'Invalid email or password' });
         }
 
         const token = jwt.sign(
-            { id: admin._id, role: admin.Role },
+            {
+                id: admin._id,
+                Role: admin.Role
+            },
             JWT_SECRET,
             { expiresIn: '1h' }
         );
@@ -62,11 +67,9 @@ export const adminLogin = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
-
-
-export const getAllAdmins = async (req: Request, res: Response) => {
+export const getAllRole = async (req: Request, res: Response) => {
     try {
-        const admins = await AdminModel.find().populate('email');
+        const admins = await AdminModel.find().populate('Email');
         res.status(200).json(admins);
     } catch (error) {
         console.error('Error fetching Admins:', error);
@@ -74,7 +77,7 @@ export const getAllAdmins = async (req: Request, res: Response) => {
     }
 };
 
-export const getAdminById = async (req: Request, res: Response) => {
+export const getRoleById = async (req: Request, res: Response) => {
     const adminId = req.params.adminId;
 
     try {
@@ -92,32 +95,33 @@ export const getAdminById = async (req: Request, res: Response) => {
 };
 
 
-export const updateAdmin = async (req: Request, res: Response) => {
+export const updateRole = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { firstName, lastName, phoneNumber, password, isActive } = req.body;
+    const { Password, FirstName, LastName, PhoneNumber, Role, isActive } = req.body;
+
+    const validRoles = ['Admin', 'Subadmin'];
+    if (Role && !validRoles.includes(Role)) {
+        return res.status(400).json({ error: 'Invalid role' });
+    }
 
     try {
         const admin = await AdminModel.findById(id);
-        console.log("Admin",admin)
         if (!admin) {
             return res.status(404).json({ error: 'Admin not found' });
         }
 
-        if (firstName !== undefined) admin.FirstName = firstName;
-        if (lastName !== undefined) admin.LastName = lastName;
-        if (phoneNumber !== undefined) admin.PhoneNumber = phoneNumber;
-        if (isActive !== undefined) admin.isActive = isActive;
-        if (password !== undefined) {
-            admin.Password = await bcrypt.hash(password, 10);
-        }
-
-        admin.updatedAt = new Date();
+        if (Password) admin.Password = Password;
+        if (FirstName) admin.FirstName = FirstName;
+        if (LastName) admin.LastName = LastName;
+        if (PhoneNumber) admin.PhoneNumber = PhoneNumber;
+        if (Role) admin.Role = Role;
+        if (typeof isActive === 'boolean') admin.isActive = isActive;
 
         await admin.save();
 
-        res.status(200).json({ message: 'Admin updated successfully' });
+        res.status(200).json({ message: `${admin.Role} updated successfully`, admin });
     } catch (error) {
-        console.error('Error updating Admin:', error);
+        console.error('Error updating admin:', error);
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };

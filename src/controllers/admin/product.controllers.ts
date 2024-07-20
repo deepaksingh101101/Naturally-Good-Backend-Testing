@@ -112,3 +112,26 @@ export const deleteProduct = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+export const filterProducts = async (req: Request, res: Response) => {
+    try {
+        const { type, category, minPrice, maxPrice, organic } = req.query;
+        
+        const filter: any = {};
+
+        if (type) filter.Type = type;
+        if (category) filter.Category = category;
+        if (minPrice) filter.Price = { $gte: Number(minPrice) };
+        if (maxPrice) {
+            if (!filter.Price) filter.Price = {};
+            filter.Price.$lte = Number(maxPrice);
+        }
+        if (organic) filter.Organic = organic === 'true';
+
+        const products = await ProductModel.find(filter);
+        
+        res.status(200).json(products);
+    } catch (error) {
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};

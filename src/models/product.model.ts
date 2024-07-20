@@ -1,6 +1,6 @@
 import { prop, getModelForClass, pre, Ref } from '@typegoose/typegoose';
 import { Types } from 'mongoose';
-import { Admin } from './admin.model';
+import { Admin } from './role.model';
 
 @pre<Product>('save', function() {
   this.UpdatedAt = new Date();

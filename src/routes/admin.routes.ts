@@ -1,16 +1,16 @@
 import { Router } from 'express';
-import {  adminLogin, createAdmin  , getAdminById, getAllAdmins, updateAdmin} from '../controllers/auth/adminauth.controller';
+import {  loginRole, createRole ,updateRole , getRoleById, getAllRole} from '../controllers/auth/role.controller';
 import { superAdminMiddleware } from '../middleware/superadmin.middleware';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
 import { createDeliveryGuy, deliveryGuyLogin, getAllDeliveryGuys, updateDeliveryGuy ,getDeliveryGuyById} from '../controllers/admin/employee.controller';
 
 const router = Router();
 
-router.post('/create',superAdminMiddleware, createAdmin);
-router.get("/getalladmin",superAdminMiddleware ,getAllAdmins);
-router.get("/getadminbyid/:adminId",superAdminMiddleware,getAdminById);
-router.put("/update/:id",updateAdmin);
-router.post("/adminlogin",adminLogin);
+router.post('/create',superAdminMiddleware, createRole);
+router.get("/getallrole",superAdminMiddleware ,getAllRole);
+router.get("/getrolebyid/:adminId",superAdminMiddleware,getRoleById);
+router.put("/update/:id",updateRole);
+router.post("/rolelogin",loginRole);
 router.post("/create/delivery" , adminMiddleware , createDeliveryGuy);
 router.post("/login/delivery"  , deliveryGuyLogin);
 router.put('/update/delivery/:id', updateDeliveryGuy);
