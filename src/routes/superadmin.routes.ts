@@ -6,4 +6,5 @@ const router = Router();
 router.post('/superadmin', createSuperAdmin);
 router.post('/loginsuperadmin',loginSuperAdmin)
 
+
 export default router;

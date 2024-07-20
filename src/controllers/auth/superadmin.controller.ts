@@ -53,3 +53,9 @@ export const loginSuperAdmin = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
+
+
+
+
+
+
