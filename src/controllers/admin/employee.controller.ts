@@ -198,7 +198,7 @@ export const updateUserStatus = async (req: Request, res: Response) => {
 
 
   // Update Status for Active and Inactive
-  export const assignEmployee = async (req: Request, res: Response) => {
+export const assignEmployee = async (req: Request, res: Response) => {
     const { userId, employeeId } = req.query;
   
     try {
@@ -228,4 +228,3 @@ export const updateUserStatus = async (req: Request, res: Response) => {
       res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   };
-  
