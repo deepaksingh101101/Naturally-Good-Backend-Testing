@@ -115,21 +115,32 @@ export const deleteProduct = async (req: Request, res: Response) => {
 
 export const filterProducts = async (req: Request, res: Response) => {
     try {
-        const { type, category, minPrice, maxPrice, organic } = req.query;
-        
-        const filter: any = {};
+        const filters = req.query;
 
-        if (type) filter.Type = type;
-        if (category) filter.Category = category;
-        if (minPrice) filter.Price = { $gte: Number(minPrice) };
-        if (maxPrice) {
-            if (!filter.Price) filter.Price = {};
-            filter.Price.$lte = Number(maxPrice);
+        const query: any = {};
+
+        if (filters.ProductName) {
+            query.ProductName = { $regex: new RegExp(filters.ProductName as string, 'i') }; 
         }
-        if (organic) filter.Organic = organic === 'true';
+        if (filters.Type) {
+            query.Type = filters.Type;
+        }
+        if (filters.Season) {
+            query.Season = filters.Season;
+        }
+        if (filters.Price) {
+            query.Price = +filters.Price;
+        }
+        if (filters.Stock) {
+            query.Stock = +filters.Stock;
+        }
 
-        const products = await ProductModel.find(filter);
+        const products = await ProductModel.find(query);
         
+        if (products.length === 0) {
+            return res.status(404).json({ error: 'Products not found' });
+        }
+
         res.status(200).json(products);
     } catch (error) {
         res.status(500).json({ error: 'Internal server error' });
