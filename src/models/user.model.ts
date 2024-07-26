@@ -2,16 +2,16 @@ import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
 
 class Address {
-  @prop({ type: String, required: true })
+  @prop({ type: String, required: false })
   public HouseNumber: string;
 
-  @prop({ type: String, required: true })
+  @prop({ type: String, required: false })
   public City: string;
 
-  @prop({ type: String, required: true })
+  @prop({ type: String, required: false })
   public State: string;
 
-  @prop({ type: String, required: true })
+  @prop({ type: String, required: false })
   public ZipCode: string;
 }
 
@@ -30,13 +30,13 @@ export class User {
   @prop({ type: String, required: true })
   public lastname: string;
 
-  @prop({ type: Number, required: true })
+  @prop({ type: Number, required: false })
   public phoneNo: number;
 
-  @prop({ type: String, required: true })
+  @prop({ type: String, required: false })
   public password: string;
 
-  @prop({ type: () => Address, required: true })
+  @prop({ type: () => Address, required: false })
   public address: Address;
 
   @prop({ type: String })
@@ -45,13 +45,18 @@ export class User {
   @prop({ type: Boolean, default: true })
   public accountStatus: boolean;
 
+  @prop({ type: String, required:false })
+  public assignedEmployee?: string;
+
+
   @prop({ type: String, default: () => new Date().toISOString() })
   public lastLogin: string;
 
-  @prop({ type: String })
+  @prop({ type: String, required:false })
   public otp?: string;
+  
 
-  @prop({ type: Date })
+  @prop({ type: Date, required:false })
   public otpExpiry?: Date;
 
   public async comparePassword(candidatePassword: string): Promise<boolean> {

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
-import { createProduct, deleteProduct, filterProducts, getAllProducts, getProductById, updateProduct } from '../controllers/admin/product.controllers';
+import { createProduct, deleteProduct, filterProducts, getAllProducts, getProductById, updateProduct, updateProductCategory } from '../controllers/admin/product.controllers';
 
 const router = Router();
 
@@ -10,5 +10,6 @@ router.get('/products/:id', getProductById)
 router.put('/update/:id', adminMiddleware, updateProduct)
 router.delete('/delete/:id',adminMiddleware , deleteProduct)
 router.get('/filter',filterProducts)
+router.post('/updateProductCategory',updateProductCategory)
 
 export default router;

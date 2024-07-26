@@ -8,6 +8,7 @@ import admin from "./routes/admin.routes"
 import superadmin from "./routes/superadmin.routes"
 import category from "./routes/category.routes"
 import product from "./routes/product.routes"
+import plan from "./routes/plans.routes"
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -39,6 +40,8 @@ export class Applicaction {
     this.app.use("/category",category)
 
     this.app.use("/product",product)
+
+    this.app.use("/plan",plan)
 
     this.app.use(express.static(path.join(__dirname, "public")));
   }
