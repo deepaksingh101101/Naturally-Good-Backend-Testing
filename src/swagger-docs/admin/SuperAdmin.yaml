@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Naturally Good(Super Admin)
+  title: Naturally Good(Admin)
   description: API endpoints for Naturally Goods documented on Swagger
   contact:
     name: Deepak Singh
@@ -72,5 +72,58 @@ paths:
                     type: string
                     example: Error details message
 
-
-  
+  /superadmin/login:
+    post:
+      summary: Login a Super Admin
+      tags:
+        - SuperAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Email:
+                  type: string
+                  example: "john.doe@example.com"
+                Password:
+                  type: string
+                  example: "Password123!"
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login successful
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        400:
+          description: Invalid email or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid email or password
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+                  details:
+                    type: string
+                    example: Error details message
