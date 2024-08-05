@@ -3,8 +3,8 @@ import { createSuperAdmin, loginSuperAdmin } from '../controllers/auth/superadmi
 
 const router = Router();
 
-router.post('/superadmin', createSuperAdmin);
-router.post('/loginsuperadmin',loginSuperAdmin)
+router.post('/create', createSuperAdmin);
+router.post('/login',loginSuperAdmin)
 
 
 export default router;
