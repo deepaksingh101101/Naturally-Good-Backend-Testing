@@ -32,7 +32,7 @@ export class Order {
   @prop({ required: true })
   public VegetablesItems!: items;
 
-  @prop({ type: String, enum: OderStatus, required: false })
+  @prop({ type: String, enum: OderStatus, required: false, default: OderStatus.InProgress })
   public DeliveryStatus?: OderStatus;
 
   @prop({ type: String })
