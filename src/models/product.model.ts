@@ -58,8 +58,8 @@ class Product {
     // @prop({ type: String, required: false })
     // public NutritionalInfo?: string;
 
-    @prop({ type: Boolean, required: false, default: false })
-    public Organic?: boolean;
+    // @prop({ type: Boolean, required: false, default: false })
+    // public Organic?: boolean;
 
     @prop({ type: Boolean, required: false, default: true })
     public Available?: boolean;

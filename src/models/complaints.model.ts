@@ -1,27 +1,34 @@
-import { prop, getModelForClass } from '@typegoose/typegoose';
+import { prop, getModelForClass, Ref } from '@typegoose/typegoose';
+import { User } from './user.model';
+
+enum StatusType {
+    ACTIVE = 'active',
+    INACTIVE = 'inactive'
+}
 
 class Compliments {
 
     @prop({ type: Date, required: true })
     public OrderId!: Date;
 
-    @prop({ type: Number, required: true })
-    public UserId!: number;
+    @prop({ ref: () => User })
+    public UserId!: Ref<User>;
+
 
     @prop({ type: String })
     public ComplaintType!: string;
 
-    @prop({ type: Number, default: 1 })
-    public Description!: number;
-
-    @prop({ type: String, required: true })
-    public Status!: string;
+    @prop({ enum: StatusType, required: true })
+    public Status!: StatusType;
 
     @prop({ type: String })
     public Resolution?: string;
 
-    @prop({ type: String })
-    public ComplimentDate?: string;
+    @prop({ type: Number, default: 1 })
+    public Description!: number;
+
+    // @prop({ type: String })
+    // public ComplimentDate?: string;
 
     @prop({ type: Date, default: Date.now })
     public CreatedAt!: Date;
