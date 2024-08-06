@@ -13,6 +13,7 @@ import categoryRoutes from "./routes/category.routes";
 import productRoutes from "./routes/product.routes";
 import planRoutes from "./routes/plans.routes";
 import complaintTypeRoutes from "./routes/complaints.routes";
+import dropDownRoutes from "./routes/dropdown.routes";
 import { setupSwagger } from "./swaggerConfig";  // Import the Swagger configuration
 
 dotenv.config();
@@ -24,7 +25,7 @@ export class Application {
     this.app = express();
     this.middlewares();
     this.routes();
-    setupSwagger(this.app);  // Setup Swagger
+    setupSwagger(this.app); 
   }
 
   middlewares() {
@@ -43,6 +44,7 @@ export class Application {
     this.app.use("/product", productRoutes);
     this.app.use("/plan", planRoutes);
     this.app.use("/complaintType",complaintTypeRoutes );
+    this.app.use("/dropDown",dropDownRoutes );
     this.app.use(express.static(path.join(__dirname, "public")));
   }
 

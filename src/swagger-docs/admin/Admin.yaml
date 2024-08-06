@@ -329,3 +329,391 @@ paths:
                   details:
                     type: string
                     example: Error details message
+
+
+  /dropDown/types:
+    get:
+      summary: Get all Types
+      tags:
+        - Types
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of all Types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: "60d0fe4f5311236168a109ca"
+                    Name:
+                      type: string
+                      example: "Vegetable"
+                    CreatedAt:
+                      type: string
+                      format: date-time
+                      example: "2023-08-06T14:34:08.000Z"
+                    UpdatedAt:
+                      type: string
+                      format: date-time
+                      example: "2023-08-06T14:34:08.000Z"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+    post:
+      summary: Create a new Type
+      tags:
+        - Types
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Name:
+                  type: string
+                  example: "Vegetable"
+      security:
+        - bearerAuth: []
+      responses:
+        201:
+          description: Type created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "60d0fe4f5311236168a109ca"
+                  Name:
+                    type: string
+                    example: "Vegetable"
+                  CreatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+                  UpdatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+        400:
+          description: Type already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Type already exists
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+  /dropDown/types/{id}:
+    delete:
+      summary: Delete a Type by ID
+      tags:
+        - Types
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the Type
+      responses:
+        204:
+          description: Type deleted successfully
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+  /dropDown/seasons:
+    get:
+      summary: Get all Seasons
+      tags:
+        - Seasons
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of all Seasons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: "60d0fe4f5311236168a109ca"
+                    Name:
+                      type: string
+                      example: "Spring"
+                    CreatedAt:
+                      type: string
+                      format: date-time
+                      example: "2023-08-06T14:34:08.000Z"
+                    UpdatedAt:
+                      type: string
+                      format: date-time
+                      example: "2023-08-06T14:34:08.000Z"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+    post:
+      summary: Create a new Season
+      tags:
+        - Seasons
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Name:
+                  type: string
+                  example: "Spring"
+      security:
+        - bearerAuth: []
+      responses:
+        201:
+          description: Season created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "60d0fe4f5311236168a109ca"
+                  Name:
+                    type: string
+                    example: "Spring"
+                  CreatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+                  UpdatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+        400:
+          description: Season already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Season already exists
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+  /dropDown/seasons/{id}:
+    delete:
+      summary: Delete a Season by ID
+      tags:
+        - Seasons
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the Season
+      responses:
+        204:
+          description: Season deleted successfully
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+  /dropDown/rosters:
+    get:
+      summary: Get all Rosters
+      tags:
+        - Rosters
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of all Rosters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: "60d0fe4f5311236168a109ca"
+                    Name:
+                      type: string
+                      example: "Team A"
+                    CreatedAt:
+                      type: string
+                      format: date-time
+                      example: "2023-08-06T14:34:08.000Z"
+                    UpdatedAt:
+                      type: string
+                      format: date-time
+                      example: "2023-08-06T14:34:08.000Z"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+    post:
+      summary: Create a new Roster
+      tags:
+        - Rosters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Name:
+                  type: string
+                  example: "Team A"
+      security:
+        - bearerAuth: []
+      responses:
+        201:
+          description: Roster created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "60d0fe4f5311236168a109ca"
+                  Name:
+                    type: string
+                    example: "Team A"
+                  CreatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+                  UpdatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+        400:
+          description: Roster already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Roster already exists
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+
+  /dropDown/rosters/{id}:
+    delete:
+      summary: Delete a Roster by ID
+      tags:
+        - Rosters
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the Roster
+      responses:
+        204:
+          description: Roster deleted successfully
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
