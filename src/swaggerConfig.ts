@@ -6,14 +6,8 @@ import path from 'path';
 export const setupSwagger = (app: express.Application) => {
   // Load multiple Swagger documents
   const swaggerDocuments = {
-    admin: YAML.load(path.join(__dirname, './swagger-docs/admin/SuperAdmin.yaml')),
-    // Uncomment and add other documents as needed
-    // tasks: YAML.load(path.join(__dirname, './swagger-docs/Tasks.yaml')),
-    // auth: YAML.load(path.join(__dirname, './swagger-docs/Auth.yaml')),
-    // user: YAML.load(path.join(__dirname, './swagger-docs/user/User.yaml')),
-    // category: YAML.load(path.join(__dirname, './swagger-docs/Category.yaml')),
-    // product: YAML.load(path.join(__dirname, './swagger-docs/Product.yaml')),
-    // plan: YAML.load(path.join(__dirname, './swagger-docs/Plan.yaml')),
+    superAdmin: YAML.load(path.join(__dirname, './swagger-docs/superAdmin/SuperAdmin.yaml')),
+    admin: YAML.load(path.join(__dirname, './swagger-docs/admin/Admin.yaml')),
   };
 
   // Set up Swagger UI for each document

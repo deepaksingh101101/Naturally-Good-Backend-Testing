@@ -149,29 +149,29 @@ export const filterProducts = async (req: Request, res: Response) => {
 };
 
 
-export const updateProductCategory = async (req: Request, res: Response) => {
-    try {
-        const {productId}=req.query;
-      const {  newCategory } = req.body;
+// export const updateProductCategory = async (req: Request, res: Response) => {
+//     try {
+//         const {productId}=req.query;
+//       const {  newCategory } = req.body;
   
-      // Validate the new category
-      if (!Object.values(CategoryType).includes(newCategory)) {
-        return res.status(400).json({ message: 'Invalid category type' });
-      }
+//       // Validate the new category
+//       if (!Object.values(CategoryType).includes(newCategory)) {
+//         return res.status(400).json({ message: 'Invalid category type' });
+//       }
   
-      // Find the product by ID
-      const product = await ProductModel.findById(productId);
-      if (!product) {
-        return res.status(404).json({ message: 'Product not found' });
-      }
+//       // Find the product by ID
+//       const product = await ProductModel.findById(productId);
+//       if (!product) {
+//         return res.status(404).json({ message: 'Product not found' });
+//       }
   
-      // Update the product's category
-      product.Category = newCategory;
-      await product.save();
+//       // Update the product's category
+//       product.Category = newCategory;
+//       await product.save();
   
-      // Return a success response
-      return res.status(200).json({ message: 'Product category updated successfully', product });
-    } catch (error) {
-      return res.status(500).json({ message: 'Internal server error', error });
-    }
-  };
+//       // Return a success response
+//       return res.status(200).json({ message: 'Product category updated successfully', product });
+//     } catch (error) {
+//       return res.status(500).json({ message: 'Internal server error', error });
+//     }
+//   };

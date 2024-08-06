@@ -1,0 +1,331 @@
+openapi: 3.0.0
+info:
+  title: Naturally Good(Admin)
+  description: API endpoints for Naturally Goods documented on Swagger
+  contact:
+    name: Deepak Singh
+    email: deepak@techavtar.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:3001
+    description: Local server
+
+components: 
+      securitySchemes: 
+        bearerAuth: 
+          type: 'http'
+          scheme: 'bearer'
+          bearerFormat: 'JWT'
+       
+     
+  
+paths:
+  /complaintType/create:
+    post:
+      summary: Create a new Complaint Type
+      tags:
+        - Complaints
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ComplaintType:
+                  type: string
+                  example: "Delivery Issue"
+                Status:
+                  type: string
+                  enum: [active, inactive]
+                  example: "active"
+                Resolution:
+                  type: string
+                  example: "Resolved by rescheduling delivery"
+                Description:
+                  type: string
+                  example: "The delivery was delayed by 3 days"
+      security:
+        - bearerAuth: [ ]
+      responses:
+        201:
+          description: Complaint Type created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Complaint Type created successfully
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+                  details:
+                    type: string
+                    example: Error details message
+
+  /complaintType/allComplaintType:
+    get:
+      summary: Get all Complaint Types
+      security:
+        - bearerAuth: []
+      tags:
+        - Complaints
+      responses:
+        200:
+          description: List of all Complaint Types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    _id:
+                      type: string
+                      example: "60d0fe4f5311236168a109ca"
+                    ComplaintType:
+                      type: string
+                      example: "Delivery Issue"
+                    Status:
+                      type: string
+                      enum: [active, inactive]
+                      example: "active"
+                    Resolution:
+                      type: string
+                      example: "Resolved by rescheduling delivery"
+                    Description:
+                      type: string
+                      example: "The delivery was delayed by 3 days"
+                    CreatedBy:
+                      type: string
+                      example: "60d0fe4f5311236168a109cb"
+                    CreatedAt:
+                      type: string
+                      format: date-time
+                      example: "2023-08-06T14:34:08.000Z"
+                    UpdatedAt:
+                      type: string
+                      format: date-time
+                      example: "2023-08-06T14:34:08.000Z"
+
+  /complaintType/{id}:
+    get:
+      summary: Get a Complaint Type by ID
+      security:
+        - bearerAuth: []
+      tags:
+        - Complaints
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the complaint type
+      responses:
+        200:
+          description: Complaint Type retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "60d0fe4f5311236168a109ca"
+                  ComplaintType:
+                    type: string
+                    example: "Delivery Issue"
+                  Status:
+                    type: string
+                    enum: [active, inactive]
+                    example: "active"
+                  Resolution:
+                    type: string
+                    example: "Resolved by rescheduling delivery"
+                  Description:
+                    type: string
+                    example: "The delivery was delayed by 3 days"
+                  CreatedBy:
+                    type: string
+                    example: "60d0fe4f5311236168a109cb"
+                  CreatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+                  UpdatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+        404:
+          description: Complaint Type not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Complaint Type not found
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+                  details:
+                    type: string
+                    example: Error details message
+
+    put:
+      summary: Update a Complaint Type by ID
+      security:
+        - bearerAuth: []
+      tags:
+        - Complaints
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the complaint type
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ComplaintType:
+                  type: string
+                  example: "Delivery Issue"
+                Status:
+                  type: string
+                  enum: [active, inactive]
+                  example: "active"
+                Resolution:
+                  type: string
+                  example: "Resolved by rescheduling delivery"
+                Description:
+                  type: string
+                  example: "The delivery was delayed by 3 days"
+      responses:
+        200:
+          description: Complaint Type updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    example: "60d0fe4f5311236168a109ca"
+                  ComplaintType:
+                    type: string
+                    example: "Delivery Issue"
+                  Status:
+                    type: string
+                    enum: [active, inactive]
+                    example: "active"
+                  Resolution:
+                    type: string
+                    example: "Resolved by rescheduling delivery"
+                  Description:
+                    type: string
+                    example: "The delivery was delayed by 3 days"
+                  CreatedBy:
+                    type: string
+                    example: "60d0fe4f5311236168a109cb"
+                  CreatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+                  UpdatedAt:
+                    type: string
+                    format: date-time
+                    example: "2023-08-06T14:34:08.000Z"
+        404:
+          description: Complaint Type not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Complaint Type not found
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+                  details:
+                    type: string
+                    example: Error details message
+
+    delete:
+      summary: Delete a Complaint Type by ID
+      security:
+        - bearerAuth: []
+      tags:
+        - Complaints
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID of the complaint type
+      responses:
+        200:
+          description: Complaint Type deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Complaint Type deleted successfully
+        404:
+          description: Complaint Type not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Complaint Type not found
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Internal server error
+                  details:
+                    type: string
+                    example: Error details message

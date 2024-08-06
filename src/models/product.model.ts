@@ -14,9 +14,6 @@ class Product {
     public Type!: string;
 
     @prop({ type: String, required: false })
-    public Group?: string;
-
-    @prop({ type: String, required: false })
     public Season?: string;
 
     @prop({ type: String, required: false })
@@ -31,29 +28,41 @@ class Product {
     @prop({ type: Number, required: true })
     public UnitQuantity!: number;
 
-    @prop({ type: Number, required: false })
-    public Pieces?: number;
-
-    @prop({ type: String, required: false })
-    public Description?: string;
+    // @prop({ type: Number, required: false })
+    // public Pieces?: number;
 
     @prop({ type: Number, required: true })
     public Price!: number;
 
-    @prop({ type: String, required: false })
-    public Category?: string;
+    @prop({ type: Number, required: true })
+    public MinimumUnits!: number;
 
     @prop({ type: Number, required: true })
-    public Stock!: number;
+    public MaximumUnits!: number;
+
+    @prop({ type: String, required: false })
+    public Group?: string;
+
+    // @prop({ type: String, required: false })
+    // public Category?: string;
+
+    // @prop({ type: Number, required: true })
+    // public Stock!: number;
 
     @prop({ type: String, required: false })
     public ImageURL?: string;
 
     @prop({ type: String, required: false })
-    public NutritionalInfo?: string;
+    public Description?: string;
+
+    // @prop({ type: String, required: false })
+    // public NutritionalInfo?: string;
 
     @prop({ type: Boolean, required: false, default: false })
     public Organic?: boolean;
+
+    @prop({ type: Boolean, required: false, default: true })
+    public Available?: boolean;
 
     @prop({ type: Date, default: Date.now })
     public UpdatedAt!: Date;

@@ -2,6 +2,7 @@ import express from "express";
 import morgan from "morgan";
 import path from "path";
 import dotenv from "dotenv";
+import cors from "cors";  // Import the CORS middleware
 
 import { PORT } from "./config";
 import tasksRoutes from "./routes/tasks.routes";
@@ -11,6 +12,7 @@ import superadminRoutes from "./routes/superadmin.routes";
 import categoryRoutes from "./routes/category.routes";
 import productRoutes from "./routes/product.routes";
 import planRoutes from "./routes/plans.routes";
+import complaintTypeRoutes from "./routes/complaints.routes";
 import { setupSwagger } from "./swaggerConfig";  // Import the Swagger configuration
 
 dotenv.config();
@@ -29,6 +31,7 @@ export class Application {
     this.app.use(morgan("dev"));
     this.app.use(express.urlencoded({ extended: false }));
     this.app.use(express.json());
+    this.app.use(cors());  // Enable CORS
   }
 
   routes() {
@@ -39,6 +42,7 @@ export class Application {
     this.app.use("/category", categoryRoutes);
     this.app.use("/product", productRoutes);
     this.app.use("/plan", planRoutes);
+    this.app.use("/complaintType",complaintTypeRoutes );
     this.app.use(express.static(path.join(__dirname, "public")));
   }
 
