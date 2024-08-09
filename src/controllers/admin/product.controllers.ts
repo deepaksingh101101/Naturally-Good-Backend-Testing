@@ -7,8 +7,10 @@ export const createProduct = async (req: Request, res: Response) => {
         const AdminId = req['adminId'];
         const { ProductName } = req.body;
 
-        // Check if a product with the same name already exists
-        const existingProduct = await ProductModel.findOne({ ProductName });
+        // Check if a product with the same name already exists (case insensitive)
+        const existingProduct = await ProductModel.findOne({ 
+            ProductName: { $regex: new RegExp('^' + ProductName + '$', 'i') } 
+        });
         if (existingProduct) {
             return res.status(400).json({ error: 'Product name already exists' });
         }
@@ -24,7 +26,6 @@ export const createProduct = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
-
 
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
@@ -55,8 +56,9 @@ export const getAllProducts = async (req: Request, res: Response) => {
 
 export const getProductById = async (req: Request, res: Response) => {
     try {
+        console.log("hello")
         const { id } = req.params;
-
+console.log(req.params)
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
             return res.status(400).json({ error: 'Invalid product ID format' });
         }
@@ -77,6 +79,7 @@ export const getProductById = async (req: Request, res: Response) => {
 
 export const updateProduct = async (req: Request, res: Response) => {
     try {
+        console.log("hello")
         const { id } = req.params;
         const AdminId = req['adminId'];
 
@@ -124,7 +127,6 @@ export const deleteProduct = async (req: Request, res: Response) => {
 export const filterProducts = async (req: Request, res: Response) => {
     try {
         const filters = req.query;
-
         const query: any = {};
 
         if (filters.ProductName) {
@@ -133,24 +135,25 @@ export const filterProducts = async (req: Request, res: Response) => {
         if (filters.Type) {
             query.Type = filters.Type;
         }
+        if (filters.Roster) {
+            query.Roster = filters.Roster;
+        }
         if (filters.Season) {
             query.Season = filters.Season;
         }
         if (filters.Price) {
             query.Price = +filters.Price;
         }
-        if (filters.Stock) {
-            query.Stock = +filters.Stock;
-        }
 
         const products = await ProductModel.find(query);
-        
+
         if (products.length === 0) {
             return res.status(404).json({ error: 'Products not found' });
         }
 
         res.status(200).json(products);
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

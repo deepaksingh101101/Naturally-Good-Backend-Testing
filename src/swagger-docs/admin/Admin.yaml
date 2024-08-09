@@ -726,6 +726,22 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Product'
+            example:
+              ProductName: "Arvi"
+              Type: "Regular Veggie"
+              Season: "Monsoon"
+              Priority: "2"
+              Roster: "Mandatory"
+              VeggieNameInHindi: "अरबी"
+              UnitQuantity: 200
+              Price: 200
+              MinimumUnits: 2
+              MaximumUnits: 5
+              Group: "Veggies"
+              ImageURL: "http://example.com/image.jpg"
+              Description: "Fresh and organic tomatoes"
+              Available: true
+              Visibility: "Public"
       security:
         - bearerAuth: []
       responses:
@@ -745,70 +761,6 @@ paths:
                   error:
                     type: string
                     example: "Product name already exists"
-        500:
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal server error"
-
-    get:
-      summary: Get all products with pagination
-      tags:
-        - Products
-      parameters:
-        - in: query
-          name: page
-          schema:
-            type: integer
-          description: The page number to retrieve
-          required: false
-          example: 1
-        - in: query
-          name: limit
-          schema:
-            type: integer
-          description: The number of items to retrieve per page
-          required: false
-          example: 10
-      security:
-        - bearerAuth: []
-      responses:
-        200:
-          description: A list of products with pagination info
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  total:
-                    type: integer
-                    description: Total number of products
-                    example: 100
-                  currentpage:
-                    type: integer
-                    description: The current page number
-                    example: 1
-                  totalpages:
-                    type: integer
-                    description: Total number of pages
-                    example: 10
-                  prevPage:
-                    type: boolean
-                    description: Indicates if there is a previous page
-                    example: false
-                  nextPage:
-                    type: boolean
-                    description: Indicates if there is a next page
-                    example: true
-                  products:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/Product'
         500:
           description: Internal server error
           content:
@@ -1013,12 +965,13 @@ paths:
           name: Price
           schema:
             type: number
+            format: float
           description: The price of the product to filter by
           example: 99.99
         - in: query
           name: Stock
           schema:
-            type: number
+            type: integer
           description: The stock of the product to filter by
           example: 50
       security:
@@ -1053,9 +1006,9 @@ paths:
                     type: string
                     example: "Internal server error"
 
-components: 
-  securitySchemes: 
-    bearerAuth: 
+components:
+  securitySchemes:
+    bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
@@ -1086,17 +1039,17 @@ components:
           type: string
           example: "उदाहरण सब्जी"
         UnitQuantity:
-          type: number
+          type: integer
           example: 1
         Price:
           type: number
           format: float
           example: 99.99
         MinimumUnits:
-          type: number
+          type: integer
           example: 1
         MaximumUnits:
-          type: number
+          type: integer
           example: 100
         Group:
           type: string
@@ -1112,7 +1065,9 @@ components:
           example: true
         Visibility:
           type: string
-          enum: ['Admin', 'Public']
+          enum:
+            - 'Admin'
+            - 'Public'
           example: 'Admin'
         UpdatedAt:
           type: string

@@ -60,7 +60,7 @@ export const loginRole = async (req: Request, res: Response) => {
                 Role: admin.Role
             },
             JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '10h' }
         );
 
         res.status(200).json({ message: 'Login successful', token });
