@@ -1,15 +1,5 @@
-import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
-
-class Item {
-  @prop({ required: true })
-  public VegetableName!: string;
-
-  @prop({ required: true })
-  public Quantity!: number;
-
-  @prop({ required: true })
-  public Price!: number;
-}
+import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
+import { Product } from './product.model'; // Adjust the import path accordingly
 
 @ModelOptions({
   schemaOptions: {
@@ -17,18 +7,30 @@ class Item {
   },
 })
 export class Bag {
+  @prop({ required: true })
+  public bagName!: string;
 
-  @prop({ type: String, required: true })
-  public UserId: string;
+  @prop({ required: true })
+  public bagMaxWeight!: number;
 
-  @prop({ type: () => [Item], required: true })
-  public VegetablesItems!: Item[];
+  @prop({ type: String, enum: ['Admin', 'Public'], required: true })
+  public bagVisibility!: string;
 
-  @prop({ type: Number, required: true })
-  public TotalAmount: number;
+  @prop({ type: String, enum: ['Active', 'Inactive'], required: true, default: 'Active' })
+  public status!: string;
+
+  @prop({ type: String })
+  public bagImageUrl?: string;
+
+  @prop({ type: String })
+  public bagDescription?: string;
+
+  @prop({ ref: () => Product, required: true })
+  public allowedItems!: Ref<Product>[];
+
+  @prop({ required: true })
+  public CreatedBy!: string;
 
 }
 
-const BagModel = getModelForClass(Bag);
-
-export default BagModel;
+export const BagModel = getModelForClass(Bag); // Ensure named export

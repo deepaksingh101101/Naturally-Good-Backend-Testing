@@ -5,10 +5,10 @@ import { createProduct, deleteProduct, filterProducts, getAllProducts, getProduc
 const router = Router();
 
 router.post('/create', adminMiddleware, createProduct);
-router.get('getAll/' ,adminMiddleware, getAllProducts)
-router.get('getOne/:id',adminMiddleware, getProductById)
-router.put('updateOne/:id', adminMiddleware, updateProduct)
-router.delete('deleteOne/:id',adminMiddleware , deleteProduct)
+router.get('/getAll' ,adminMiddleware, getAllProducts)
+router.get('/getOne/:id',adminMiddleware, getProductById)
+router.put('/updateOne/:id', adminMiddleware, updateProduct)
+router.delete('/deleteOne/:id',adminMiddleware , deleteProduct)
 router.get('/filter', filterProducts);
 // router.post('/updateProductCategory',updateProductCategory)
 

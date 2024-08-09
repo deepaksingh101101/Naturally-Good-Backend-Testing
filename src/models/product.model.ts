@@ -4,7 +4,8 @@ import { Admin } from './role.model';
 @pre<Product>('save', async function() {
   this.UpdatedAt = new Date();
 })
-class Product {
+
+export class Product {
   @prop({ type: String, required: true })
   public ProductName!: string;
 

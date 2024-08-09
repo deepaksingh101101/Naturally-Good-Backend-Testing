@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { client, twilioNumber } from '../../twilio';
-import BagModel from '../models/bag.model';
 import FeedbackModel from '../models/feedback.model';
 import UserModel from '../models/user.model';
+import { BagModel } from '../models/bag.model';
 
 export const sendOTP = async (req: Request, res: Response) => {
   try {

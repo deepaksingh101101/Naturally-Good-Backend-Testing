@@ -11,6 +11,7 @@ import adminRoutes from "./routes/admin.routes";
 import superadminRoutes from "./routes/superadmin.routes";
 import categoryRoutes from "./routes/category.routes";
 import productRoutes from "./routes/product.routes";
+import bagRoutes from "./routes/bag.routes";
 import planRoutes from "./routes/plans.routes";
 import complaintTypeRoutes from "./routes/complaints.routes";
 import dropDownRoutes from "./routes/dropdown.routes";
@@ -40,11 +41,16 @@ export class Application {
     this.app.use("/auth", authRoutes);
     this.app.use("/admin", adminRoutes);
     this.app.use("/superadmin", superadminRoutes);
-    this.app.use("/category", categoryRoutes);
     this.app.use("/product", productRoutes);
+    this.app.use("/bag", bagRoutes);
+
+
+
     this.app.use("/plan", planRoutes);
     this.app.use("/complaintType",complaintTypeRoutes );
     this.app.use("/dropDown",dropDownRoutes );
+    this.app.use("/category", categoryRoutes);
+
     this.app.use(express.static(path.join(__dirname, "public")));
   }
 
