@@ -4,12 +4,12 @@ import { createProduct, deleteProduct, filterProducts, getAllProducts, getProduc
 
 const router = Router();
 
-router.post('/create', adminMiddleware, createProduct);
-router.get('/allproduct' , getAllProducts)
-router.get('/products/:id', getProductById)
-router.put('/update/:id', adminMiddleware, updateProduct)
-router.delete('/delete/:id',adminMiddleware , deleteProduct)
-router.get('/filter',filterProducts)
+router.post('/', adminMiddleware, createProduct);
+router.get('/' ,adminMiddleware, getAllProducts)
+router.get('/:id',adminMiddleware, getProductById)
+router.put('/:id', adminMiddleware, updateProduct)
+router.delete('/:id',adminMiddleware , deleteProduct)
+router.get('/filter',adminMiddleware,filterProducts)
 // router.post('/updateProductCategory',updateProductCategory)
 
 export default router;

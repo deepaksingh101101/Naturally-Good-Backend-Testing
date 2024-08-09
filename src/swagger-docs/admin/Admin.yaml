@@ -11,14 +11,12 @@ servers:
     description: Local server
 
 components: 
-      securitySchemes: 
-        bearerAuth: 
-          type: 'http'
-          scheme: 'bearer'
-          bearerFormat: 'JWT'
-       
-     
-  
+  securitySchemes: 
+    bearerAuth: 
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
 paths:
   /complaintType/create:
     post:
@@ -46,7 +44,7 @@ paths:
                   type: string
                   example: "The delivery was delayed by 3 days"
       security:
-        - bearerAuth: [ ]
+        - bearerAuth: []
       responses:
         201:
           description: Complaint Type created successfully
@@ -330,7 +328,6 @@ paths:
                     type: string
                     example: Error details message
 
-
   /dropDown/types:
     get:
       summary: Get all Types
@@ -353,7 +350,7 @@ paths:
                       example: "60d0fe4f5311236168a109ca"
                     Name:
                       type: string
-                      example: "Vegetable"
+                      example: "Staples"
                     CreatedAt:
                       type: string
                       format: date-time
@@ -386,7 +383,7 @@ paths:
               properties:
                 Name:
                   type: string
-                  example: "Vegetable"
+                  example: "Staples"
       security:
         - bearerAuth: []
       responses:
@@ -402,7 +399,7 @@ paths:
                     example: "60d0fe4f5311236168a109ca"
                   Name:
                     type: string
-                    example: "Vegetable"
+                    example: "Staples"
                   CreatedAt:
                     type: string
                     format: date-time
@@ -718,7 +715,7 @@ paths:
                     type: string
                     example: Internal server error
 
-  /product/create:
+  /product:
     post:
       summary: Create a new Product
       tags:
@@ -728,53 +725,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                ProductName:
-                  type: string
-                  example: "Arvi"
-                Type:
-                  type: string
-                  example: "Regular Veggie"
-                Season:
-                  type: string
-                  example: "Monsoon"
-                Priority:
-                  type: string
-                  example: "2"
-                Roster:
-                  type: string
-                  example: "Mandatory"
-                VeggieNameInHindi:
-                  type: string
-                  example: "अरबी"
-                UnitQuantity:
-                  type: number
-                  example: 200
-                Price:
-                  type: number
-                  example: 200
-                MinimumUnits:
-                  type: number
-                  example: 2
-                MaximumUnits:
-                  type: number
-                  example: 5
-                Group:
-                  type: string
-                  example: "Veggies"
-                ImageURL:
-                  type: string
-                  example: "http://example.com/image.jpg"
-                Description:
-                  type: string
-                  example: "Fresh and organic tomatoes"
-                Available:
-                  type: boolean
-                  example: true
-                Visibility:
-                  type: string
-                  example: Public
+              $ref: '#/components/schemas/Product'
       security:
         - bearerAuth: []
       responses:
@@ -783,64 +734,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  _id:
-                    type: string
-                    example: "60d0fe4f5311236168a109ca"
-                  ProductName:
-                    type: string
-                    example: "Tomato"
-                  Type:
-                    type: string
-                    example: "Vegetable"
-                  Season:
-                    type: string
-                    example: "Summer"
-                  Priority:
-                    type: string
-                    example: "High"
-                  Roster:
-                    type: string
-                    example: "Roster1"
-                  VeggieNameInHindi:
-                    type: string
-                    example: "टमाटर"
-                  UnitQuantity:
-                    type: number
-                    example: 1
-                  Price:
-                    type: number
-                    example: 50
-                  MinimumUnits:
-                    type: number
-                    example: 1
-                  MaximumUnits:
-                    type: number
-                    example: 100
-                  Group:
-                    type: string
-                    example: "Group1"
-                  ImageURL:
-                    type: string
-                    example: "http://example.com/image.jpg"
-                  Description:
-                    type: string
-                    example: "Fresh and organic tomatoes"
-                  Available:
-                    type: boolean
-                    example: true
-                  UpdatedAt:
-                    type: string
-                    format: date-time
-                    example: "2023-08-06T14:34:08.000Z"
-                  CreatedAt:
-                    type: string
-                    format: date-time
-                    example: "2023-08-06T14:34:08.000Z"
-                  createdBy:
-                    type: string
-                    example: "60d0fe4f5311236168a109cb"
+                $ref: '#/components/schemas/Product'
         400:
           description: Validation error
           content:
@@ -850,7 +744,7 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Type 'Vegetable' does not exist"
+                    example: "Product name already exists"
         500:
           description: Internal server error
           content:
@@ -860,6 +754,374 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: Internal server error
+                    example: "Internal server error"
 
+    get:
+      summary: Get all products with pagination
+      tags:
+        - Products
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+          description: The page number to retrieve
+          required: false
+          example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+          description: The number of items to retrieve per page
+          required: false
+          example: 10
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: A list of products with pagination info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of products
+                    example: 100
+                  currentpage:
+                    type: integer
+                    description: The current page number
+                    example: 1
+                  totalpages:
+                    type: integer
+                    description: Total number of pages
+                    example: 10
+                  prevPage:
+                    type: boolean
+                    description: Indicates if there is a previous page
+                    example: false
+                  nextPage:
+                    type: boolean
+                    description: Indicates if there is a next page
+                    example: true
+                  products:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Product'
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
 
+  /product/{id}:
+    get:
+      summary: Get a product by its ID
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the product to retrieve
+          example: "60d0fe4f5311236168a109ca"
+      responses:
+        200:
+          description: Product retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        400:
+          description: Invalid product ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid product ID format"
+        404:
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Product not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+
+    put:
+      summary: Update a product by its ID
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the product to update
+          example: "60d0fe4f5311236168a109ca"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        400:
+          description: Invalid product ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid product ID format"
+        404:
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Product not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+
+    delete:
+      summary: Delete a product by its ID
+      tags:
+        - Products
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: The ID of the product to delete
+          example: "60d0fe4f5311236168a109ca"
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: Product deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product deleted successfully"
+        400:
+          description: Invalid product ID format
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid product ID format"
+        404:
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Product not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+
+  /product/filter:
+    get:
+      summary: Filter products based on query parameters
+      tags:
+        - Products
+      parameters:
+        - in: query
+          name: ProductName
+          schema:
+            type: string
+          description: The name of the product to filter by
+          example: "Sample Product"
+        - in: query
+          name: Type
+          schema:
+            type: string
+          description: The type of the product to filter by
+          example: "Staples"
+        - in: query
+          name: Season
+          schema:
+            type: string
+          description: The season of the product to filter by
+          example: "Spring"
+        - in: query
+          name: Price
+          schema:
+            type: number
+          description: The price of the product to filter by
+          example: 99.99
+        - in: query
+          name: Stock
+          schema:
+            type: number
+          description: The stock of the product to filter by
+          example: 50
+      security:
+        - bearerAuth: []
+      responses:
+        200:
+          description: List of filtered products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+        404:
+          description: Products not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Products not found"
+        500:
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+
+components: 
+  securitySchemes: 
+    bearerAuth: 
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "60d0fe4f5311236168a109ca"
+        ProductName:
+          type: string
+          example: "Sample Product"
+        Type:
+          type: string
+          example: "Staples"
+        Season:
+          type: string
+          example: "Spring"
+        Priority:
+          type: string
+          example: "High"
+        Roster:
+          type: string
+          example: "Weekly"
+        VeggieNameInHindi:
+          type: string
+          example: "उदाहरण सब्जी"
+        UnitQuantity:
+          type: number
+          example: 1
+        Price:
+          type: number
+          format: float
+          example: 99.99
+        MinimumUnits:
+          type: number
+          example: 1
+        MaximumUnits:
+          type: number
+          example: 100
+        Group:
+          type: string
+          example: "Green Vegetables"
+        ImageURL:
+          type: string
+          example: "http://example.com/image.jpg"
+        Description:
+          type: string
+          example: "This is a sample product."
+        Available:
+          type: boolean
+          example: true
+        Visibility:
+          type: string
+          enum: ['Admin', 'Public']
+          example: 'Admin'
+        UpdatedAt:
+          type: string
+          format: date-time
+          example: "2024-08-06T14:48:00.000Z"
+        CreatedAt:
+          type: string
+          format: date-time
+          example: "2024-08-05T14:48:00.000Z"
+        createdBy:
+          type: string
+          example: "60d0fe4f5311236168a109ca"

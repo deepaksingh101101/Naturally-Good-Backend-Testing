@@ -5,6 +5,13 @@ import { CategoryType } from '../../models/category.model';
 export const createProduct = async (req: Request, res: Response) => {
     try {
         const AdminId = req['adminId'];
+        const { ProductName } = req.body;
+
+        // Check if a product with the same name already exists
+        const existingProduct = await ProductModel.findOne({ ProductName });
+        if (existingProduct) {
+            return res.status(400).json({ error: 'Product name already exists' });
+        }
 
         const product = new ProductModel({
             ...req.body,

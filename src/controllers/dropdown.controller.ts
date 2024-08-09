@@ -14,17 +14,25 @@ export const getTypes = async (req: Request, res: Response) => {
 // Create a new Type
 export const createType = async (req: Request, res: Response) => {
   try {
-    const existingType = await TypesModel.findOne({ Name: req.body.Name });
+    // Convert the input name to lowercase
+    const typeName = req.body.Name.toLowerCase();
+
+    // Check if the type already exists, case insensitive
+    const existingType = await TypesModel.findOne({ Name: typeName });
     if (existingType) {
       return res.status(400).json({ error: 'Type already exists' });
     }
-    const newType = new TypesModel(req.body);
+
+    // Create a new type with the name in lowercase
+    const newType = new TypesModel({ ...req.body, Name: typeName });
     await newType.save();
+
     res.status(201).json(newType);
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 // Delete a Type by ID
 export const deleteType = async (req: Request, res: Response) => {
@@ -49,17 +57,25 @@ export const getSeasons = async (req: Request, res: Response) => {
 // Create a new Season
 export const createSeason = async (req: Request, res: Response) => {
   try {
-    const existingSeason = await SeasonModel.findOne({ Name: req.body.Name });
+    // Convert the input name to lowercase
+    const seasonName = req.body.Name.toLowerCase();
+
+    // Check if the season already exists, case insensitive
+    const existingSeason = await SeasonModel.findOne({ Name: seasonName });
     if (existingSeason) {
       return res.status(400).json({ error: 'Season already exists' });
     }
-    const newSeason = new SeasonModel(req.body);
+
+    // Create a new season with the name in lowercase
+    const newSeason = new SeasonModel({ ...req.body, Name: seasonName });
     await newSeason.save();
+
     res.status(201).json(newSeason);
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 // Delete a Season by ID
 export const deleteSeason = async (req: Request, res: Response) => {
@@ -84,17 +100,25 @@ export const getRosters = async (req: Request, res: Response) => {
 // Create a new Roster
 export const createRoster = async (req: Request, res: Response) => {
   try {
-    const existingRoster = await RosterModel.findOne({ Name: req.body.Name });
+    // Convert the input name to lowercase
+    const rosterName = req.body.Name.toLowerCase();
+
+    // Check if the roster already exists, case insensitive
+    const existingRoster = await RosterModel.findOne({ Name: rosterName });
     if (existingRoster) {
       return res.status(400).json({ error: 'Roster already exists' });
     }
-    const newRoster = new RosterModel(req.body);
+
+    // Create a new roster with the name in lowercase
+    const newRoster = new RosterModel({ ...req.body, Name: rosterName });
     await newRoster.save();
+
     res.status(201).json(newRoster);
   } catch (error) {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
 
 // Delete a Roster by ID
 export const deleteRoster = async (req: Request, res: Response) => {
