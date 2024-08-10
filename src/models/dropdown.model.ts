@@ -1,7 +1,7 @@
 import { prop, getModelForClass } from '@typegoose/typegoose';
 
 // Define the Types schema For Product
-class Types {
+export class Types {
   @prop({ type: String, required: true })
   public Name!: string;
 
@@ -16,7 +16,7 @@ class Types {
 }
 
 // Define the Season schema
-class Season {
+export class Season {
   @prop({ type: String, required: true })
   public Name!: string;
 
@@ -31,7 +31,7 @@ class Season {
 }
 
 // Define the Roster schema
-class Roster {
+export class Roster {
   @prop({ type: String, required: true })
   public Name!: string;
 
@@ -46,7 +46,7 @@ class Roster {
 }
 
 // Define the Subscription Type schema
-class SubscriptionType {
+export class SubscriptionType {
   @prop({ type: String, required: true })
   public Name!: string;
 
@@ -61,7 +61,7 @@ class SubscriptionType {
 }
 
 // Define the Frequency Type schema
-class FrequencyType {
+export class FrequencyType {
   @prop({ type: String, required: true })
   public Name!: string;
 

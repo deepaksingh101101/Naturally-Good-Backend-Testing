@@ -1,4 +1,11 @@
-import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
+import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
+import { FrequencyType, SubscriptionType } from './dropdown.model';
+import { Bag } from './bag.model';
+
+class DeliveryDay {
+  @prop({ type: String, required: true })
+  public day!: string;
+}
 
 @ModelOptions({
   schemaOptions: {
@@ -7,27 +14,41 @@ import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
 })
 export class Subscription {
 
+  @prop({ ref: () => SubscriptionType })
+  public SubscriptionTypeId!: Ref<SubscriptionType>;
 
-  @prop({ type: Date })
-  public SubscriptionStartDate?: Date;
+  @prop({ ref: () => FrequencyType })
+  public FrequencyId!: Ref<FrequencyType>;
 
-  @prop({ type: Date })
-  public SubscriptionEndDate?: Date;
+  @prop({ type: Number, required: true })
+  public TotalDeliveryNumber!: number;
 
-  @prop({ type: String })
-  public PaymentStatus?: String;
+  @prop({ type: String, enum: ['Admin', 'Public'], required: true })
+  public Visibility?: string;
 
-  @prop({ type: Boolean, })
-  public SubscriptionStatus: boolean;
+  @prop({ type: String, enum: ['Active', 'Inactive'], required: true })
+  public Status!: string;
+
+  @prop({ ref: () => Bag  })
+  public Bags!: Ref<Bag>[];
+
+  @prop({ type: () => [DeliveryDay], required: true })
+  public DeliveryDays!: DeliveryDay[];
+
+  @prop({ type: Number, required: true })
+  public OriginalPrice!: number;
+
+  @prop({ type: Number,default:0,required:false })
+  public Offer?: number;
+
+  @prop({ type: Number, required: true })
+  public NetPrice!: number;
 
   @prop({ type: String, required: true })
-  public CompletedAt: string;
+  public ImageUrl!: string;
 
-  @prop({ type: String, required: true })
-  public UpdatedAt: string;
-
-  @prop({ type: String, required: true })
-  public CreatedAt: string;
+  @prop({ type: String, required: false })
+  public Description!: string;
 }
 
 const SubscriptionModel = getModelForClass(Subscription);

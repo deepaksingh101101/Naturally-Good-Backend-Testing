@@ -2,7 +2,7 @@ import { prop, getModelForClass, pre, Ref } from '@typegoose/typegoose';
 import { Admin } from './role.model';
 
 @pre<Product>('save', async function() {
-  this.UpdatedAt = new Date();
+  this.updatedAt = new Date();
 })
 
 export class Product {
@@ -52,10 +52,10 @@ export class Product {
   public Visibility?: string;
 
   @prop({ type: Date, default: Date.now })
-  public UpdatedAt!: Date;
+  public updatedAt!: Date;
 
   @prop({ type: Date, default: Date.now })
-  public CreatedAt!: Date;
+  public createdAt!: Date;
 
   @prop({ ref: () => Admin })
   public createdBy!: Ref<Admin>;

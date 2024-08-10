@@ -11,6 +11,7 @@ import adminRoutes from "./routes/admin.routes";
 import superadminRoutes from "./routes/superadmin.routes";
 import categoryRoutes from "./routes/category.routes";
 import productRoutes from "./routes/product.routes";
+import subscriptionRoutes from "./routes/subscription.routes";
 import bagRoutes from "./routes/bag.routes";
 import planRoutes from "./routes/plans.routes";
 import complaintTypeRoutes from "./routes/complaints.routes";
@@ -41,8 +42,12 @@ export class Application {
     this.app.use("/auth", authRoutes);
     this.app.use("/admin", adminRoutes);
     this.app.use("/superadmin", superadminRoutes);
+
+
+    
     this.app.use("/product", productRoutes);
     this.app.use("/bag", bagRoutes);
+    this.app.use("/subscription", subscriptionRoutes);
 
 
 
