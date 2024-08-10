@@ -1,13 +1,5 @@
 import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
 
-class SubscriptionPlan {
-  @prop({ type: String, required: true })
-  public HouseNumber: string;
-
-  @prop({ type: String, required: true })
-  public City: string;
-}
-
 @ModelOptions({
   schemaOptions: {
     timestamps: true,
@@ -15,8 +7,6 @@ class SubscriptionPlan {
 })
 export class Subscription {
 
-  @prop({ type: () => SubscriptionPlan, required: true })
-  public SubscriptionPlan: SubscriptionPlan;
 
   @prop({ type: Date })
   public SubscriptionStartDate?: Date;

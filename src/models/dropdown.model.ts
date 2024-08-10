@@ -1,9 +1,12 @@
 import { prop, getModelForClass } from '@typegoose/typegoose';
 
-// Define the Types schema
+// Define the Types schema For Product
 class Types {
   @prop({ type: String, required: true })
   public Name!: string;
+
+  @prop({ required: true })
+  public SortOrder!: number;
 
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;
@@ -20,6 +23,9 @@ class Season {
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;
 
+  @prop({ required: false })
+  public SortOrder!: number;
+
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;
 }
@@ -28,6 +34,39 @@ class Season {
 class Roster {
   @prop({ type: String, required: true })
   public Name!: string;
+
+  @prop({ required: true })
+  public SortOrder!: number;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+}
+
+// Define the Subscription Type schema
+class SubscriptionType {
+  @prop({ type: String, required: true })
+  public Name!: string;
+
+  @prop({ required: true })
+  public Value!: number;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+}
+
+// Define the Frequency Type schema
+class FrequencyType {
+  @prop({ type: String, required: true })
+  public Name!: string;
+
+  @prop({ required: true })
+  public Value!: number;
 
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;
@@ -40,5 +79,7 @@ class Roster {
 const TypesModel = getModelForClass(Types);
 const SeasonModel = getModelForClass(Season);
 const RosterModel = getModelForClass(Roster);
+const SubscriptionTypeModel = getModelForClass(SubscriptionType);
+const FrequencyTypeModel = getModelForClass(FrequencyType);
 
-export { TypesModel, SeasonModel, RosterModel };
+export { TypesModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel };
