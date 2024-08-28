@@ -1,5 +1,5 @@
 import { prop, getModelForClass, pre, Ref } from '@typegoose/typegoose';
-import { Admin } from './role.model';
+import { Admin } from './oldrole.model';
 
 @pre<Product>('save', async function() {
   this.updatedAt = new Date();

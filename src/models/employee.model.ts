@@ -1,13 +1,12 @@
 import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
-import { User } from './user.model';
+import { Role } from './role.model'; // Adjust the path as needed
 
 @ModelOptions({
     schemaOptions: {
         timestamps: true,
     },
 })
-
 export class Employee {
 
     @prop({ required: true })
@@ -40,19 +39,17 @@ export class Employee {
     @prop({ required: true })
     public State!: string;
 
-    @prop({ ref: () => User  })
-    public AssignedCustomers!: Ref<User>[];
-
-    @prop({ required: true })
-    public Role!: string;
+    // Reference to the Role model
+    @prop({ ref: () => Role, required: true })
+    public Role!: Ref<Role>;
 
     @prop({ default: true })
     public isActive!: boolean;
 
-    @prop({ required: true })
+    @prop({ default: Date.now })
     public UpdatedAt!: Date;
 
-    @prop({ required: true })
+    @prop({ default: Date.now })
     public CreatedAt!: Date;
 
     public async hashPassword(Password: string): Promise<string> {

@@ -9,6 +9,7 @@ import tasksRoutes from "./routes/tasks.routes";
 import authRoutes from "./routes/auth.routes";
 import adminRoutes from "./routes/admin.routes";
 import superadminRoutes from "./routes/superadmin.routes";
+import permissionRoutes from "./routes/permissions.routes";
 import categoryRoutes from "./routes/category.routes";
 import productRoutes from "./routes/product.routes";
 import couponsRoutes from "./routes/coupons.routes";
@@ -43,6 +44,7 @@ export class Application {
     this.app.use("/auth", authRoutes);
     this.app.use("/admin", adminRoutes);
     this.app.use("/superadmin", superadminRoutes);
+    this.app.use("/permission", permissionRoutes);
 
 
 

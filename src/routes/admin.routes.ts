@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { 
   loginRole, createRole, updateRole, getRoleById, getAllRole, 
-  handleAdminFilter, handleUserFilter, handleEmployeeFilter 
+  handleAdminFilter, handleUserFilter 
 } from '../controllers/auth/role.controller';
 import { superAdminMiddleware } from '../middleware/superadmin.middleware';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
@@ -24,7 +24,7 @@ router.get('/getall/delivery', adminMiddleware, getAllDeliveryGuys);
 router.get("/deliveryGuy/:id", adminMiddleware, getDeliveryGuyById);
 router.post('/filterAdmins', handleAdminFilter);
 router.post('/filterUsers', handleUserFilter);
-router.post('/filterEmployees', handleEmployeeFilter);
+// router.post('/filterEmployees', handleEmployeeFilter);
 router.post('/updateEmployeeStatus', updateEmployeeStatus);
 router.get('/updateUserStatus', adminMiddleware, updateUserStatus);
 router.patch('/assignEmployee', adminMiddleware, assignEmployee);

@@ -1,50 +1,30 @@
-import { getModelForClass, ModelOptions, prop, pre } from '@typegoose/typegoose';
-import bcrypt from 'bcrypt';
+import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
+import { Permission } from './permission.model'; // Adjust the path as needed
+import { SuperAdmin } from './superadmin.model';
 
 @ModelOptions({
     schemaOptions: {
-        timestamps: true,
+        timestamps: true, // This ensures createdAt and updatedAt fields are automatically added
     },
 })
-@pre<Admin>('save', async function() {
-    if (this.isModified('Password')) {
-        this.Password = await this.hashPassword(this.Password);
-    }
-})
-export class Admin {
+export class Role {
     @prop({ required: true, unique: true })
-    public Email!: string;
+    public roleName!: string;
 
-    @prop({ required: true })
-    public Password!: string;
+    // Reference to the Permission model
+    @prop({ ref: () => Permission, required: true })
+    public permissions!: Ref<Permission>[];
 
-    @prop({ required: true })
-    public FirstName!: string;
+    // Created by reference to an Admin or User
+    @prop({ ref: () => SuperAdmin, required: true })
+    public createdBy!: Ref<SuperAdmin>;
 
-    @prop({ required: true })
-    public LastName!: string;
+    // Updated by reference to an Admin or User
+    @prop({ ref: () => SuperAdmin })
+    public updatedBy?: Ref<SuperAdmin>;
 
-    @prop({ required: true })
-    public PhoneNumber!: string;
-
-    @prop({ required: true })
-    public SuperAdminId!: string;
-
-    @prop({ required: true, enum: ['Admin', 'Subadmin'] })
-    public Role!: string;
-
-    @prop({ default: true })
-    public isActive!: boolean;
-
-    public async hashPassword(password: string): Promise<string> {
-        const saltRounds = 10;
-        return await bcrypt.hash(password, saltRounds);
-    }
-
-    public async validatePassword(password: string): Promise<boolean> {
-        return await bcrypt.compare(password, this.Password);
-    }
+    // The timestamps createdAt and updatedAt are automatically managed by Mongoose
 }
 
-const AdminModel = getModelForClass(Admin);
-export default AdminModel;
+const RoleModel = getModelForClass(Role);
+export default RoleModel;

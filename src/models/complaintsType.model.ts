@@ -1,5 +1,5 @@
 import { prop, getModelForClass, modelOptions, Ref } from '@typegoose/typegoose';
-import { Admin } from './role.model';
+import { Admin } from './oldrole.model';
 
 enum StatusType {
     ACTIVE = 'active',

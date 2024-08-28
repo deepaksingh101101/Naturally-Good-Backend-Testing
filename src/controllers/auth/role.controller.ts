@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import AdminModel, { Admin } from '../../models/role.model';
+import AdminModel, { Admin } from '../../models/oldrole.model';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import UserModel from '../../models/user.model';
-import DeliveryGuyModel from '../../models/employee.model';
 
 export const createRole = async (req: Request, res: Response) => {
     const { Email, Password, FirstName, LastName, PhoneNumber, Role } = req.body;
@@ -211,44 +210,44 @@ export const handleUserFilter = async (req: Request, res: Response) => {
 };
 
 // Filter Employee
-export const handleEmployeeFilter = async (req: Request, res: Response) => {
-    try {
-        // Extract query parameters from the request
-        const {
-            Email,
-            FirstName,
-            LastName,
-            PhoneNumber,
-            AdminId,
-            Role,
-            isActive,
-            CreatedAt,
-            UpdatedAt
-        } = req.query;
+// export const handleEmployeeFilter = async (req: Request, res: Response) => {
+//     try {
+//         // Extract query parameters from the request
+//         const {
+//             Email,
+//             FirstName,
+//             LastName,
+//             PhoneNumber,
+//             AdminId,
+//             Role,
+//             isActive,
+//             CreatedAt,
+//             UpdatedAt
+//         } = req.query;
 
-        // Build the query object dynamically
-        const query: any = {};
+//         // Build the query object dynamically
+//         const query: any = {};
 
-        if (Email) query.Email = Email;
-        if (FirstName) query.FirstName = FirstName;
-        if (LastName) query.LastName = LastName;
-        if (PhoneNumber) query.PhoneNumber = PhoneNumber;
-        if (AdminId) query.AdminId = AdminId;
-        if (Role) query.Role = Role;
-        if (isActive) query.isActive = isActive === 'true'; // Convert string 'true'/'false' to boolean
-        if (CreatedAt) query.CreatedAt = CreatedAt;
-        if (UpdatedAt) query.UpdatedAt = UpdatedAt;
+//         if (Email) query.Email = Email;
+//         if (FirstName) query.FirstName = FirstName;
+//         if (LastName) query.LastName = LastName;
+//         if (PhoneNumber) query.PhoneNumber = PhoneNumber;
+//         if (AdminId) query.AdminId = AdminId;
+//         if (Role) query.Role = Role;
+//         if (isActive) query.isActive = isActive === 'true'; // Convert string 'true'/'false' to boolean
+//         if (CreatedAt) query.CreatedAt = CreatedAt;
+//         if (UpdatedAt) query.UpdatedAt = UpdatedAt;
 
-        // Perform the query
-        const deliveryGuys = await DeliveryGuyModel.find(query).select('-Password');
+//         // Perform the query
+//         const deliveryGuys = await DeliveryGuyModel.find(query).select('-Password');
 
-        // Return the results
-        return res.status(200).json(deliveryGuys);
+//         // Return the results
+//         return res.status(200).json(deliveryGuys);
 
-    } catch (error) {
-        return res.status(500).json({ error: 'An error occurred while processing the request' });
-    }
-};
+//     } catch (error) {
+//         return res.status(500).json({ error: 'An error occurred while processing the request' });
+//     }
+// };
 
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
