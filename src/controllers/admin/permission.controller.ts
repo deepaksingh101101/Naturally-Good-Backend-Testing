@@ -89,6 +89,11 @@ export const updatePermission = async (req: Request, res: Response) => {
     const { moduleName, permissions } = req.body;
 
     try {
+        // Validate request body
+        if (!moduleName || !Array.isArray(permissions)) {
+            return res.status(400).json({ error: 'Invalid request body' });
+        }
+
         const updatedPermission = await permissionService.updatePermission(id, { moduleName, permissions });
 
         if (!updatedPermission) {
