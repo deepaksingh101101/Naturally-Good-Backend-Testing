@@ -19,7 +19,6 @@ export const superAdminMiddleware = (req: Request, res: Response, next: NextFunc
         }
 
         req['decodedToken'] = decoded;
-
         next();
     } catch (error) {
         console.error('Error verifying token:', error);

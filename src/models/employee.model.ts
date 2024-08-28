@@ -1,6 +1,7 @@
 import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
 import { Role } from './role.model'; // Adjust the path as needed
+import { SuperAdmin } from './superadmin.model';
 
 @ModelOptions({
     schemaOptions: {
@@ -43,14 +44,14 @@ export class Employee {
     @prop({ ref: () => Role, required: true })
     public Role!: Ref<Role>;
 
+    @prop({ ref: () => SuperAdmin, required: false })
+    public CreatedBy!: Ref<SuperAdmin>;
+
+    @prop({ ref: () => SuperAdmin, required: false })
+    public UpdatedBy!: Ref<SuperAdmin>;
+
     @prop({ default: true })
     public isActive!: boolean;
-
-    @prop({ default: Date.now })
-    public UpdatedAt!: Date;
-
-    @prop({ default: Date.now })
-    public CreatedAt!: Date;
 
     public async hashPassword(Password: string): Promise<string> {
         const saltRounds = 10;
