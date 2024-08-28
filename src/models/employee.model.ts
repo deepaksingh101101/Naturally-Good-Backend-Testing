@@ -1,5 +1,6 @@
-import { getModelForClass, ModelOptions, prop } from '@typegoose/typegoose';
+import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
+import { User } from './user.model';
 
 @ModelOptions({
     schemaOptions: {
@@ -7,12 +8,7 @@ import bcrypt from 'bcrypt';
     },
 })
 
-export class DeliveryGuy {
-    @prop({ required: true, unique: true })
-    public Email!: string;
-
-    @prop({ required: true })
-    public Password!: string;
+export class Employee {
 
     @prop({ required: true })
     public FirstName!: string;
@@ -23,10 +19,31 @@ export class DeliveryGuy {
     @prop({ required: true })
     public PhoneNumber!: string;
 
-    @prop({ required: true })
-    public AdminId!: string;
+    @prop({ required: true, unique: true })
+    public Email!: string;
 
-    @prop({ required: true, enum: ['delivery_guy'] })
+    @prop({ required: false })
+    public Password?: string;
+
+    @prop({ required: true })
+    public Dob!: Date;
+
+    @prop({ required: true })
+    public Gender!: string;
+
+    @prop({ required: true })
+    public StreetAddress!: string;
+
+    @prop({ required: true })
+    public City!: string;
+
+    @prop({ required: true })
+    public State!: string;
+
+    @prop({ ref: () => User  })
+    public AssignedCustomers!: Ref<User>[];
+
+    @prop({ required: true })
     public Role!: string;
 
     @prop({ default: true })
@@ -48,5 +65,5 @@ export class DeliveryGuy {
     }
 }
 
-const DeliveryGuyModel = getModelForClass(DeliveryGuy);
-export default DeliveryGuyModel;
+const EmployeeModel = getModelForClass(Employee);
+export default EmployeeModel;

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { RosterModel, SeasonModel, TypesModel, SubscriptionTypeModel, FrequencyTypeModel } from '../models/dropdown.model';
+import { RosterModel, SeasonModel, TypesModel, SubscriptionTypeModel, FrequencyTypeModel, RoleTypeModel } from '../models/dropdown.model';
 
 // Common function to handle errors
 const handleError = (res: Response, error: any) => {
@@ -208,5 +208,55 @@ export const deleteFrequencyType = async (req: Request, res: Response) => {
     return res.status(204).json({ message: 'Frequency Type deleted' });
   } catch (error) {
     handleError(res, error);
+  }
+};
+
+
+// Role CRUD
+export const createRole = async (req: Request, res: Response) => {
+  try {
+    const { Name } = req.body;
+
+    if (!Name) {
+      return res.status(400).json({ error: 'Role name is required' });
+    }
+
+    const existingRole = await RoleTypeModel.findOne({ Name });
+    if (existingRole) {
+      return res.status(400).json({ error: 'Role already exists' });
+    }
+
+    const newRole = new RoleTypeModel({ Name });
+    await newRole.save();
+
+    res.status(201).json(newRole);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const deleteRole = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    const role = await RoleTypeModel.findByIdAndDelete(id);
+
+    if (!role) {
+      return res.status(404).json({ error: 'Role not found' });
+    }
+
+    res.status(200).json({ message: 'Role deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getAllRoles = async (req: Request, res: Response) => {
+  try {
+    const roles = await RoleTypeModel.find();
+
+    res.status(200).json(roles);
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
   }
 };

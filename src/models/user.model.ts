@@ -6,6 +6,12 @@ class Address {
   public HouseNumber: string;
 
   @prop({ type: String, required: false })
+  public SocietyLocality: string;
+
+  @prop({ type: String, required: false })
+  public Sector: string;
+
+  @prop({ type: String, required: false })
   public City: string;
 
   @prop({ type: String, required: false })
@@ -13,6 +19,9 @@ class Address {
 
   @prop({ type: String, required: false })
   public ZipCode: string;
+
+  @prop({ type: String, required: false })
+  public AlternateAddress?: string;
 }
 
 @ModelOptions({
@@ -21,47 +30,64 @@ class Address {
   },
 })
 export class User {
-  @prop({ type: String, required: true })
-  public userName: string;
+  // @prop({ type: String, required: true })
+  // public UserName: string;
 
   @prop({ type: String, required: true })
-  public firstname: string;
+  public FirstName: string;
 
   @prop({ type: String, required: true })
-  public lastname: string;
+  public LastName: string;
 
   @prop({ type: Number, required: false })
-  public phoneNo: number;
+  public PhoneNo: number;
 
   @prop({ type: String, required: false })
-  public password: string;
+  public Password: string;
 
   @prop({ type: () => Address, required: false })
-  public address: Address;
+  public Address: Address;
 
   @prop({ type: String })
-  public email?: string;
+  public Email?: string;
 
   @prop({ type: Boolean, default: true })
-  public accountStatus: boolean;
+  public AccountStatus: boolean;
 
-  @prop({ type: String, required:false })
-  public assignedEmployee?: string;
-
+  @prop({ type: String, required: false })
+  public AssignedEmployee?: string;
 
   @prop({ type: String, default: () => new Date().toISOString() })
   public lastLogin: string;
 
-  @prop({ type: String, required:false })
+  @prop({ type: String, required: false })
   public otp?: string;
-  
 
-  @prop({ type: Date, required:false })
+  @prop({ type: Date, required: false })
   public otpExpiry?: Date;
 
-  public async comparePassword(candidatePassword: string): Promise<boolean> {
-    return bcrypt.compare(candidatePassword, this.password);
-  }
+  // New fields for customer information
+  @prop({ type: String, required: true })
+  public contactNumber: string;
+
+  @prop({ type: String, required: false })
+  public alternateContactNumber?: string;
+
+  @prop({ type: String, required: false })
+  public allergies?: string;
+
+  @prop({ type: Number, required: false })
+  public numberOfFamilyMembers?: number;
+
+  @prop({ type: Date, required: false })
+  public dateOfBirth?: Date;
+
+  @prop({ type: String, required: false })
+  public gender?: string;
+
+  // public async comparePassword(candidatePassword: string): Promise<boolean> {
+    // return bcrypt.compare(candidatePassword, this.password);
+  // }
 }
 
 const UserModel = getModelForClass(User);

@@ -75,11 +75,25 @@ export class FrequencyType {
   public UpdatedAt!: Date;
 }
 
+
+// Define the Frequency Type schema
+export class Role {
+  @prop({ type: String, required: true })
+  public Name!: string;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+}
+
 // Create models for each schema
 const TypesModel = getModelForClass(Types);
 const SeasonModel = getModelForClass(Season);
 const RosterModel = getModelForClass(Roster);
 const SubscriptionTypeModel = getModelForClass(SubscriptionType);
 const FrequencyTypeModel = getModelForClass(FrequencyType);
+const RoleTypeModel = getModelForClass(Role);
 
-export { TypesModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel };
+export { TypesModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel,RoleTypeModel };

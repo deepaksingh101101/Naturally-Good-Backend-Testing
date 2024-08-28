@@ -1,5 +1,5 @@
 import express from 'express';
-import { createFrequencyType, createRoster, createSeason, createSubscriptionType, createType, deleteFrequencyType, deleteRoster, deleteSeason, deleteSubscriptionType, deleteType, getFrequencyTypes, getRosters, getSeasons, getSubscriptionTypes, getTypes } from '../controllers/dropdown.controller';
+import { createFrequencyType, createRole, createRoster, createSeason, createSubscriptionType, createType, deleteFrequencyType, deleteRole, deleteRoster, deleteSeason, deleteSubscriptionType, deleteType, getAllRoles, getFrequencyTypes, getRosters, getSeasons, getSubscriptionTypes, getTypes } from '../controllers/dropdown.controller';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
 
 const router = express.Router();
@@ -29,4 +29,10 @@ router.delete('/subscription-types/:id', adminMiddleware, deleteSubscriptionType
 router.get('/frequency-types', adminMiddleware, getFrequencyTypes);
 router.post('/frequency-types', adminMiddleware, createFrequencyType);
 router.delete('/frequency-types/:id', adminMiddleware, deleteFrequencyType);
+
+
+// Role Types routes
+router.get('/role-types', adminMiddleware,getAllRoles );
+router.post('/role-types', adminMiddleware, createRole);
+router.delete('/role-types/:id', adminMiddleware, deleteRole);
 export default router;

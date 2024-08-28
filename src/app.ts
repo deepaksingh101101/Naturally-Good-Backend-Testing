@@ -11,6 +11,7 @@ import adminRoutes from "./routes/admin.routes";
 import superadminRoutes from "./routes/superadmin.routes";
 import categoryRoutes from "./routes/category.routes";
 import productRoutes from "./routes/product.routes";
+import couponsRoutes from "./routes/coupons.routes";
 import subscriptionRoutes from "./routes/subscription.routes";
 import bagRoutes from "./routes/bag.routes";
 import planRoutes from "./routes/plans.routes";
@@ -44,9 +45,10 @@ export class Application {
     this.app.use("/superadmin", superadminRoutes);
 
 
-    
+
     this.app.use("/product", productRoutes);
     this.app.use("/bag", bagRoutes);
+    this.app.use("/coupons", couponsRoutes);
     this.app.use("/subscription", subscriptionRoutes);
 
 

@@ -182,7 +182,7 @@ export const updateUserStatus = async (req: Request, res: Response) => {
       }
   
       // Update the accountStatus and lastLogin fields
-      user.accountStatus = accountStatus;
+    //   user.accountStatus = accountStatus;
       user.lastLogin = new Date().toISOString();
   
       // Save the updated user
@@ -216,7 +216,7 @@ export const assignEmployee = async (req: Request, res: Response) => {
       }
   
       // Assign employeeId to the user
-      user.assignedEmployee = employeeId;
+    //   user.assignedEmployee = employeeId;
   
       // Save the updated user
       await user.save();

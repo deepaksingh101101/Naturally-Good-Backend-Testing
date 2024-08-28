@@ -1,6 +1,7 @@
 import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
 import { FrequencyType, SubscriptionType } from './dropdown.model';
 import { Bag } from './bag.model';
+import { Coupon } from './coupons.model';
 
 class DeliveryDay {
   @prop({ type: String, required: true })
@@ -31,6 +32,9 @@ export class Subscription {
 
   @prop({ ref: () => Bag  })
   public Bags!: Ref<Bag>[];
+
+  @prop({ ref: () => Coupon  })
+  public Coupons!: Ref<Coupon>[];
 
   @prop({ type: () => [DeliveryDay], required: true })
   public DeliveryDays!: DeliveryDay[];
