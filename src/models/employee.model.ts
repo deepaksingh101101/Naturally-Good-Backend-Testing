@@ -1,7 +1,6 @@
 import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
 import { Role } from './role.model'; // Adjust the path as needed
-import { SuperAdmin } from './superadmin.model';
 
 @ModelOptions({
     schemaOptions: {
@@ -9,7 +8,6 @@ import { SuperAdmin } from './superadmin.model';
     },
 })
 export class Employee {
-
     @prop({ required: true })
     public FirstName!: string;
 
@@ -40,15 +38,16 @@ export class Employee {
     @prop({ required: true })
     public State!: string;
 
-    // Reference to the Role model
     @prop({ ref: () => Role, required: true })
     public Role!: Ref<Role>;
 
-    @prop({ ref: () => SuperAdmin, required: false })
-    public CreatedBy!: Ref<SuperAdmin>;
+    // Updated to only reference Employee
+    @prop({ ref: () => Employee, required: false })
+    public CreatedBy?: Ref<Employee>;
 
-    @prop({ ref: () => SuperAdmin, required: false })
-    public UpdatedBy!: Ref<SuperAdmin>;
+    // Removed enum restriction since only Employee can be the creator
+    @prop({ required: false })
+    public CreatedByModel?: 'Employee';
 
     @prop({ default: true })
     public isActive!: boolean;
@@ -59,7 +58,7 @@ export class Employee {
     }
 
     public async validatePassword(Password: string): Promise<boolean> {
-        return await bcrypt.compare(Password, this.Password);
+        return await bcrypt.compare(Password, this.Password!);
     }
 }
 

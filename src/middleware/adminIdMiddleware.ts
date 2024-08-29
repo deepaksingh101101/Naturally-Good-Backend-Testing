@@ -18,12 +18,12 @@ export const adminMiddleware = async (req: Request, res: Response, next: NextFun
 
         const admin = await AdminModel.findById(decoded.id);
 
-        if (!admin) {
+    if (!admin) {
             return res.status(404).json({ error: 'Admin not found' });
         }
 
         req['adminId'] = admin._id;
-
+        req['decodedToken']=admin;
         next();
     } catch (error) {
         console.error('Error verifying token:', error);

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
-export const superAdminMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const verifyMiddleware = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: 'Unauthorized' });
@@ -13,12 +13,19 @@ export const superAdminMiddleware = (req: Request, res: Response, next: NextFunc
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: string, email: string, role: string };
-        console.log(decoded)
-        if (decoded.role !== 'SuperAdmin') {
+        req['role'] = decoded.role;
+
+        if (!decoded.role) {
             return res.status(403).json({ error: 'Forbidden' });
         }
 
         req['decodedToken'] = decoded;
+        if(decoded.role === 'SuperAdmin'){
+            req['model'] = 'SuperAdmin';
+        }
+        else{
+            req['model'] = 'Employee';
+        }
         next();
     } catch (error) {
         console.error('Error verifying token:', error);

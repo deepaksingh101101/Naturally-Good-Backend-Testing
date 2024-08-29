@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { adminMiddleware } from '../middleware/adminIdMiddleware'; // Adjust the path as needed
-import { superAdminMiddleware } from '../middleware/superadmin.middleware';
+import { verifyMiddleware } from '../middleware/superadmin.middleware';
 import { createPermission, deletePermission, getPermissionById, getPermissions, updatePermission } from '../controllers/admin/permission.controller';
 
 const router = Router();
