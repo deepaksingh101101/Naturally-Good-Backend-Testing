@@ -133,3 +133,33 @@ export const getEmployeeById = async (req: Request, res: Response) => {
 };
 
 
+export const editEmployeeById = async (req: Request, res: Response) => {
+    const { id } = req.params; // Get employee ID from the request parameters
+
+    try {
+        // Find the employee by ID, excluding the Password field
+        const employee = await EmployeeModel.findById(id);
+        if (!employee) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+
+        // Extract new data from the request body
+        const newData = req.body;
+
+        // Update the employee's fields with the new data while preserving existing fields
+        const updatedEmployee = await EmployeeModel.findByIdAndUpdate(
+            id,
+            { $set: newData },
+            { new: true, runValidators: true } // `new: true` returns the updated document
+        );
+
+        if (!updatedEmployee) {
+            return res.status(404).json({ error: 'Failed to update employee' });
+        }
+
+        res.json(updatedEmployee);
+    } catch (error) {
+        console.error('Error updating employee by ID:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+};

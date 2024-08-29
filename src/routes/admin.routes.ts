@@ -6,6 +6,7 @@ import {
 import { verifyMiddleware } from '../middleware/superadmin.middleware';
 import {  
   createEmployee,
+  editEmployeeById,
   getAllEmployees,
   getEmployeeById,
   loginEmployee
@@ -20,6 +21,7 @@ router.post('/createRole', checkPermissions('Create Role'), createRole);
 router.post('/create/employee', checkPermissions('Create Employee'), createEmployee);
 router.get('/employee',checkPermissions('View Employee') ,getAllEmployees);
 router.get('/getOneEmployee/:id', checkPermissions('View Employee'), getEmployeeById);
+router.put('/editEmployee/:id', checkPermissions('Edit Employee'), editEmployeeById);
 
 router.get('/employee/login', loginEmployee);
 
