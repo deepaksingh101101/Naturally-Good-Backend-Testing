@@ -26,7 +26,7 @@ console.log(superAdminId)
                 return {
                     // Assuming you want to map some properties from `permission`
                     isAllowed: false,
-                    id: perm._id ,
+                    actionName: perm.name,
                 };
             })
         }));
@@ -47,6 +47,21 @@ console.log(superAdminId)
         
     } catch (error) {
         console.error('Error creating role:', error);
+        return res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+};
+// Get All role
+export const getAllRoles = async (req: Request, res: Response) => {
+    try {
+        // Fetch all roles from the database
+        const roles = await RoleModel.find()
+            .exec();
+
+        // Respond with the list of roles
+        return res.status(200).json({roles });
+        
+    } catch (error) {
+        console.error('Error fetching roles:', error);
         return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };

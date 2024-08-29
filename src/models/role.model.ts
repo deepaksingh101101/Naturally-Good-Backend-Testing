@@ -1,6 +1,7 @@
 import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
 import { PermissionItem } from './permission.model'; // Adjust the path as needed
 import { SuperAdmin } from './superadmin.model'; // Adjust the path as needed
+import { Types } from 'mongoose';
 
 @ModelOptions({
     schemaOptions: {
@@ -24,7 +25,7 @@ export class Role {
     public permissions!: {
         permission: Ref<PermissionItem>;
         details: {
-            name: string;
+            actionName: string;
             isAllowed: boolean;
         }[];
     }[];

@@ -19,29 +19,23 @@ export const checkPermissions = (actionToCheck: string) => {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string; role: string };
       const roleId = decoded.role;
-console.log(roleId)
+
       // Fetch the role details by ID, including its permissions
-      const role = await RoleModel.findById(decoded.role).populate('permissions.permission');
+      const role = await RoleModel.findById(roleId).populate('permissions.permission');
 
       if (!role) {
         res.status(403).json({ error: 'Forbidden: Role not found' });
         return; // Stop execution after response
       }
 
-      // Fetch the required permission ID from the permission model for the action
-      const permission = await PermissionModel.findOne({ 'permissions.name': actionToCheck });
-
-      if (!permission) {
-        res.status(403).json({ error: 'Forbidden: Permission not found' });
-        return; // Stop execution after response
-      }
-
-      // Check if the role has the required permission by looking for the permission ID in the role's details
+      // Check if the role has the required permission by looking for the permission action name
       const hasPermission = role.permissions.some((perm: any) =>
-        perm.permission && permission._id && perm.permission.equals(permission._id) &&
-        perm.details.some((detail: any) => detail.isAllowed)
+        perm.details.some((detail: any) =>
+        {
+         return  detail.actionName === actionToCheck && detail.isAllowed
+        }
+        )
       );
-      
 
       if (!hasPermission) {
         res.status(403).json({ error: 'Forbidden: Insufficient permissions' });
