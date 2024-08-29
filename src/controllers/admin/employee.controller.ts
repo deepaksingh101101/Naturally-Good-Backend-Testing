@@ -83,9 +83,21 @@ export const loginEmployee = async (req: Request, res: Response) => {
 
 export const getAllEmployees = async (req: Request, res: Response) => {
     try {
-        // Find all employees and populate CreatedBy and UpdatedBy fields
-        const employees = await EmployeeModel.find()
-            .populate('CreatedBy')
+        // Find the role ID for 'Superadmin'
+        const superadminRole = await RoleModel.findOne({ roleName: 'Superadmin' }).exec();
+        if (!superadminRole) {
+            return res.status(400).json({ error: 'Superadmin role not found' });
+        }
+
+        const roleIdToExclude = superadminRole._id; // Extract the role ID to exclude
+
+        // Fetch employees excluding the ones with the 'Superadmin' role
+        const employees = await EmployeeModel.find({ Role: { $ne: roleIdToExclude } })
+            .select('-Password') // Exclude the Password field
+            .populate({
+                path: 'CreatedBy',
+                select: '-Password' // Exclude sensitive fields from CreatedBy
+            })
             .exec();
 
         res.status(200).json(employees);
@@ -94,4 +106,30 @@ export const getAllEmployees = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
+
+
+export const getEmployeeById = async (req: Request, res: Response) => {
+    const { id } = req.params; // Get employee ID from the request parameters
+
+    try {
+        // Find the employee by ID, excluding the Password field
+        const employee = await EmployeeModel.findById(id)
+            .select('-Password') // Exclude the Password field
+            .populate({
+                path: 'CreatedBy',
+                select: '-Password' // Exclude sensitive fields from CreatedBy
+            })
+            .exec();
+
+        if (!employee) {
+            return res.status(404).json({ error: 'Employee not found' });
+        }
+
+        res.status(200).json(employee);
+    } catch (error) {
+        console.error('Error fetching employee by ID:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+};
+
 

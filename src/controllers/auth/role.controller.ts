@@ -6,6 +6,7 @@ import PermissionModel from '../../models/permission.model'; // Adjust the path 
 export const createRole = async (req: Request, res: Response) => {
     const { roleName } = req.body;
     const superAdminId = req['decodedToken'].id;
+    // const superAdminId = "66d00c12bcecdc9aabfe3a91";
 console.log(superAdminId)
     try {
         // Check if the role already exists (case-insensitive)
@@ -20,7 +21,7 @@ console.log(superAdminId)
         const permissions = await PermissionModel.find();
         // Map permissions with isAllowed set to false
         const mappedPermissions = permissions.map(per => ({
-            // permission: per._id, 
+            permission: per._id, 
             details: per.permissions.map(perm => {
                 return {
                     // Assuming you want to map some properties from `permission`

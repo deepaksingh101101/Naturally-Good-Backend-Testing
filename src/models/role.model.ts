@@ -22,7 +22,7 @@ export class Role {
         default: [], // Initialize as an empty array
     })
     public permissions!: {
-        // permission: Ref<PermissionItem>;
+        permission: Ref<PermissionItem>;
         details: {
             name: string;
             isAllowed: boolean;
