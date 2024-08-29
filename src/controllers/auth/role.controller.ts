@@ -6,7 +6,7 @@ import PermissionModel from '../../models/permission.model'; // Adjust the path 
 export const createRole = async (req: Request, res: Response) => {
     const { roleName } = req.body;
     const superAdminId = req['decodedToken'].id;
-
+console.log(superAdminId)
     try {
         // Check if the role already exists (case-insensitive)
         const existingRole = await RoleModel.findOne({
