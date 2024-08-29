@@ -19,10 +19,10 @@ export const checkPermissions = (actionToCheck: string) => {
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string; role: string };
       const roleId = decoded.role;
-console.log(roleId)
+
       // Fetch the role details by ID, including its permissions
       const role = await RoleModel.findById(roleId).populate('permissions.permission');
-console.log(role)
+
       if (!role) {
         res.status(403).json({ error: 'Forbidden: Role not found' });
         return; // Stop execution after response
