@@ -65,3 +65,19 @@ export const getAllRoles = async (req: Request, res: Response) => {
         return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
+
+export const getAllRolesNameAndId = async (req: Request, res: Response) => {
+    try {
+        // Fetch all roles with only name and ID fields
+        const roles = await RoleModel.find()
+            .select('roleName _id')
+            .exec();
+
+        // Respond with the list of roles
+        return res.status(200).json({ roles });
+        
+    } catch (error) {
+        console.error('Error fetching roles:', error);
+        return res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+};

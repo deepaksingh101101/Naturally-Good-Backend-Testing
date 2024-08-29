@@ -11,15 +11,16 @@ import {
   getEmployeeById,
   loginEmployee
 } from '../controllers/admin/employee.controller';
-import { createRole, getAllRoles } from '../controllers/auth/role.controller';
+import { createRole, getAllRoles, getAllRolesNameAndId } from '../controllers/auth/role.controller';
 import { checkPermissions } from '../middleware/checkPermission';
+import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
 
 const router = Router();
 
 // Pass the specific action name as a parameter to the middleware
 router.post('/createRole', checkPermissions('Create Role'), createRole);
 router.get('/getAllRolesForPermissions', checkPermissions('View Role'), getAllRoles);
-router.get('/getAllRolesIdAndName', getAllRoles);
+router.get('/getAllRolesNameAndId',isRoleLoggedIn, getAllRolesNameAndId); //No permission added
 
 
 router.post('/create/employee', checkPermissions('Create Employee'), createEmployee);
