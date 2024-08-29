@@ -20,7 +20,7 @@ console.log(superAdminId)
         const permissions = await PermissionModel.find();
         // Map permissions with isAllowed set to false
         const mappedPermissions = permissions.map(per => ({
-            permission: per._id, // Ensure permission is mapped correctly
+            // permission: per._id, 
             details: per.permissions.map(perm => {
                 return {
                     // Assuming you want to map some properties from `permission`
