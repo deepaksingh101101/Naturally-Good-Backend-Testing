@@ -1,7 +1,8 @@
-import { prop, getModelForClass } from '@typegoose/typegoose';
+import { prop, getModelForClass, Ref } from '@typegoose/typegoose';
+import { Employee } from './employee.model';
 
-// Define the Types schema For Product
-export class Types {
+// Define the ProductType schema
+export class ProductType {
   @prop({ type: String, required: true })
   public Name!: string;
 
@@ -13,7 +14,15 @@ export class Types {
 
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;
+
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
 }
+
+
 
 // Define the Season schema
 export class Season {
@@ -89,11 +98,11 @@ export class Role {
 }
 
 // Create models for each schema
-const TypesModel = getModelForClass(Types);
+const ProductTypeModel = getModelForClass(ProductType);
 const SeasonModel = getModelForClass(Season);
 const RosterModel = getModelForClass(Roster);
 const SubscriptionTypeModel = getModelForClass(SubscriptionType);
 const FrequencyTypeModel = getModelForClass(FrequencyType);
 const RoleTypeModel = getModelForClass(Role);
 
-export { TypesModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel,RoleTypeModel };
+export { ProductTypeModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel,RoleTypeModel };

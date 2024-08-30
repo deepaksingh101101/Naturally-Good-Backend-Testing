@@ -202,9 +202,10 @@ export const getEmployeeById = async (req: Request, res: Response) => {
 
 export const editEmployeeById = async (req: Request, res: Response) => {
     const { id } = req.params; // Get employee ID from the request parameters
+    const loggedInId = req['decodedToken']?.id; // Get the logged-in user ID from the decoded token
 
     try {
-        // Find the employee by ID, excluding the Password field
+        // Find the employee by ID
         const employee = await EmployeeModel.findById(id);
         if (!employee) {
             return res.status(404).json({ error: 'Employee not found' });
@@ -212,6 +213,9 @@ export const editEmployeeById = async (req: Request, res: Response) => {
 
         // Extract new data from the request body
         const newData = req.body;
+
+        // Set the UpdatedBy field to the logged-in user's ID
+        newData.UpdatedBy = loggedInId;
 
         // Update the employee's fields with the new data while preserving existing fields
         const updatedEmployee = await EmployeeModel.findByIdAndUpdate(

@@ -44,6 +44,9 @@ export class Employee {
     // Updated to only reference Employee
     @prop({ ref: () => Employee, required: false })
     public CreatedBy?: Ref<Employee>;
+    
+    @prop({ ref: () => Employee, required: false })
+    public UpdatedBy?: Ref<Employee>;
 
     // Removed enum restriction since only Employee can be the creator
     @prop({ required: false })

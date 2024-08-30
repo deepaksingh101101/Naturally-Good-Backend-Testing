@@ -19,7 +19,7 @@ export const isRoleLoggedIn = async (req: Request, res: Response, next: NextFunc
         const decoded = jwt.verify(token, JWT_SECRET) as { id: string, email: string,role: string };
 
         const roleId = decoded.role;
-
+        req['decodedToken']=decoded.id;
         // Fetch the role details by ID, including its permissions
         const role = await RoleModel.findById(roleId).populate('permissions.permission');
   

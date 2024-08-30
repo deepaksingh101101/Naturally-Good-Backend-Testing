@@ -1,47 +1,56 @@
 import { Request, Response } from 'express';
-import { RosterModel, SeasonModel, TypesModel, SubscriptionTypeModel, FrequencyTypeModel, RoleTypeModel } from '../models/dropdown.model';
+import { RosterModel, SeasonModel, SubscriptionTypeModel, FrequencyTypeModel, RoleTypeModel, ProductTypeModel } from '../models/dropdown.model';
 
 // Common function to handle errors
 const handleError = (res: Response, error: any) => {
   res.status(500).json({ error: 'Internal server error' });
 };
 
-// Common function to check if name already exists
-const checkExistingName = async (model: any, name: string) => {
-  return await model.findOne({ Name: name.toLowerCase() });
-};
 
-// Types APIs
+// Create a new ProductType
+export const createProductType = async (req: Request, res: Response) => {
+  try {
+    const { Name, SortOrder } = req.body;
+    const loggedInId = req['decodedToken'];
+
+    // Check if required fields are present
+    if (!Name || SortOrder === undefined) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Check if Name already exists (ignoring case)
+    const existingName = await ProductTypeModel.findOne({ Name: { $regex: new RegExp(`^${Name}$`, 'i') } });
+    if (existingName) {
+      return res.status(400).json({ error: 'Name already exists' });
+    }
+
+    // Check if SortOrder already exists
+    const existingSortOrder = await ProductTypeModel.findOne({ SortOrder: SortOrder });
+    if (existingSortOrder) {
+      return res.status(400).json({ error: 'Sort order already exists' });
+    }
+
+    // Create new ProductType
+    const newProductType = new ProductTypeModel({ Name, SortOrder, CreatedBy:loggedInId,UpdatedBy:loggedInId});
+    await newProductType.save();
+    res.status(201).json(newProductType);
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+// Get all Product Types
 export const getTypes = async (req: Request, res: Response) => {
   try {
-    const types = await TypesModel.find();
+    const types = await ProductTypeModel.find();
     return res.json(types);
   } catch (error) {
     handleError(res, error);
   }
 };
-
-export const createType = async (req: Request, res: Response) => {
+// Delete a ProductType by ID
+export const deleteProductType = async (req: Request, res: Response) => {
   try {
-    const { Name, SortOrder } = req.body;
-    if (!Name || SortOrder === undefined) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    const name = Name.toLowerCase();
-    if (await checkExistingName(TypesModel, name)) {
-      return res.status(400).json({ error: 'Type already exists' });
-    }
-    const newType = new TypesModel({ Name: name, SortOrder });
-    await newType.save();
-    res.status(201).json(newType);
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-export const deleteType = async (req: Request, res: Response) => {
-  try {
-    const type = await TypesModel.findByIdAndDelete(req.params.id);
+    const type = await ProductTypeModel.findByIdAndDelete(req.params.id);
     if (!type) {
       return res.status(404).json({ error: 'Type not found' });
     }
@@ -51,212 +60,54 @@ export const deleteType = async (req: Request, res: Response) => {
   }
 };
 
-// Seasons APIs
-export const getSeasons = async (req: Request, res: Response) => {
-  try {
-    const seasons = await SeasonModel.find();
-    return res.json(seasons);
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-export const createSeason = async (req: Request, res: Response) => {
-  try {
-    const { Name, SortOrder } = req.body;
-    if (!Name  === undefined) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    const name = Name.toLowerCase();
-    if (await checkExistingName(SeasonModel, name)) {
-      return res.status(400).json({ error: 'Season already exists' });
-    }
-    const newSeason = new SeasonModel({ Name: name, SortOrder });
-    await newSeason.save();
-    res.status(201).json(newSeason);
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-export const deleteSeason = async (req: Request, res: Response) => {
-  try {
-    const season = await SeasonModel.findByIdAndDelete(req.params.id);
-    if (!season) {
-      return res.status(404).json({ error: 'Season not found' });
-    }
-    return res.status(204).json({ message: 'Season deleted' });
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-// Rosters APIs
-export const getRosters = async (req: Request, res: Response) => {
-  try {
-    const rosters = await RosterModel.find();
-    return res.json(rosters);
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-export const createRoster = async (req: Request, res: Response) => {
-  try {
-    const { Name, SortOrder } = req.body;
-    if (!Name || SortOrder === undefined) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    const name = Name.toLowerCase();
-    if (await checkExistingName(RosterModel, name)) {
-      return res.status(400).json({ error: 'Roster already exists' });
-    }
-    const newRoster = new RosterModel({ Name: name, SortOrder });
-    await newRoster.save();
-    res.status(201).json(newRoster);
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-export const deleteRoster = async (req: Request, res: Response) => {
-  try {
-    const roster = await RosterModel.findByIdAndDelete(req.params.id);
-    if (!roster) {
-      return res.status(404).json({ error: 'Roster not found' });
-    }
-    return res.status(204).json({ message: 'Roster deleted' });
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-// Subscription Types APIs
-export const getSubscriptionTypes = async (req: Request, res: Response) => {
-  try {
-    const subscriptionTypes = await SubscriptionTypeModel.find();
-    return res.json(subscriptionTypes);
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-export const createSubscriptionType = async (req: Request, res: Response) => {
-  try {
-    const { Name, Value } = req.body;
-    if (!Name || Value === undefined) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    const name = Name.toLowerCase();
-    if (await checkExistingName(SubscriptionTypeModel, name)) {
-      return res.status(400).json({ error: 'Subscription Type already exists' });
-    }
-    const newSubscriptionType = new SubscriptionTypeModel({ Name: name, Value });
-    await newSubscriptionType.save();
-    res.status(201).json(newSubscriptionType);
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-export const deleteSubscriptionType = async (req: Request, res: Response) => {
-  try {
-    const subscriptionType = await SubscriptionTypeModel.findByIdAndDelete(req.params.id);
-    if (!subscriptionType) {
-      return res.status(404).json({ error: 'Subscription Type not found' });
-    }
-    return res.status(204).json({ message: 'Subscription Type deleted' });
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-// Frequency Types APIs
-export const getFrequencyTypes = async (req: Request, res: Response) => {
-  try {
-    const frequencyTypes = await FrequencyTypeModel.find();
-    return res.status(200).json(frequencyTypes);
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-export const createFrequencyType = async (req: Request, res: Response) => {
-  try {
-    const { Name,  Value } = req.body;
-    if (!Name || Value === undefined) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-    const name = Name.toLowerCase();
-    if (await checkExistingName(FrequencyTypeModel, name)) {
-      return res.status(400).json({ error: 'Frequency Type already exists' });
-    }
-    const newFrequencyType = new FrequencyTypeModel({ Name: name, Value });
-    await newFrequencyType.save();
-    res.status(201).json(newFrequencyType);
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-export const deleteFrequencyType = async (req: Request, res: Response) => {
-  try {
-    const frequencyType = await FrequencyTypeModel.findByIdAndDelete(req.params.id);
-    if (!frequencyType) {
-      return res.status(404).json({ error: 'Frequency Type not found' });
-    }
-    return res.status(204).json({ message: 'Frequency Type deleted' });
-  } catch (error) {
-    handleError(res, error);
-  }
-};
-
-
-// Role CRUD
-export const createRole = async (req: Request, res: Response) => {
-  try {
-    const { Name } = req.body;
-
-    if (!Name) {
-      return res.status(400).json({ error: 'Role name is required' });
-    }
-
-    const existingRole = await RoleTypeModel.findOne({ Name });
-    if (existingRole) {
-      return res.status(400).json({ error: 'Role already exists' });
-    }
-
-    const newRole = new RoleTypeModel({ Name });
-    await newRole.save();
-
-    res.status(201).json(newRole);
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
-
-export const deleteRole = async (req: Request, res: Response) => {
+// Edit a Product Type
+export const editProductType = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const { Name, SortOrder } = req.body;
+    const loggedInId = req['decodedToken'];
 
-    const role = await RoleTypeModel.findByIdAndDelete(id);
-
-    if (!role) {
-      return res.status(404).json({ error: 'Role not found' });
+    // Find the existing ProductType by ID
+    const existingProductType = await ProductTypeModel.findById(id);
+    if (!existingProductType) {
+      return res.status(404).json({ error: 'ProductType not found' });
     }
 
-    res.status(200).json({ message: 'Role deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
-  }
-};
+    // Check if Name is provided and is not the same as the current one (ignoring case)
+    if (Name) {
+      const existingName = await ProductTypeModel.findOne({
+        _id: { $ne: id }, 
+        Name: { $regex: new RegExp(`^${Name}$`, 'i') }, // Case insensitive match
+      });
+      if (existingName) {
+        return res.status(400).json({ error: 'Name already exists' });
+      }
+      existingProductType.Name = Name;  // Update Name if provided
+    }
 
-export const getAllRoles = async (req: Request, res: Response) => {
-  try {
-    const roles = await RoleTypeModel.find();
+    // Check if SortOrder is provided and is not the same as the current one
+    if (SortOrder !== undefined) {
+      const existingSortOrder = await ProductTypeModel.findOne({
+        _id: { $ne: id }, 
+        SortOrder: SortOrder,
+      });
+      if (existingSortOrder) {
+        return res.status(400).json({ error: 'Sort order already exists' });
+      }
+      existingProductType.SortOrder = SortOrder;  // Update SortOrder if provided
+    }
 
-    res.status(200).json(roles);
+    // Update UpdatedBy if provided
+      existingProductType.UpdatedBy = loggedInId;
+    // Always update the UpdatedAt field
+    existingProductType.UpdatedAt = new Date();
+
+    // Save the changes
+    await existingProductType.save();
+
+    // Respond with the updated ProductType
+    res.status(200).json(existingProductType);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    handleError(res, error);
   }
 };
