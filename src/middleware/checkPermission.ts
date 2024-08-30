@@ -32,6 +32,8 @@ export const checkPermissions = (actionToCheck: string) => {
       const hasPermission = role.permissions.some((perm: any) =>
         perm.details.some((detail: any) =>
         {
+          console.log(detail)
+
          return  detail.actionName === actionToCheck && detail.isAllowed
         }
         )

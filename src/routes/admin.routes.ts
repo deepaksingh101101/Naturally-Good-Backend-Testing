@@ -6,6 +6,7 @@ import {
 import { verifyMiddleware } from '../middleware/superadmin.middleware';
 import {  
   createEmployee,
+  createSuperAdmin,
   editEmployeeById,
   getAllEmployees,
   getEmployeeById,
@@ -23,6 +24,7 @@ router.get('/getAllRolesForPermissions', checkPermissions('View Role'), getAllRo
 router.get('/getAllRolesNameAndId',isRoleLoggedIn, getAllRolesNameAndId); //No permission added
 
 
+router.post('/create/superAdmin', createSuperAdmin);
 router.post('/create/employee', checkPermissions('Create Employee'), createEmployee);
 router.get('/employee',checkPermissions('View Employee') ,getAllEmployees);
 router.get('/getOneEmployee/:id', checkPermissions('View Employee'), getEmployeeById);

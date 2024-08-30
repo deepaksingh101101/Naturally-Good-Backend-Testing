@@ -38,7 +38,7 @@ export class Employee {
     @prop({ required: true })
     public State!: string;
 
-    @prop({ ref: () => Role, required: true })
+    @prop({ ref: () => Role, required: false })
     public Role!: Ref<Role>;
 
     // Updated to only reference Employee

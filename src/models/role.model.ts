@@ -12,7 +12,7 @@ export class Role {
     @prop({ required: true, unique: true })
     public roleName!: string;
 
-    @prop({ ref: () => SuperAdmin, required: true })
+    @prop({ ref: () => SuperAdmin, required: false })
     public createdBy!: Ref<SuperAdmin>;
 
     @prop({ ref: () => SuperAdmin })

@@ -5,15 +5,82 @@ import RoleModel from '../../models/role.model';
 import EmployeeModel, { Employee } from '../../models/employee.model';
 import jwt from 'jsonwebtoken';
 import { DocumentType } from '@typegoose/typegoose';
+import PermissionModel from '../../models/permission.model';
+
+
+export const createSuperAdmin = async (req: Request, res: Response) => {
+    const { Email, Password, FirstName, LastName, PhoneNumber, Dob, Gender, StreetAddress, City, State } = req.body;
+
+    try {
+        // Check if the "Superadmin" role already exists (case insensitive)
+        let superadminRole = await RoleModel.findOne({
+            roleName: { $regex: new RegExp(`^Superadmin$`, 'i') }
+        });
+
+        // If the role doesn't exist, create it
+        if (!superadminRole) {
+            const permissions = await PermissionModel.find();
+
+            // Map permissions with `isAllowed` set to false
+            const mappedPermissions = permissions.map(per => ({
+                permission: per._id,
+                details: per.permissions.map(perm => ({
+                    isAllowed: true, // Set `isAllowed` to false for each permission
+                    actionName: perm.name,
+                }))
+            }));
+
+            superadminRole = new RoleModel({
+                roleName: "Superadmin",
+                permissions: mappedPermissions,
+            });
+
+            // Save the new role
+            await superadminRole.save();
+        }
+
+        // Check if an employee with the provided email already exists
+        const employeeExists = await EmployeeModel.findOne({ Email });
+
+        if (employeeExists) {
+            return res.status(400).json({ error: 'Email already exists' });
+        }
+
+        // Hash the password
+        const hashedPassword = await bcrypt.hash(Password, 10);
+
+        // Create a new employee with the "Superadmin" role
+        const newEmployee = new EmployeeModel({
+            Email,
+            Password: hashedPassword,
+            FirstName,
+            LastName,
+            PhoneNumber,
+            Dob,
+            Gender,
+            StreetAddress,
+            City,
+            State,
+            Role: superadminRole._id, // Assign the "Superadmin" role ID
+        });
+
+        // Save the new employee
+        await newEmployee.save();
+
+        res.status(201).json({ message: 'Superadmin created successfully' });
+    } catch (error) {
+        console.error('Error creating superadmin:', error);
+        res.status(500).json({ error: 'Internal server error', details: error.message });
+    }
+};
+
 
 export const createEmployee = async (req: Request, res: Response) => {
     const { Email, Password, FirstName, LastName, PhoneNumber, Dob, Gender, StreetAddress, City, State, roleId } = req.body;
     const loggedInId = req['decodedToken']?.id;
-
     if (!loggedInId) {
         return res.status(400).json({ error: 'Invalid Login user' });
     }
-
     try {
         const role = await RoleModel.findById(roleId);
         if (!role) {

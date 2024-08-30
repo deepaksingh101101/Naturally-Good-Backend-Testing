@@ -28,7 +28,7 @@ console.log(superAdminId)
                     isAllowed: false,
                     actionName: perm.name,
                 };
-            })
+        })
         }));
         
 
