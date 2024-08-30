@@ -313,3 +313,214 @@ export const editSeason = async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+
+
+// Create Subscription Type
+
+export const getSubscriptionTypes = async (req: Request, res: Response) => {
+  try {
+    const subscriptionTypes = await SubscriptionTypeModel.find();
+    return res.json(subscriptionTypes);
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+export const createSubscriptionType = async (req: Request, res: Response) => {
+  try {
+    const { Name, Value } = req.body;
+    const loggedInId = req['decodedToken']; // Get logged-in user ID
+
+    if (!Name || Value === undefined || !loggedInId) {
+      return res.status(400).json({ error: 'Missing required fields or user ID' });
+    }
+
+    const name = Name.toLowerCase();
+
+    // Check if subscription type with the same name already exists
+    const existing = await SubscriptionTypeModel.findOne({ Name: name });
+    if (existing) {
+      return res.status(400).json({ error: 'Subscription Type already exists' });
+    }
+
+    const newSubscriptionType = new SubscriptionTypeModel({
+      Name: name,
+      Value,
+      CreatedBy: loggedInId,
+      UpdatedBy: loggedInId
+    });
+
+    await newSubscriptionType.save();
+    res.status(201).json(newSubscriptionType);
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+export const deleteSubscriptionType = async (req: Request, res: Response) => {
+  try {
+    const subscriptionType = await SubscriptionTypeModel.findByIdAndDelete(req.params.id);
+    if (!subscriptionType) {
+      return res.status(404).json({ error: 'Subscription Type not found' });
+    }
+    return res.status(204).json({ message: 'Subscription Type deleted' });
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+export const editSubscriptionType = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { Name, Value } = req.body;
+    const loggedInId = req['decodedToken']; // Get logged-in user ID
+
+    // Validate ID format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: 'Invalid subscription type ID format' });
+    }
+
+    // Check if the logged-in user ID is available
+    if (!loggedInId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Prepare update object
+    const updateData: any = { UpdatedBy: loggedInId };
+
+    // If Name is provided, validate and include it in the update
+    if (Name) {
+      const name = Name.toLowerCase();
+      const existing = await SubscriptionTypeModel.findOne({ Name: name, _id: { $ne: id } });
+      if (existing) {
+        return res.status(400).json({ error: 'Subscription Type with this name already exists' });
+      }
+      updateData.Name = name;
+    }
+
+    // If Value is provided, include it in the update
+    if (Value !== undefined) {
+      updateData.Value = Value;
+    }
+
+    // Find and update the subscription type
+    const updatedSubscriptionType = await SubscriptionTypeModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedSubscriptionType) {
+      return res.status(404).json({ error: 'Subscription Type not found' });
+    }
+
+    return res.status(200).json(updatedSubscriptionType);
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+
+// Frequency Type
+export const getFrequencyTypes = async (req: Request, res: Response) => {
+  try {
+    const frequencyTypes = await FrequencyTypeModel.find();
+    return res.status(200).json(frequencyTypes);
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+
+export const createFrequencyType = async (req: Request, res: Response) => {
+  try {
+    const { Name, Value } = req.body;
+    
+    if (!Name || Value === undefined) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Check if Frequency Type with the same name exists (case-insensitive)
+    const existing = await FrequencyTypeModel.findOne({ 
+      Name: { $regex: new RegExp(`^${Name}$`, 'i') } 
+    });
+
+    if (existing) {
+      return res.status(400).json({ error: 'Frequency Type already exists' });
+    }
+
+    // Create and save the new Frequency Type
+    const newFrequencyType = new FrequencyTypeModel({ Name, Value });
+    await newFrequencyType.save();
+    
+    res.status(201).json(newFrequencyType);
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+
+
+export const editFrequencyType = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { Name, Value } = req.body;
+
+    // Validate ID format
+    if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: 'Invalid frequency type ID format' });
+    }
+
+    // Prepare update object
+    const updateData: any = {};
+
+    // If Name is provided, validate and include it in the update
+    if (Name) {
+      // Check if a Frequency Type with the same name already exists (case-insensitive)
+      const existing = await FrequencyTypeModel.findOne({
+        Name: { $regex: new RegExp(`^${Name}$`, 'i') },
+        _id: { $ne: id }
+      });
+
+      if (existing) {
+        return res.status(400).json({ error: 'Frequency Type with this name already exists' });
+      }
+      
+      updateData.Name = Name; // Use the provided name as is
+    }
+
+    // If Value is provided, include it in the update
+    if (Value !== undefined) {
+      updateData.Value = Value;
+    }
+
+    // Find and update the frequency type
+    const updatedFrequencyType = await FrequencyTypeModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedFrequencyType) {
+      return res.status(404).json({ error: 'Frequency Type not found' });
+    }
+
+    return res.status(200).json(updatedFrequencyType);
+  } catch (error) {
+    handleError(res, error);
+  }
+};
+
+
+export const deleteFrequencyType = async (req: Request, res: Response) => {
+  try {
+    const frequencyType = await FrequencyTypeModel.findByIdAndDelete(req.params.id);
+    if (!frequencyType) {
+      return res.status(404).json({ error: 'Frequency Type not found' });
+    }
+    return res.status(204).json({ message: 'Frequency Type deleted' });
+  } catch (error) {
+    handleError(res, error);
+  }
+};

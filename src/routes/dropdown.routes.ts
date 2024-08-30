@@ -1,7 +1,7 @@
 import express from 'express';
 // import { createFrequencyType, createRole, createRoster, createSeason, createSubscriptionType, createType, deleteFrequencyType, deleteRole, deleteRoster, deleteSeason, deleteSubscriptionType, deleteType, getAllRoles, getFrequencyTypes, getRosters, getSeasons, getSubscriptionTypes, getTypes } from '../controllers/dropdown.controller';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
-import { createProductType, createRoster, createSeason, deleteProductType, deleteRoster, deleteSeason, editProductType, editRoster, editSeason, getRosters, getSeasons, getTypes } from '../controllers/dropdown.controller';
+import { createFrequencyType, createProductType, createRoster, createSeason, createSubscriptionType, deleteFrequencyType, deleteProductType, deleteRoster, deleteSeason, deleteSubscriptionType, editFrequencyType, editProductType, editRoster, editSeason, editSubscriptionType, getFrequencyTypes, getRosters, getSeasons, getSubscriptionTypes, getTypes } from '../controllers/dropdown.controller';
 import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
 
 const router = express.Router();
@@ -26,14 +26,16 @@ router.delete('/deleteRosters/:id', isRoleLoggedIn, deleteRoster);
 router.put('/updateRosters/:id', isRoleLoggedIn, editRoster);
 
 // // Subscription Types routes
-// router.get('/subscription-types', adminMiddleware, getSubscriptionTypes);
-// router.post('/subscription-types', adminMiddleware, createSubscriptionType);
-// router.delete('/subscription-types/:id', adminMiddleware, deleteSubscriptionType);
+router.get('/subscription-types', isRoleLoggedIn, getSubscriptionTypes);
+router.post('/subscription-types', isRoleLoggedIn, createSubscriptionType);
+router.delete('/subscription-types/:id', isRoleLoggedIn, deleteSubscriptionType);
+router.put('/subscription-types/:id', isRoleLoggedIn, editSubscriptionType);
 
 // // Frequency Types routes
-// router.get('/frequency-types', adminMiddleware, getFrequencyTypes);
-// router.post('/frequency-types', adminMiddleware, createFrequencyType);
-// router.delete('/frequency-types/:id', adminMiddleware, deleteFrequencyType);
+router.get('/frequency-types', isRoleLoggedIn, getFrequencyTypes);
+router.post('/frequency-types', isRoleLoggedIn, createFrequencyType);
+router.delete('/frequency-types/:id', isRoleLoggedIn, deleteFrequencyType);
+router.put('/frequency-types/:id', isRoleLoggedIn, editFrequencyType);
 
 
 // // Role Types routes

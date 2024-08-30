@@ -1,5 +1,21 @@
-import { prop, getModelForClass, Ref } from '@typegoose/typegoose';
+import { prop, getModelForClass, Ref, pre } from '@typegoose/typegoose';
 import { Employee } from './employee.model';
+
+@pre<ProductType>('save', async function() {
+  this.UpdatedAt = new Date();
+})
+@pre<Roster>('save', async function() {
+  this.UpdatedAt = new Date();
+})
+@pre<Season>('save', async function() {
+  this.UpdatedAt = new Date();
+})
+@pre<SubscriptionType>('save', async function() {
+  this.UpdatedAt = new Date();
+})
+@pre<FrequencyType>('save', async function() {
+  this.UpdatedAt = new Date();
+})
 
 // Define the ProductType schema
 export class ProductType {
@@ -21,9 +37,6 @@ export class ProductType {
   @prop({ ref: () => Employee, required: false })
   public UpdatedBy!: Ref<Employee>;
 }
-
-
-
 // Define the Roster schema
 export class Roster {
   @prop({ type: String, required: true })
@@ -44,10 +57,6 @@ export class Roster {
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;
 }
-
-
-
-
 // Define the Season schema
 export class Season {
   @prop({ type: String, required: true })
@@ -65,15 +74,6 @@ export class Season {
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;
 }
-
-
-
-
-
-
-
-
-
 
 // Define the Subscription Type schema
 export class SubscriptionType {
@@ -97,8 +97,6 @@ export class SubscriptionType {
 }
 
 
-
-
 // Define the Frequency Type schema
 export class FrequencyType {
   @prop({ type: String, required: true })
@@ -112,6 +110,12 @@ export class FrequencyType {
 
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;
+
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
 }
 
 
