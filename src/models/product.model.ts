@@ -1,25 +1,30 @@
 import { prop, getModelForClass, pre, Ref } from '@typegoose/typegoose';
 import { Admin } from './oldrole.model';
+import { Employee } from './employee.model';
+import { ProductType, Roster, Season } from './dropdown.model';
 
 @pre<Product>('save', async function() {
-  this.updatedAt = new Date();
+  this.UpdatedAt = new Date();
 })
 
 export class Product {
   @prop({ type: String, required: true })
   public ProductName!: string;
 
-  @prop({ type: String, required: true })
-  public Type!: string;
+  @prop({ ref: () => ProductType })
+  public Type!: Ref<ProductType>;
 
-  @prop({ type: String, required: false })
-  public Season?: string;
+  @prop({ ref: () => Season })
+  public Season!: Ref<Season>;
 
   @prop({ type: String, required: false })
   public Priority?: string;
 
+  @prop({ ref: () => Roster })
+  public Roster!: Ref<Roster>;
+
   @prop({ type: String, required: false })
-  public Roster?: string;
+  public Group?: string;
 
   @prop({ type: String, required: true })
   public VeggieNameInHindi!: string;
@@ -36,14 +41,14 @@ export class Product {
   @prop({ type: Number, required: true })
   public MaximumUnits!: number;
 
-  @prop({ type: String, required: false })
-  public Group?: string;
-
   @prop({ type: String, required: true })
   public ImageURL!: string;
 
   @prop({ type: String, required: false })
   public Description?: string;
+
+  @prop({ type: Number, required: false })
+  public Buffer?: number;
 
   @prop({ type: Boolean, required: false, default: true })
   public Available?: boolean;
@@ -52,26 +57,17 @@ export class Product {
   public Visibility?: string;
 
   @prop({ type: Date, default: Date.now })
-  public updatedAt!: Date;
+  public UpdatedAt!: Date;
 
   @prop({ type: Date, default: Date.now })
-  public createdAt!: Date;
+  public CreatedAt!: Date;
 
-  @prop({ ref: () => Admin })
-  public createdBy!: Ref<Admin>;
+  @prop({ ref: () => Employee })
+  public CreatedBy!: Ref<Employee>;
 
-  // Additional properties (uncomment if needed)
-  // @prop({ type: String, required: false })
-  // public NutritionalInfo?: string;
+  @prop({ ref: () => Employee })
+  public UpdatedBy!: Ref<Employee>;
 
-  // @prop({ type: Boolean, required: false, default: false })
-  // public Organic?: boolean;
-
-  // @prop({ type: String, required: false })
-  // public Category?: string;
-
-  // @prop({ type: Number, required: true })
-  // public Stock!: number;
 }
 
 const ProductModel = getModelForClass(Product);

@@ -4,8 +4,8 @@ import { CategoryType } from '../../models/category.model';
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
-        const AdminId = req['adminId'];
-        const { ProductName } = req.body;
+        const loggedInId = req['decodedToken']?.id
+                const { ProductName } = req.body;
 
         // Check if a product with the same name already exists (case insensitive)
         const existingProduct = await ProductModel.findOne({ 
@@ -17,7 +17,8 @@ export const createProduct = async (req: Request, res: Response) => {
 
         const product = new ProductModel({
             ...req.body,
-            createdBy: AdminId 
+            CreatedBy: loggedInId ,
+            UpdatedBy: loggedInId ,
         });
 
         await product.save();
@@ -29,59 +30,83 @@ export const createProduct = async (req: Request, res: Response) => {
 
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
-        const currentpage = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const skip = (currentpage - 1) * limit;
-
-        const products = await ProductModel.find().skip(skip).limit(limit);
-        const total = await ProductModel.countDocuments();
-        const totalPages = Math.ceil(total / limit);
-
-        const prevPage = currentpage > 1;
-        const nextPage = currentpage < totalPages;
-
-        res.status(200).json({
-            total,
-            currentpage,
-            totalpages: totalPages,
-            prevPage,
-            nextPage,
-            products
-        });
+      const currentPage = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (currentPage - 1) * limit;
+  
+      // Find all products with pagination and populate necessary fields
+      const products = await ProductModel.find()
+        .skip(skip)
+        .limit(limit)
+        .populate('Type', 'Name') // Populate Type with only the 'Name' field
+        .populate('Season', 'Name') // Populate Season with only the 'Name' field
+        .populate('Roster', 'Name') // Populate Roster with only the 'Name' field
+        .populate('CreatedBy', 'Email') // Populate CreatedBy with 'Name' and 'Email' fields only
+        .populate('UpdatedBy', 'Email'); // Populate CreatedBy with 'Name' and 'Email' fields only
+  
+      const total = await ProductModel.countDocuments(); // Total count of products
+      const totalPages = Math.ceil(total / limit); // Calculate total pages
+  
+      // Determine if there are previous and next pages
+      const prevPage = currentPage > 1;
+      const nextPage = currentPage < totalPages;
+  
+      // Respond with paginated data
+      res.status(200).json({
+        total,
+        currentPage,
+        totalPages,
+        prevPage,
+        nextPage,
+        products,
+      });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-};
+  };
+  
 
 
 export const getProductById = async (req: Request, res: Response) => {
     try {
-        console.log("hello")
-        const { id } = req.params;
-console.log(req.params)
-        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ error: 'Invalid product ID format' });
-        }
+      const { id } = req.params;
+      console.log(req.params);
+      
+      // Validate the product ID format
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({ error: 'Invalid product ID format' });
+      }
+  
+      // Find product by ID and populate the related fields
+      const product = await ProductModel.findById(id)
+        .populate('Type', 'Name') // Populate Type with only the 'Name' field
+        .populate('Season', 'Name') // Populate Season with only the 'Name' field
+        .populate('Roster', 'Name') // Populate Roster with only the 'Name' field
+        .populate('CreatedBy', 'Email') // Populate CreatedBy with 'Name' and 'Email' fields only
+        .populate('UpdatedBy', 'Email'); // Populate CreatedBy with 'Name' and 'Email' fields only
 
-        const product = await ProductModel.findById(id);
-
-        if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
-        }
-
-        res.status(200).json(product);
+  
+      if (!product) {
+        return res.status(404).json({ error: 'Product not found' });
+      }
+  
+      res.status(200).json(product);
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+      console.error(error);
+      res.status(500).json({ error: 'Internal server error' });
     }
-};
+  };
+  
+  
 
 
 
 export const updateProduct = async (req: Request, res: Response) => {
     try {
-        console.log("hello")
         const { id } = req.params;
-        const AdminId = req['adminId'];
+        const loggedInId = req['decodedToken']?.id
+
 
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
             return res.status(400).json({ error: 'Invalid product ID format' });
@@ -89,7 +114,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 
         const product = await ProductModel.findByIdAndUpdate(
             id,
-            { ...req.body, updatedBy: AdminId, UpdatedAt: new Date().toISOString() },
+            { ...req.body, UpdatedBy: loggedInId, UpdatedAt: new Date().toISOString() },
             { new: true, runValidators: true }
         );
 
@@ -103,6 +128,40 @@ export const updateProduct = async (req: Request, res: Response) => {
     }
 };
 
+
+export const toggleProductAvailability = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const { Available } = req.body;
+        const loggedInId = req['decodedToken']?.id;
+
+        // Validate product ID format
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return res.status(400).json({ error: 'Invalid product ID format' });
+        }
+
+        // Validate Available field
+        if (typeof Available !== 'boolean') {
+            return res.status(400).json({ error: 'Invalid value for Available. It must be true or false.' });
+        }
+
+        // Update the Available field
+        const product = await ProductModel.findByIdAndUpdate(
+            id,
+            { Available, UpdatedBy: loggedInId, UpdatedAt: new Date() },
+            { new: true, runValidators: true }
+        );
+
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+
+        res.status(200).json(product);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+};
 
 export const deleteProduct = async (req: Request, res: Response) => {
     try {
@@ -129,23 +188,80 @@ export const filterProducts = async (req: Request, res: Response) => {
         const filters = req.query;
         const query: any = {};
 
+        // Initialize aggregation pipeline
+        const pipeline: any[] = [];
+
+        // ProductName filter using regex for case-insensitive match
         if (filters.ProductName) {
-            query.ProductName = { $regex: new RegExp(filters.ProductName as string, 'i') }; 
-        }
-        if (filters.Type) {
-            query.Type = filters.Type;
-        }
-        if (filters.Roster) {
-            query.Roster = filters.Roster;
-        }
-        if (filters.Season) {
-            query.Season = filters.Season;
-        }
-        if (filters.Price) {
-            query.Price = +filters.Price;
+            pipeline.push({
+                $match: {
+                    ProductName: { $regex: new RegExp(filters.ProductName as string, 'i') },
+                },
+            });
         }
 
-        const products = await ProductModel.find(query);
+        // Type filter based on ProductType name
+        if (filters.Type) {
+            pipeline.push({
+                $lookup: {
+                    from: 'producttypes', // Collection name of ProductType
+                    localField: 'Type', // Field in Product schema
+                    foreignField: '_id', // Field in ProductType schema
+                    as: 'TypeInfo', // Output array field
+                },
+            });
+            pipeline.push({
+                $match: {
+                    'TypeInfo.Name': filters.Type, // Match the ProductType Name
+                },
+            });
+        }
+
+        // Season filter based on Season name
+        if (filters.Season) {
+            pipeline.push({
+                $lookup: {
+                    from: 'seasons', // Collection name of Season
+                    localField: 'Season', // Field in Product schema
+                    foreignField: '_id', // Field in Season schema
+                    as: 'SeasonInfo', // Output array field
+                },
+            });
+            pipeline.push({
+                $match: {
+                    'SeasonInfo.Name': filters.Season, // Match the Season Name
+                },
+            });
+        }
+
+        // Roster filter based on Roster name
+        if (filters.Roster) {
+            pipeline.push({
+                $lookup: {
+                    from: 'rosters', // Collection name of Roster
+                    localField: 'Roster', // Field in Product schema
+                    foreignField: '_id', // Field in Roster schema
+                    as: 'RosterInfo', // Output array field
+                },
+            });
+            pipeline.push({
+                $match: {
+                    'RosterInfo.Name': filters.Roster, // Match the Roster Name
+                },
+            });
+        }
+
+        // Group filter (direct match since Group is a field in Product)
+        if (filters.Group) {
+            pipeline.push({
+                $match: {
+                    Group: filters.Group,
+                },
+            });
+        }
+
+        // Execute the aggregation pipeline
+        const products = await ProductModel.aggregate(pipeline);
 
         if (products.length === 0) {
             return res.status(404).json({ error: 'Products not found' });
@@ -188,6 +304,5 @@ export const filterProducts = async (req: Request, res: Response) => {
 
 
 
-// Create and Delete For Product Dropdown (Type,Season,Roster) 
 
 

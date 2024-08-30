@@ -1,15 +1,16 @@
 import { Router } from 'express';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
-import { createProduct, deleteProduct, filterProducts, getAllProducts, getProductById, updateProduct } from '../controllers/admin/product.controllers';
+import { createProduct, deleteProduct, filterProducts, getAllProducts, getProductById, toggleProductAvailability, updateProduct } from '../controllers/admin/product.controllers';
+import { checkPermissions } from '../middleware/checkPermission';
 
 const router = Router();
 
-router.post('/create', adminMiddleware, createProduct);
-router.get('/getAll' ,adminMiddleware, getAllProducts)
-router.get('/getOne/:id',adminMiddleware, getProductById)
-router.put('/updateOne/:id', adminMiddleware, updateProduct)
-router.delete('/deleteOne/:id',adminMiddleware , deleteProduct)
+router.post('/create', checkPermissions('Create Product'), createProduct);
+router.get('/getAll' , getAllProducts)
+router.get('/getOne/:id',getProductById)
+router.put('/updateOne/:id', checkPermissions('Edit Product'), updateProduct)
+router.put('/toggleAvailability/:id', checkPermissions('Product Availability'), toggleProductAvailability)
+// router.delete('/deleteOne/:id',checkPermissions('Create Product') , deleteProduct)
 router.get('/filter', filterProducts);
-// router.post('/updateProductCategory',updateProductCategory)
 
 export default router;
