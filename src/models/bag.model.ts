@@ -1,35 +1,44 @@
-import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
+import { getModelForClass, ModelOptions, pre, prop, Ref } from '@typegoose/typegoose';
 import { Product } from './product.model'; // Adjust the import path accordingly
+import { Employee } from './employee.model';
 
-@ModelOptions({
-  schemaOptions: {
-    timestamps: true,
-  },
+@pre<Bag>('save', async function() {
+  this.UpdatedAt = new Date();
 })
+
 export class Bag {
   @prop({ required: true })
-  public bagName!: string;
+  public BagName!: string;
 
   @prop({ required: true })
-  public bagMaxWeight!: number;
+  public BagMaxWeight!: number;
 
   @prop({ type: String, enum: ['Admin', 'Public'], required: true })
-  public bagVisibility!: string;
+  public BagVisibility!: string;
 
-  @prop({ type: String, enum: ['Active', 'Inactive'], required: true, default: 'Active' })
-  public status!: string;
-
-  @prop({ type: String })
-  public bagImageUrl?: string;
+  @prop({ type: Boolean, default: true })
+  public Status!: boolean;
 
   @prop({ type: String })
-  public bagDescription?: string;
+  public BagImageUrl?: string;
+
+  @prop({ type: String })
+  public BagDescription?: string;
 
   @prop({ ref: () => Product, required: true })
-  public allowedItems!: Ref<Product>[];
+  public AllowedItems!: Ref<Product>[];
 
-  @prop({ required: true })
-  public CreatedBy!: string;
+  @prop({ ref: () => Employee })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee })
+  public UpdatedBy!: Ref<Employee>;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
 
 }
 
