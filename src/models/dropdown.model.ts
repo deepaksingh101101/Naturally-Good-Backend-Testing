@@ -24,6 +24,30 @@ export class ProductType {
 
 
 
+// Define the Roster schema
+export class Roster {
+  @prop({ type: String, required: true })
+  public Name!: string;
+
+  @prop({ required: true })
+  public SortOrder!: number;
+
+  @prop({ type: String, required: true })
+  public CreatedBy!: string;
+
+  @prop({ type: String, required: true })
+  public UpdatedBy!: string;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+}
+
+
+
+
 // Define the Season schema
 export class Season {
   @prop({ type: String, required: true })
@@ -38,22 +62,6 @@ export class Season {
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;
 }
-
-// Define the Roster schema
-export class Roster {
-  @prop({ type: String, required: true })
-  public Name!: string;
-
-  @prop({ required: true })
-  public SortOrder!: number;
-
-  @prop({ type: Date, default: Date.now })
-  public CreatedAt!: Date;
-
-  @prop({ type: Date, default: Date.now })
-  public UpdatedAt!: Date;
-}
-
 // Define the Subscription Type schema
 export class SubscriptionType {
   @prop({ type: String, required: true })
