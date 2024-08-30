@@ -1,7 +1,7 @@
 import express from 'express';
 // import { createFrequencyType, createRole, createRoster, createSeason, createSubscriptionType, createType, deleteFrequencyType, deleteRole, deleteRoster, deleteSeason, deleteSubscriptionType, deleteType, getAllRoles, getFrequencyTypes, getRosters, getSeasons, getSubscriptionTypes, getTypes } from '../controllers/dropdown.controller';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
-import { createProductType, createRoster, deleteProductType, deleteRoster, editProductType, editRoster, getRosters, getTypes } from '../controllers/dropdown.controller';
+import { createProductType, createRoster, createSeason, deleteProductType, deleteRoster, deleteSeason, editProductType, editRoster, editSeason, getRosters, getSeasons, getTypes } from '../controllers/dropdown.controller';
 import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
 
 const router = express.Router();
@@ -14,9 +14,10 @@ router.delete('/deleteProductType/:id', isRoleLoggedIn, deleteProductType);
 router.put('/editProductType/:id', isRoleLoggedIn, editProductType);
 
 // // Seasons routes
-// router.get('/seasons', adminMiddleware, getSeasons);
-// router.post('/seasons', adminMiddleware, createSeason);
-// router.delete('/seasons/:id', adminMiddleware, deleteSeason);
+router.get('/getAllSeasons', isRoleLoggedIn, getSeasons);
+router.post('/createSeasons', isRoleLoggedIn, createSeason);
+router.delete('/deleteSeasons/:id', isRoleLoggedIn, deleteSeason);
+router.put('/updateSeasons/:id', isRoleLoggedIn, editSeason);
 
 // // Rosters routes
 router.get('/getAllRosters', isRoleLoggedIn, getRosters);

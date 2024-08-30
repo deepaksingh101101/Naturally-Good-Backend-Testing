@@ -32,11 +32,11 @@ export class Roster {
   @prop({ required: true })
   public SortOrder!: number;
 
-  @prop({ type: String, required: true })
-  public CreatedBy!: string;
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
 
-  @prop({ type: String, required: true })
-  public UpdatedBy!: string;
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
 
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;
@@ -56,12 +56,25 @@ export class Season {
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;
 
-  @prop({ required: false })
-  public SortOrder!: number;
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
 
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;
 }
+
+
+
+
+
+
+
+
+
+
 // Define the Subscription Type schema
 export class SubscriptionType {
   @prop({ type: String, required: true })
@@ -75,7 +88,16 @@ export class SubscriptionType {
 
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;
+
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
 }
+
+
+
 
 // Define the Frequency Type schema
 export class FrequencyType {
