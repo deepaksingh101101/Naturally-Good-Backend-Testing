@@ -47,10 +47,11 @@ export const isRoleLoggedIn = async (req: Request, res: Response, next: NextFunc
                 message: 'Invalid token'
             });
         }
-        responseHandler.out(req, res, {
+        return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: 'Internal server error'+ error.message,
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
     }
 };

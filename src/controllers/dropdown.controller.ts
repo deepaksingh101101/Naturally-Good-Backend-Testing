@@ -7,8 +7,9 @@ const handleError = (req:Request,res: Response, error: any) => {
   return responseHandler.out(req, res, {
     status: false,
     statusCode: 500,
-    message: "Internal Server Error" +error.message,
-});
+    message: 'Internal Server Error',
+    data: error.message
+  });
 };
 
 
@@ -228,8 +229,9 @@ export const createRoster = async (req: Request, res: Response) => {
     return responseHandler.out(req, res, {
       status: false,
       statusCode: 500,
-      message: "Internal server error" +error.message,
-  });
+      message: 'Internal Server Error',
+      data: error.message
+    });
     // res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -249,8 +251,9 @@ export const getRosters = async (req: Request, res: Response) => {
     return responseHandler.out(req, res, {
       status: false,
       statusCode: 500,
-      message: "Internal server error" +error.message,
-  });
+      message: 'Internal Server Error',
+      data: error.message
+    });
   }
 };
 
@@ -276,8 +279,9 @@ export const deleteRoster = async (req: Request, res: Response) => {
     return responseHandler.out(req, res, {
       status: false,
       statusCode: 500,
-      message: "Internal server error" +error.message,
-  });
+      message: 'Internal Server Error',
+      data: error.message
+    });
     // res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -355,8 +359,9 @@ export const editRoster = async (req: Request, res: Response) => {
     return responseHandler.out(req, res, {
       status: false,
       statusCode: 500,
-      message: "Internal server error" +error.message,
-  });
+      message: 'Internal Server Error',
+      data: error.message
+    });
   }
 };
 
@@ -406,8 +411,9 @@ export const createSeason = async (req: Request, res: Response) => {
     return responseHandler.out(req, res, {
       status: false,
       statusCode: 500,
-      message: "Internal server error" +error.message,
-  });
+      message: 'Internal Server Error',
+      data: error.message
+    });
     // res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -428,8 +434,9 @@ export const getSeasons = async (req: Request, res: Response) => {
     return responseHandler.out(req, res, {
       status: false,
       statusCode: 500,
-      message: "Internal server error" +error.message,
-  });
+      message: 'Internal Server Error',
+      data: error.message
+    });
     // res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -456,8 +463,9 @@ export const deleteSeason = async (req: Request, res: Response) => {
     return responseHandler.out(req, res, {
       status: false,
       statusCode: 500,
-      message: "Internal server error" +error.message,
-  });
+      message: 'Internal Server Error',
+      data: error.message
+    });
     // res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -517,8 +525,9 @@ export const editSeason = async (req: Request, res: Response) => {
     return responseHandler.out(req, res, {
       status: false,
       statusCode: 500,
-      message: "Internal server error" +error.message,
-  });
+      message: 'Internal Server Error',
+      data: error.message
+    });
     // res.status(500).json({ error: 'Internal server error' });
   }
 };

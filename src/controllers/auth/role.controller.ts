@@ -65,8 +65,9 @@ export const createRole = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: "Internal Server Error"+ error.message,
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
         // return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
@@ -90,8 +91,9 @@ export const getAllRoles = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: "Internal Server Error" +error.message,
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
         // return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
@@ -116,8 +118,9 @@ export const getAllRolesNameAndId = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: "Internal Server Error" +error.message,
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
         // return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };

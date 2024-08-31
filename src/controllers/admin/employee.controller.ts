@@ -84,10 +84,11 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
         // res.status(201).json({ message: 'Superadmin created successfully' });
     } catch (error) {
         return responseHandler.out(req, res, {
-            status: true,
+            status: false,
             statusCode: 500,
-            message: 'Internal server error'+ error.message ,
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
         // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
@@ -155,8 +156,9 @@ export const createEmployee = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: "Internal server error"+error.message,
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
         // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
@@ -204,8 +206,9 @@ export const loginEmployee = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: "Internal Server Error"+error.message,
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
         // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
@@ -247,9 +250,9 @@ export const getAllEmployees = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: "Internal Server Error"+error.message,
-
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
         // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
@@ -290,8 +293,9 @@ export const getEmployeeById = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: "Iternal Server Error"+error.message,
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
         // res.status(500).json({ error: 'Internal server error', details: error.message });
 
     }
@@ -348,8 +352,9 @@ export const editEmployeeById = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: "Internal Server Error"+ error.message,
-        });
+            message: 'Internal Server Error',
+            data: error.message
+          });
         // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };

@@ -71,7 +71,8 @@ export const checkPermissions = (actionToCheck: string) => {
       return responseHandler.out(req, res, {
         status: false,
         statusCode: 500,
-        message: 'Internal server error'+error.message,
+        message: 'Internal Server Error',
+        data: error.message
       });
     }
   };

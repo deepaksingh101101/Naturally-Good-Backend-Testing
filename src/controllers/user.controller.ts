@@ -3,6 +3,7 @@ import { client, twilioNumber } from '../../twilio';
 import FeedbackModel from '../models/feedback.model';
 import UserModel from '../models/user.model';
 import { BagModel } from '../models/bag.model';
+import { responseHandler } from '../utils/send-response';
 
 export const sendOTP = async (req: Request, res: Response) => {
   try {
@@ -170,24 +171,58 @@ export const UpdateBagByUser = async (req: Request, res: Response): Promise<void
 // Create Feedback
 export const CreateFeedback = async (req: Request, res: Response): Promise<void> => {
   try {
-    const CreatedBy=req['userId'] //get from request
+    const loggedInUser = req['userId']; // Get user ID from request, ensure this is set correctly in your middleware
 
-    const {  Feedback,RatingValue } = req.body;
-    const newFeedback = new FeedbackModel({ CreatedBy, Feedback });
+    const { Feedback, RatingValue,Order } = req.body;
+
+    if (!Feedback || !RatingValue || Order) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Missing required values'
+      });
+    }
+    
+
+    const newFeedback = new FeedbackModel({
+      CreatedBy: loggedInUser,
+      UpdatedBy: loggedInUser,
+      Feedback,
+      Order,
+      RatingValue
+    });
+    
     await newFeedback.save();
-    res.status(201).json(newFeedback);
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 201,
+      message: 'Feedback created successfully',
+      data: newFeedback
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error creating feedback:', error);
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
   }
 };
-
-
 
 // Update Feedback (by User)
 export const UpdateFeedback = async (req: Request, res: Response): Promise<void> => {
   try {
-    const {id} =req.query;
+    const { id } = req.query as { id: string };
     const { Feedback } = req.body;
+
+    if (!Feedback) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Feedback is required'
+      });
+    }
 
     const updatedFeedback = await FeedbackModel.findByIdAndUpdate(
       id,
@@ -196,53 +231,111 @@ export const UpdateFeedback = async (req: Request, res: Response): Promise<void>
     );
 
     if (!updatedFeedback) {
-      res.status(404).json({ message: 'Feedback not found' });
-      return;
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'Feedback not found'
+      });
     }
-    res.status(200).json(updatedFeedback);
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'Feedback updated successfully',
+      data: updatedFeedback
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error updating feedback:', error);
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
   }
 };
 
 // Delete Feedback (by User)
 export const DeleteFeedback = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.query;
+    const { id } = req.query as { id: string };
     const deletedFeedback = await FeedbackModel.findByIdAndDelete(id);
+    
     if (!deletedFeedback) {
-      res.status(404).json({ message: 'Feedback not found' });
-      return;
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'Feedback not found'
+      });
     }
-    res.status(200).json({ message: 'Feedback deleted' });
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'Feedback deleted successfully'
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error deleting feedback:', error);
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
   }
 };
 
-// Get Feedback by UserId (for Admin)
+// Get Feedback by User ID
 export const GetFeedbackByUserId = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.query;
-    const feedbacks = await FeedbackModel.find({ CreatedBy: id });
+    const userId = req['userId']; // Get user ID from request
+
+    const feedbacks = await FeedbackModel.find({ CreatedBy: userId });
+
     if (!feedbacks.length) {
-      res.status(404).json({ message: 'No feedback found for this user' });
-      return;
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'No feedback found for this user'
+      });
     }
-    res.status(200).json(feedbacks);
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'Feedbacks fetched successfully',
+      data: feedbacks
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching feedbacks by user:', error);
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
   }
 };
-
 
 // Get All Feedback (for User and Admin)
 export const GetAllFeedback = async (req: Request, res: Response): Promise<void> => {
   try {
     const feedbacks = await FeedbackModel.find();
-    res.status(200).json(feedbacks);
+    
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'All feedbacks fetched successfully',
+      data: feedbacks
+    });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching all feedbacks:', error);
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
   }
 };
 
