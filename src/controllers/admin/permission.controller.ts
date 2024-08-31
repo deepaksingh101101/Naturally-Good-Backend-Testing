@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import PermissionModel, { Permission } from '../../models/permission.model';
 import { responseHandler } from '../../utils/send-response';
+import path from 'path';
+import fs from 'fs';
 
 // Service class for handling CRUD operations on the Permission model
 class PermissionService {
@@ -34,51 +36,85 @@ class PermissionService {
 // Instantiate the service class
 const permissionService = new PermissionService();
 
+// File path to permissions JSON file
+const PERMISSIONS_FILE_PATH = path.resolve(__dirname, '../../constant/permissions.json');
+
+// Load permissions from JSON file
+const loadPermissionsFromFile = (): Promise<any[]> => {
+    return new Promise((resolve, reject) => {
+        fs.readFile(PERMISSIONS_FILE_PATH, 'utf8', (err, data) => {
+            if (err) {
+                return reject(new Error(`Failed to read permissions file: ${err.message}`));
+            }
+            try {
+                const permissions = JSON.parse(data);
+                resolve(permissions);
+            } catch (parseError) {
+                reject(new Error(`Failed to parse permissions file: ${parseError.message}`));
+            }
+        });
+    });
+};
+
 // Controller functions for handling HTTP requests
 
-// Create a new permission
+// Create permissions
 export const createPermission = async (req: Request, res: Response) => {
-    const permissions = req.body;
-
-    // Validate that body is an array
-    if (!Array.isArray(permissions)) {
-        // return res.status(400).json({ error: 'Request body must be an array of permissions' });
-        return responseHandler.out(req, res, {
-            status: false,
-            statusCode: 400,
-            message: "Request body must be an array of permissions!!",
-        });
-    }
-
     try {
+        // Load permissions from file
+        const permissionsFromFile = await loadPermissionsFromFile();
+
+        // Check if any permissions already exist
+        const existingPermissions = await PermissionModel.find();
+
+        if (existingPermissions.length > 0) {
+            // Permissions already exist
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Permissions are already created. Cannot create new ones.',
+            });
+        }
+
         // Bulk insert permissions
-        const result = await PermissionModel.insertMany(permissions);
-        // res.status(201).json({ message: 'Permissions created successfully', data: result });
+        await PermissionModel.insertMany(permissionsFromFile);
+        
+        // Return success response
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 200,
-            message: "Permissions created successfully!!",
+            message: 'Permissions created successfully!',
         });
+
     } catch (error) {
         console.error('Error creating permissions:', error);
-        // res.status(500).json({ error: 'Internal server error', details: error.message });
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
-            message: "Internal Server Error!!",
+            message: 'Internal Server Error!',
             data: error.message
         });
     }
 };
 
 // Get all permissions
-export const getPermissions = async (_req: Request, res: Response) => {
+export const getPermissions = async (req: Request, res: Response) => {
     try {
         const permissions = await permissionService.getPermissions();
-        res.status(200).json({ data: permissions });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Permissions fetched successfully!',
+            data: permissions
+        });
     } catch (error) {
         console.error('Error fetching permissions:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error!',
+            data: error.message
+        });
     }
 };
 
@@ -90,13 +126,27 @@ export const getPermissionById = async (req: Request, res: Response) => {
         const permission = await permissionService.getPermissionById(id);
 
         if (!permission) {
-            return res.status(404).json({ error: 'Permission not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Permission not found',
+            });
         }
 
-        res.status(200).json({ data: permission });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Permission fetched successfully!',
+            data: permission
+        });
     } catch (error) {
         console.error('Error fetching permission:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error!',
+            data: error.message
+        });
     }
 };
 
@@ -105,22 +155,39 @@ export const updatePermission = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { moduleName, permissions } = req.body;
 
-    try {
-        // Validate request body
-        if (!moduleName || !Array.isArray(permissions)) {
-            return res.status(400).json({ error: 'Invalid request body' });
-        }
+    if (!moduleName || !Array.isArray(permissions) || permissions.some(p => !p.name)) {
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 400,
+            message: 'Invalid request body',
+        });
+    }
 
+    try {
         const updatedPermission = await permissionService.updatePermission(id, { moduleName, permissions });
 
         if (!updatedPermission) {
-            return res.status(404).json({ error: 'Permission not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Permission not found',
+            });
         }
 
-        res.status(200).json({ message: 'Permission updated successfully', data: updatedPermission });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Permission updated successfully!',
+            data: updatedPermission
+        });
     } catch (error) {
         console.error('Error updating permission:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error!',
+            data: error.message
+        });
     }
 };
 
@@ -132,12 +199,25 @@ export const deletePermission = async (req: Request, res: Response) => {
         const deletedPermission = await permissionService.deletePermission(id);
 
         if (!deletedPermission) {
-            return res.status(404).json({ error: 'Permission not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Permission not found',
+            });
         }
 
-        res.status(200).json({ message: 'Permission deleted successfully' });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Permission deleted successfully!',
+        });
     } catch (error) {
         console.error('Error deleting permission:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error!',
+            data: error.message
+        });
     }
 };

@@ -1,0 +1,134 @@
+
+
+[
+    {
+        "moduleName": "Product Management",
+        "permissions": [
+            { "name": "Create Product" },
+            { "name": "View Product" },
+            { "name": "Edit Product" },
+            { "name": "Product Availability" }
+        ]
+    },
+    {
+        "moduleName": "Bag Management",
+        "permissions": [
+            { "name": "Create Bag" },
+            { "name": "View Bag" },
+            { "name": "Edit Bag" },
+            { "name": "Bag Availability" }
+        ]
+    },
+    {
+        "moduleName": "Subscription Management",
+        "permissions": [
+            { "name": "Create Subscription" },
+            { "name": "View Subscription" },
+            { "name": "Edit Subscription" },
+            { "name": "Subscription Availability" }
+        ]
+    },
+    {
+        "moduleName": "Employee Management",
+        "permissions": [
+            { "name": "Create Employee" },
+            { "name": "Delete Employee" },
+            { "name": "View Employee" },
+            { "name": "Edit Employee" }
+        ]
+    },
+    {
+        "moduleName": "Customer Management",
+        "permissions": [
+            { "name": "Create Customer" },
+            { "name": "View Customer" },
+            { "name": "Edit Customer" },
+            { "name": "Customer Status" }
+        ]
+    },
+    {
+        "moduleName": "Order Management",
+        "permissions": [
+            { "name": "Create Order" },
+            { "name": "View Order" },
+            { "name": "Edit Order" },
+            { "name": "Upgrade Order" },
+            { "name": "Net Price Editable" },
+            { "name": "Edit Delivery" },
+            { "name": "Order Status" }
+        ]
+    },
+    {
+        "moduleName": "Delivery Management",
+        "permissions": [
+            { "name": "Modify Delivery Bag" },
+            { "name": "Edit Delivery Details" },
+            { "name": "Skip Delivery" },
+            { "name": "Delivery Status" }
+        ]
+    },
+    {
+        "moduleName": "Complain Management",
+        "permissions": [
+            { "name": "Create Complain Type" },
+            { "name": "Edit Complain Type" },
+            { "name": "Resolve Complain" },
+            { "name": "Complain Type Status" }
+        ]
+    },
+     {
+        "moduleName": "Role Management",
+        "permissions": [
+            { "name": "Create Role" },
+            { "name": "View Role" },
+            { "name": "Edit Role" },
+            { "name": "Delete Role" }
+        ]
+    },
+     {
+        "moduleName": "dummy2 Management",
+        "permissions": [
+            { "name": "Create Complain Type" },
+            { "name": "Edit Complain Type" },
+            { "name": "Resolve Complain" },
+            { "name": "Complain Type Status" }
+        ]
+    },
+     {
+        "moduleName": "dummy3 Management",
+        "permissions": [
+            { "name": "Create Complain Type" },
+            { "name": "Edit Complain Type" },
+            { "name": "Resolve Complain" },
+            { "name": "Complain Type Status" }
+        ]
+    },
+     {
+        "moduleName": "dummy4 Management",
+        "permissions": [
+            { "name": "Create Complain Type" },
+            { "name": "Edit Complain Type" },
+            { "name": "Resolve Complain" },
+            { "name": "Complain Type Status" }
+        ]
+    },
+     {
+        "moduleName": "dummy5 Management",
+        "permissions": [
+            { "name": "Create Complain Type" },
+            { "name": "Edit Complain Type" },
+            { "name": "Resolve Complain" },
+            { "name": "Complain Type Status" }
+        ]
+    },
+     {
+        "moduleName": "dummy6 Management",
+        "permissions": [
+            { "name": "Create Complain Type" },
+            { "name": "Edit Complain Type" },
+            { "name": "Resolve Complain" },
+            { "name": "Complain Type Status" }
+        ]
+    }
+
+]

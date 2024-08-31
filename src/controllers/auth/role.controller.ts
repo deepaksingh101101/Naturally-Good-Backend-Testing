@@ -7,6 +7,13 @@ import { responseHandler } from '../../utils/send-response';
 export const createRole = async (req: Request, res: Response) => {
     const { roleName } = req.body;
     const superAdminId = req['decodedToken'].id;
+    if(!superAdminId){
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 401,
+            message: "Unauthorized",
+        });
+    }
     // const superAdminId = "66d00c12bcecdc9aabfe3a91";
     try {
         // Check if the role already exists (case-insensitive)

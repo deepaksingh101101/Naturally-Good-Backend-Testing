@@ -19,11 +19,14 @@ export const checkPermissions = (actionToCheck: string) => {
       });
     }
 
+    console.log("token recoeved")
+
     const token = authHeader.split(' ')[1];
 
     try {
       const decoded = jwt.verify(token, JWT_SECRET) as { id: string; email: string; role: string };
       const roleId = decoded.role;
+      
 
       // Fetch the role details by ID, including its permissions
       const role = await RoleModel.findById(roleId).populate('permissions.permission');
@@ -57,7 +60,7 @@ export const checkPermissions = (actionToCheck: string) => {
 
       next(); // Continue to the next middleware or route handler
     } catch (error: any) {
-      console.error('Error verifying token:', error);
+      console.log(error)
       if (error.name === 'JsonWebTokenError') {
         return responseHandler.out(req, res, {
           status: false,
