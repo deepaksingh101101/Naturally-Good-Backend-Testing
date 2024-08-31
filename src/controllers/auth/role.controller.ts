@@ -2,19 +2,24 @@ import { Permission } from './../../models/permission.model';
 import { Request, Response } from 'express';
 import RoleModel from '../../models/role.model'; // Adjust the path as needed
 import PermissionModel from '../../models/permission.model'; // Adjust the path as needed
+import { responseHandler } from '../../utils/send-response';
 
 export const createRole = async (req: Request, res: Response) => {
     const { roleName } = req.body;
     const superAdminId = req['decodedToken'].id;
     // const superAdminId = "66d00c12bcecdc9aabfe3a91";
-console.log(superAdminId)
     try {
         // Check if the role already exists (case-insensitive)
         const existingRole = await RoleModel.findOne({
             roleName: { $regex: new RegExp(`^${roleName}$`, 'i') }
         });
         if (existingRole) {
-            return res.status(400).json({ error: 'Role already exists' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: "Role already exists",
+            });
+            // return res.status(400).json({ error: 'Role already exists' });
         }
 
         // Fetch all permissions
@@ -43,11 +48,19 @@ console.log(superAdminId)
         await newRole.save();
 
         // Respond after saving
-        return res.status(201).json({ message: 'Role created successfully', data: newRole });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 201,
+            message: "Role created successfully",
+        });
         
     } catch (error) {
-        console.error('Error creating role:', error);
-        return res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: "Internal Server Error"+ error.message,
+        });
+        // return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 // Get All role
@@ -58,11 +71,21 @@ export const getAllRoles = async (req: Request, res: Response) => {
             .exec();
 
         // Respond with the list of roles
-        return res.status(200).json({roles });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: "Role fetched successfully",
+            data:roles
+        });
+        // return res.status(200).json({roles });
         
     } catch (error) {
-        console.error('Error fetching roles:', error);
-        return res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: "Internal Server Error" +error.message,
+        });
+        // return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -74,10 +97,20 @@ export const getAllRolesNameAndId = async (req: Request, res: Response) => {
             .exec();
 
         // Respond with the list of roles
-        return res.status(200).json({ roles });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: "Role fetched successfully",
+            data:roles
+        });
+        // return res.status(200).json({ roles });
         
     } catch (error) {
-        console.error('Error fetching roles:', error);
-        return res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: "Internal Server Error" +error.message,
+        });
+        // return res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
