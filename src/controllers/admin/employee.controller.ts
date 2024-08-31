@@ -6,6 +6,7 @@ import EmployeeModel, { Employee } from '../../models/employee.model';
 import jwt from 'jsonwebtoken';
 import { DocumentType } from '@typegoose/typegoose';
 import PermissionModel from '../../models/permission.model';
+import { responseHandler } from '../../utils/send-response';
 
 
 export const createSuperAdmin = async (req: Request, res: Response) => {
@@ -43,8 +44,15 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
         const employeeExists = await EmployeeModel.findOne({ Email });
 
         if (employeeExists) {
-            return res.status(400).json({ error: 'Email already exists' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: "Email already exists",
+            });
+            // return res.status(400).json({ error: 'Email already exists' });
         }
+
+       
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(Password, 10);
@@ -67,10 +75,20 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
         // Save the new employee
         await newEmployee.save();
 
-        res.status(201).json({ message: 'Superadmin created successfully' });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 201,
+            message: "Superadmin created successfully",
+        });
+
+        // res.status(201).json({ message: 'Superadmin created successfully' });
     } catch (error) {
-        console.error('Error creating superadmin:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 500,
+            message: 'Internal server error'+ error.message ,
+        });
+        // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -78,18 +96,34 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
 export const createEmployee = async (req: Request, res: Response) => {
     const { Email, Password, FirstName, LastName, PhoneNumber, Dob, Gender, StreetAddress, City, State, roleId } = req.body;
     const loggedInId = req['decodedToken']?.id;
+
     if (!loggedInId) {
-        return res.status(400).json({ error: 'Invalid Login user' });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 401,
+            message: "Invalid Login user" ,
+        });
+        // return res.status(400).json({ error: 'Invalid Login user' });
     }
     try {
         const role = await RoleModel.findById(roleId);
         if (!role) {
-            return res.status(400).json({ error: 'Invalid role ID' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: "Invalid Role" ,
+            });
+            // return res.status(400).json({ error: 'Invalid Role' });
         }
 
         const employeeExists = await EmployeeModel.findOne({ Email });
         if (employeeExists) {
-            return res.status(400).json({ error: 'Employee already exists' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 409,
+                message: "Employee already exists",
+            });
+            // return res.status(400).json({ error: 'Employee already exists' });
         }
 
         const hashedPassword = await bcrypt.hash(Password, 10);
@@ -111,10 +145,19 @@ export const createEmployee = async (req: Request, res: Response) => {
 
         await newEmployee.save();
 
-        res.status(201).json({ message: 'Employee created successfully' });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 201,
+            message: "Employee created successfully",
+        });
+        // res.status(201).json({ message: 'Employee created successfully' });
     } catch (error) {
-        console.error('Error creating employee:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: "Internal server error"+error.message,
+        });
+        // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -124,14 +167,24 @@ export const loginEmployee = async (req: Request, res: Response) => {
 
     try {
         const employee = await EmployeeModel.findOne({ Email }) as DocumentType<Employee>;
-        console.log(employee)
         if (!employee) {
-            return res.status(400).json({ error: 'Invalid email' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 401,
+                message: "Invalid email",
+            });
+
+            // return res.status(400).json({ error: 'Invalid email' });
         }
 
         const isPasswordValid = await employee.validatePassword(Password);
         if (!isPasswordValid) {
-            return res.status(400).json({ error: 'Invalid password' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 401,
+                message: "Invalid password",
+            });
+            // return res.status(400).json({ error: 'Invalid password' });
         }
 
         const token = jwt.sign(
@@ -140,10 +193,20 @@ export const loginEmployee = async (req: Request, res: Response) => {
             { expiresIn: '1h' }
         );
 
-        res.status(200).json({ message: 'Login successful', token });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: "Login successful",
+            data:token,
+        });
+        // res.status(200).json({ message: 'Login successful', token });
     } catch (error) {
-        console.error('Error during login:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: "Internal Server Error"+error.message,
+        });
+        // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -153,7 +216,12 @@ export const getAllEmployees = async (req: Request, res: Response) => {
         // Find the role ID for 'Superadmin'
         const superadminRole = await RoleModel.findOne({ roleName: 'Superadmin' }).exec();
         if (!superadminRole) {
-            return res.status(400).json({ error: 'Superadmin role not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: "Superadmin role not found",
+            });
+            // return res.status(400).json({ error: 'Superadmin role not found' });
         }
 
         const roleIdToExclude = superadminRole._id; // Extract the role ID to exclude
@@ -167,10 +235,22 @@ export const getAllEmployees = async (req: Request, res: Response) => {
             })
             .exec();
 
-        res.status(200).json(employees);
+            return responseHandler.out(req, res, {
+                status: true,
+                statusCode: 200,
+                message: "Employees fetched successfully",
+                data:employees,
+            });
+
+        // res.status(200).json(employees);
     } catch (error) {
-        console.error('Error fetching employees:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: "Internal Server Error"+error.message,
+
+        });
+        // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
 
@@ -189,13 +269,31 @@ export const getEmployeeById = async (req: Request, res: Response) => {
             .exec();
 
         if (!employee) {
-            return res.status(404).json({ error: 'Employee not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: "Employee not found",
+    
+            });
+            // return res.status(404).json({ error: 'Employee not found' });
         }
 
-        res.status(200).json(employee);
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: "Employee Fetched Successfully",
+            data:employee,
+
+        });
+        // res.status(200).json(employee);
     } catch (error) {
-        console.error('Error fetching employee by ID:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: "Iternal Server Error"+error.message,
+        });
+        // res.status(500).json({ error: 'Internal server error', details: error.message });
+
     }
 };
 
@@ -208,7 +306,12 @@ export const editEmployeeById = async (req: Request, res: Response) => {
         // Find the employee by ID
         const employee = await EmployeeModel.findById(id);
         if (!employee) {
-            return res.status(404).json({ error: 'Employee not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: "Employee not found",
+            });
+            // return res.status(404).json({ error: 'Employee not found' });
         }
 
         // Extract new data from the request body
@@ -225,12 +328,28 @@ export const editEmployeeById = async (req: Request, res: Response) => {
         );
 
         if (!updatedEmployee) {
-            return res.status(404).json({ error: 'Failed to update employee' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: "Failed to update employee",
+            });
+            // return res.status(404).json({ error: 'Failed to update employee' });
         }
 
-        res.json(updatedEmployee);
+             return responseHandler.out(req, res, {
+                status: true,
+                statusCode: 200,
+                message: "Employee Updated Successfully",
+                data:updatedEmployee
+            });
+
+        // res.json(updatedEmployee);
     } catch (error) {
-        console.error('Error updating employee by ID:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: "Internal Server Error"+ error.message,
+        });
+        // res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 };
