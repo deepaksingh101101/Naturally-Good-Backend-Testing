@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import PermissionModel, { Permission } from '../../models/permission.model';
+import { responseHandler } from '../../utils/send-response';
 
 // Service class for handling CRUD operations on the Permission model
 class PermissionService {
@@ -41,16 +42,32 @@ export const createPermission = async (req: Request, res: Response) => {
 
     // Validate that body is an array
     if (!Array.isArray(permissions)) {
-        return res.status(400).json({ error: 'Request body must be an array of permissions' });
+        // return res.status(400).json({ error: 'Request body must be an array of permissions' });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 400,
+            message: "Request body must be an array of permissions!!",
+        });
     }
 
     try {
         // Bulk insert permissions
         const result = await PermissionModel.insertMany(permissions);
-        res.status(201).json({ message: 'Permissions created successfully', data: result });
+        // res.status(201).json({ message: 'Permissions created successfully', data: result });
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: "Permissions created successfully!!",
+        });
     } catch (error) {
         console.error('Error creating permissions:', error);
-        res.status(500).json({ error: 'Internal server error', details: error.message });
+        // res.status(500).json({ error: 'Internal server error', details: error.message });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: "Internal Server Error!!",
+            data: error.message
+        });
     }
 };
 
