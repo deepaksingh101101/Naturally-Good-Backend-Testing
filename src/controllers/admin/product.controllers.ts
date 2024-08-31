@@ -1,115 +1,144 @@
 import { Request, Response } from 'express';
 import ProductModel from '../../models/product.model';
 import { CategoryType } from '../../models/category.model';
+import { responseHandler } from '../../utils/send-response';
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
-        const loggedInId = req['decodedToken']?.id
-                const { ProductName } = req.body;
+        const loggedInId = req['decodedToken']?.id;
+        const { ProductName } = req.body;
 
-        // Check if a product with the same name already exists (case insensitive)
         const existingProduct = await ProductModel.findOne({ 
             ProductName: { $regex: new RegExp('^' + ProductName + '$', 'i') } 
         });
         if (existingProduct) {
-            return res.status(400).json({ error: 'Product name already exists' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Product name already exists'
+            });
         }
 
         const product = new ProductModel({
             ...req.body,
-            CreatedBy: loggedInId ,
-            UpdatedBy: loggedInId ,
+            CreatedBy: loggedInId,
+            UpdatedBy: loggedInId,
         });
 
         await product.save();
-        res.status(201).json(product);
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 201,
+            message: 'Product created successfully',
+            data: product
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
 
 export const getAllProducts = async (req: Request, res: Response) => {
     try {
-      const currentPage = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
-      const skip = (currentPage - 1) * limit;
-  
-      // Find all products with pagination and populate necessary fields
-      const products = await ProductModel.find()
-        .skip(skip)
-        .limit(limit)
-        .populate('Type', 'Name') // Populate Type with only the 'Name' field
-        .populate('Season', 'Name') // Populate Season with only the 'Name' field
-        .populate('Roster', 'Name') // Populate Roster with only the 'Name' field
-        .populate('CreatedBy', 'Email') // Populate CreatedBy with 'Name' and 'Email' fields only
-        .populate('UpdatedBy', 'Email'); // Populate CreatedBy with 'Name' and 'Email' fields only
-  
-      const total = await ProductModel.countDocuments(); // Total count of products
-      const totalPages = Math.ceil(total / limit); // Calculate total pages
-  
-      // Determine if there are previous and next pages
-      const prevPage = currentPage > 1;
-      const nextPage = currentPage < totalPages;
-  
-      // Respond with paginated data
-      res.status(200).json({
-        total,
-        currentPage,
-        totalPages,
-        prevPage,
-        nextPage,
-        products,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal server error' });
-    }
-  };
-  
+        const currentPage = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (currentPage - 1) * limit;
 
+        const products = await ProductModel.find()
+            .skip(skip)
+            .limit(limit)
+            .populate('Type', 'Name')
+            .populate('Season', 'Name')
+            .populate('Roster', 'Name')
+            .populate('CreatedBy', 'Email')
+            .populate('UpdatedBy', 'Email');
+
+        const total = await ProductModel.countDocuments();
+        const totalPages = Math.ceil(total / limit);
+
+        const prevPage = currentPage > 1;
+        const nextPage = currentPage < totalPages;
+
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Products retrieved successfully',
+            data: {
+                total,
+                currentPage,
+                totalPages,
+                prevPage,
+                nextPage,
+                products,
+            }
+        });
+    } catch (error) {
+        console.error(error);
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
+    }
+};
 
 export const getProductById = async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      console.log(req.params);
-      
-      // Validate the product ID format
-      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-        return res.status(400).json({ error: 'Invalid product ID format' });
-      }
-  
-      // Find product by ID and populate the related fields
-      const product = await ProductModel.findById(id)
-        .populate('Type', 'Name') // Populate Type with only the 'Name' field
-        .populate('Season', 'Name') // Populate Season with only the 'Name' field
-        .populate('Roster', 'Name') // Populate Roster with only the 'Name' field
-        .populate('CreatedBy', 'Email') // Populate CreatedBy with 'Name' and 'Email' fields only
-        .populate('UpdatedBy', 'Email'); // Populate CreatedBy with 'Name' and 'Email' fields only
+        const { id } = req.params;
 
-  
-      if (!product) {
-        return res.status(404).json({ error: 'Product not found' });
-      }
-  
-      res.status(200).json(product);
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Invalid product ID format'
+            });
+        }
+
+        const product = await ProductModel.findById(id)
+            .populate('Type', 'Name')
+            .populate('Season', 'Name')
+            .populate('Roster', 'Name')
+            .populate('CreatedBy', 'Email')
+            .populate('UpdatedBy', 'Email');
+
+        if (!product) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Product not found'
+            });
+        }
+
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Product retrieved successfully',
+            data: product
+        });
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Internal server error' });
+        console.error(error);
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
-  };
-  
-  
-
-
+};
 
 export const updateProduct = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const loggedInId = req['decodedToken']?.id
-
+        const loggedInId = req['decodedToken']?.id;
 
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ error: 'Invalid product ID format' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Invalid product ID format'
+            });
         }
 
         const product = await ProductModel.findByIdAndUpdate(
@@ -119,15 +148,27 @@ export const updateProduct = async (req: Request, res: Response) => {
         );
 
         if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Product not found'
+            });
         }
 
-        res.status(200).json(product);
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Product updated successfully',
+            data: product
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
-
 
 export const toggleProductAvailability = async (req: Request, res: Response) => {
     try {
@@ -135,17 +176,22 @@ export const toggleProductAvailability = async (req: Request, res: Response) => 
         const { Available } = req.body;
         const loggedInId = req['decodedToken']?.id;
 
-        // Validate product ID format
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ error: 'Invalid product ID format' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Invalid product ID format'
+            });
         }
 
-        // Validate Available field
         if (typeof Available !== 'boolean') {
-            return res.status(400).json({ error: 'Invalid value for Available. It must be true or false.' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Invalid value for Available. It must be true or false.'
+            });
         }
 
-        // Update the Available field
         const product = await ProductModel.findByIdAndUpdate(
             id,
             { Available, UpdatedBy: loggedInId, UpdatedAt: new Date() },
@@ -153,13 +199,26 @@ export const toggleProductAvailability = async (req: Request, res: Response) => 
         );
 
         if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Product not found'
+            });
         }
 
-        res.status(200).json(product);
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Product availability toggled successfully',
+            data: product
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
 
@@ -168,18 +227,34 @@ export const deleteProduct = async (req: Request, res: Response) => {
         const { id } = req.params;
 
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ error: 'Invalid product ID format' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Invalid product ID format'
+            });
         }
 
         const product = await ProductModel.findByIdAndDelete(id);
 
         if (!product) {
-            return res.status(404).json({ error: 'Product not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Product not found'
+            });
         }
 
-        res.status(200).json({ message: 'Product deleted successfully' });
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Product deleted successfully'
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
 
