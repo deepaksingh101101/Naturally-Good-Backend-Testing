@@ -2,10 +2,11 @@ import { Request, Response } from 'express';
 import ProductModel from '../../models/product.model';
 import { CategoryType } from '../../models/category.model';
 import { BagModel } from '../../models/bag.model';
+import { responseHandler } from '../../utils/send-response';
 
 export const createBagByAdmin = async (req: Request, res: Response) => {
     try {
-        const loggedInId = req['decodedToken']?.id
+        const loggedInId = req['decodedToken']?.id;
 
         const {
             BagName,
@@ -18,14 +19,22 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
         } = req.body;
 
         // Validate input
-        if (!BagName || !BagMaxWeight || !BagVisibility || !Status || !AllowedItems ) {
-            return res.status(400).json({ error: 'Missing required fields' });
+        if (!BagName || !BagMaxWeight || !BagVisibility || !Status || !AllowedItems) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Missing required fields'
+            });
         }
 
         // Validate allowedItems - check if all product IDs are valid
         const products = await ProductModel.find({ _id: { $in: AllowedItems } });
         if (products.length !== AllowedItems.length) {
-            return res.status(400).json({ error: 'Some products not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Some products not found'
+            });
         }
 
         // Create a new Bag
@@ -37,14 +46,23 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
             BagImageUrl,
             BagDescription,
             AllowedItems,
-            CreatedBy:loggedInId,
+            CreatedBy: loggedInId,
         });
 
         await bag.save();
-        res.status(201).json(bag);
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 201,
+            message: 'Bag created successfully',
+            data: bag
+        });
     } catch (error) {
         console.error('Error creating bag:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
 
@@ -60,15 +78,7 @@ export const getAllBags = async (req: Request, res: Response) => {
             .limit(limit)
             .populate({
                 path: 'AllowedItems' // Adjust the fields you want to select from Product
-            })
-            // .populate({
-            //     path: 'CreatedBy',
-            //     select: 'Email' // Only return the Email field for CreatedBy
-            // })
-            // .populate({
-            //     path: 'UpdatedBy',
-            //     select: 'Email' // Only return the Email field for UpdatedBy
-            // });
+            });
 
         const total = await BagModel.countDocuments(); // Total count of bags
         const totalPages = Math.ceil(total / limit); // Calculate total pages
@@ -78,24 +88,32 @@ export const getAllBags = async (req: Request, res: Response) => {
         const nextPage = currentPage < totalPages;
 
         // Respond with paginated data
-        res.status(200).json({
-            total,
-            currentPage,
-            totalPages,
-            prevPage,
-            nextPage,
-            bags,
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Bags retrieved successfully',
+            data: {
+                total,
+                currentPage,
+                totalPages,
+                prevPage,
+                nextPage,
+                bags
+            }
         });
     } catch (error) {
         console.error('Error retrieving bags:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
 
 export const updateBag = async (req: Request, res: Response) => {
     try {
-        const loggedInId = req['decodedToken']?.id
-
+        const loggedInId = req['decodedToken']?.id;
 
         const { id } = req.params;
         const {
@@ -105,14 +123,22 @@ export const updateBag = async (req: Request, res: Response) => {
         // Check if Bag exists
         const bag = await BagModel.findById(id);
         if (!bag) {
-            return res.status(404).json({ error: 'Bag not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Bag not found'
+            });
         }
 
         // Validate allowedItems - check if all product IDs are valid
         if (AllowedItems) {
             const products = await ProductModel.find({ _id: { $in: AllowedItems } });
             if (products.length !== AllowedItems.length) {
-                return res.status(400).json({ error: 'Some products not found' });
+                return responseHandler.out(req, res, {
+                    status: false,
+                    statusCode: 400,
+                    message: 'Some products not found'
+                });
             }
         }
 
@@ -129,13 +155,21 @@ export const updateBag = async (req: Request, res: Response) => {
             }
         );
 
-        res.status(200).json(updatedBag);
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Bag updated successfully',
+            data: updatedBag
+        });
     } catch (error) {
         console.error('Error updating bag:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
-
 
 export const getOneBag = async (req: Request, res: Response) => {
     try {
@@ -143,7 +177,11 @@ export const getOneBag = async (req: Request, res: Response) => {
 
         // Check if the ID is valid
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ error: 'Invalid bag ID format' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Invalid bag ID format'
+            });
         }
 
         // Find the Bag by ID and populate necessary fields
@@ -164,18 +202,29 @@ export const getOneBag = async (req: Request, res: Response) => {
                         select: 'Name'
                     }
                 ]
-            })
-            // .populate('CreatedBy', 'Email') // Populate CreatedBy with only Email field
-            // .populate('UpdatedBy', 'Email'); // Populate UpdatedBy with only Email field
+            });
 
         if (!bag) {
-            return res.status(404).json({ error: 'Bag not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Bag not found'
+            });
         }
 
-        res.status(200).json(bag);
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Bag retrieved successfully',
+            data: bag
+        });
     } catch (error) {
         console.error('Error fetching bag:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
 
@@ -187,47 +236,88 @@ export const toggleBagStatus = async (req: Request, res: Response) => {
 
         // Validate bag ID format
         if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ error: 'Invalid bag ID format' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Invalid bag ID format'
+            });
         }
 
         // Validate Status field
         if (typeof Status !== 'boolean') {
-            return res.status(400).json({ error: 'Invalid value for Status. It must be true or false.' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Invalid value for Status. It must be true or false.'
+            });
         }
 
         // Update the Status field
         const bag = await BagModel.findByIdAndUpdate(
             id,
-            { Status, UpdatedBy: loggedInId},
+            { Status, UpdatedBy: loggedInId },
             { new: true, runValidators: true }
         );
 
         if (!bag) {
-            return res.status(404).json({ error: 'Bag not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Bag not found'
+            });
         }
 
-        res.status(200).json(bag);
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Bag status updated successfully',
+            data: bag
+        });
     } catch (error) {
         console.error('Error updating bag status:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
-
 
 export const deleteBag = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
+        // Validate bag ID format
+        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'Invalid bag ID format'
+            });
+        }
+
         // Find and delete the Bag by ID
         const deletedBag = await BagModel.findByIdAndDelete(id);
         if (!deletedBag) {
-            return res.status(404).json({ error: 'Bag not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Bag not found'
+            });
         }
 
-        res.status(200).json({ message: 'Bag deleted successfully' });
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Bag deleted successfully'
+        });
     } catch (error) {
         console.error('Error deleting bag:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
     }
 };
 
