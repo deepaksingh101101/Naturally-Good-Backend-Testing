@@ -172,7 +172,7 @@ export const CreateFeedback = async (req: Request, res: Response): Promise<void>
   try {
     const CreatedBy=req['userId'] //get from request
 
-    const {  Feedback } = req.body;
+    const {  Feedback,RatingValue } = req.body;
     const newFeedback = new FeedbackModel({ CreatedBy, Feedback });
     await newFeedback.save();
     res.status(201).json(newFeedback);
