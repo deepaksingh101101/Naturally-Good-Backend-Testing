@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { RosterModel, SeasonModel, SubscriptionTypeModel, FrequencyTypeModel, RoleTypeModel, ProductTypeModel } from '../models/dropdown.model';
+import { RosterModel, SeasonModel, SubscriptionTypeModel, FrequencyTypeModel, RoleTypeModel, ProductTypeModel, SourceOfCustomerModel, TypeOfCustomerModel } from '../models/dropdown.model';
 import { responseHandler } from '../utils/send-response';
 
 // Common function to handle errors
@@ -470,7 +470,6 @@ export const deleteSeason = async (req: Request, res: Response) => {
   }
 };
 
-
 // Edit a Season
 export const editSeason = async (req: Request, res: Response) => {
   try {
@@ -851,5 +850,295 @@ export const deleteFrequencyType = async (req: Request, res: Response) => {
     // return res.status(204).json({ message: 'Frequency Type deleted' });
   } catch (error) {
     handleError(req,res, error);
+  }
+};
+
+
+
+export const createSourceOfCustomer = async (req: Request, res: Response) => {
+  try {
+    const { Name } = req.body;
+    const loggedInId = req['decodedToken'];
+
+    if (!Name) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: "Name is required",
+      });
+    }
+
+    const existingSource = await SourceOfCustomerModel.findOne({ Name: { $regex: new RegExp(`^${Name}$`, 'i') } });
+    if (existingSource) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: "Source of Customer name already exists",
+      });
+    }
+
+    const newSource = new SourceOfCustomerModel({ 
+      Name, 
+      CreatedBy: loggedInId, 
+      UpdatedBy: loggedInId 
+    });
+    await newSource.save();
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 201,
+      message: "Source of Customer created successfully",
+      data: newSource,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Get all SourceOfCustomers
+export const getSourceOfCustomers = async (req: Request, res: Response) => {
+  try {
+    const sources = await SourceOfCustomerModel.find();
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Sources of Customer fetched successfully",
+      data: sources,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Delete a SourceOfCustomer by ID
+export const deleteSourceOfCustomer = async (req: Request, res: Response) => {
+  try {
+    const source = await SourceOfCustomerModel.findByIdAndDelete(req.params.id);
+    if (!source) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: "Source of Customer not found",
+      });
+    }
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 204,
+      message: "Source of Customer deleted successfully",
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Edit a SourceOfCustomer
+export const editSourceOfCustomer = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { Name } = req.body;
+    const loggedInId = req['decodedToken'];
+
+    const existingSource = await SourceOfCustomerModel.findById(id);
+    if (!existingSource) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: "Source of Customer not found",
+      });
+    }
+
+    if (Name) {
+      const existingName = await SourceOfCustomerModel.findOne({
+        _id: { $ne: id }, 
+        Name: { $regex: new RegExp(`^${Name}$`, 'i') },
+      });
+      if (existingName) {
+        return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 400,
+          message: "Source of Customer name already exists",
+        });
+      }
+      existingSource.Name = Name;
+    }
+
+    existingSource.UpdatedBy = loggedInId;
+
+    await existingSource.save();
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Source of Customer updated successfully",
+      data: existingSource,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+
+
+// Create a new TypeOfCustomer
+export const createTypeOfCustomer = async (req: Request, res: Response) => {
+  try {
+    const { Name } = req.body;
+    const loggedInId = req['decodedToken'];
+
+    if (!Name) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: "Name is required",
+      });
+    }
+
+    const existingType = await TypeOfCustomerModel.findOne({ Name: { $regex: new RegExp(`^${Name}$`, 'i') } });
+    if (existingType) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: "Type of Customer name already exists",
+      });
+    }
+
+    const newType = new TypeOfCustomerModel({ 
+      Name, 
+      CreatedBy: loggedInId, 
+      UpdatedBy: loggedInId 
+    });
+    await newType.save();
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 201,
+      message: "Type of Customer created successfully",
+      data: newType,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Get all TypeOfCustomers
+export const getTypeOfCustomers = async (req: Request, res: Response) => {
+  try {
+    const types = await TypeOfCustomerModel.find();
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Types of Customer fetched successfully",
+      data: types,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Delete a TypeOfCustomer by ID
+export const deleteTypeOfCustomer = async (req: Request, res: Response) => {
+  try {
+    const type = await TypeOfCustomerModel.findByIdAndDelete(req.params.id);
+    if (!type) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: "Type of Customer not found",
+      });
+    }
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 204,
+      message: "Type of Customer deleted successfully",
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Edit a TypeOfCustomer
+export const editTypeOfCustomer = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { Name } = req.body;
+    const loggedInId = req['decodedToken'];
+
+    const existingType = await TypeOfCustomerModel.findById(id);
+    if (!existingType) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: "Type of Customer not found",
+      });
+    }
+
+    if (Name) {
+      const existingName = await TypeOfCustomerModel.findOne({
+        _id: { $ne: id }, 
+        Name: { $regex: new RegExp(`^${Name}$`, 'i') },
+      });
+      if (existingName) {
+        return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 400,
+          message: "Type of Customer name already exists",
+        });
+      }
+      existingType.Name = Name;
+    }
+
+    existingType.UpdatedBy = loggedInId;
+    existingType.UpdatedAt = new Date();
+
+    await existingType.save();
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Type of Customer updated successfully",
+      data: existingType,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
   }
 };

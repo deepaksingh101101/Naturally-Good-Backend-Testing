@@ -16,6 +16,12 @@ import { Employee } from './employee.model';
 @pre<FrequencyType>('save', async function() {
   this.UpdatedAt = new Date();
 })
+@pre<SourceOfCustomer>('save', async function() {
+  this.UpdatedAt = new Date();
+})
+@pre<TypeOfCustomer>('save', async function() {
+  this.UpdatedAt = new Date();
+})
 
 // Define the ProductType schema
 export class ProductType {
@@ -131,6 +137,42 @@ export class Role {
   public UpdatedAt!: Date;
 }
 
+
+export class SourceOfCustomer {
+  @prop({ type: String, required: true })
+  public Name!: string;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+}
+
+
+export class TypeOfCustomer {
+  @prop({ type: String, required: true })
+  public Name!: string;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+}
+
 // Create models for each schema
 const ProductTypeModel = getModelForClass(ProductType);
 const SeasonModel = getModelForClass(Season);
@@ -138,5 +180,7 @@ const RosterModel = getModelForClass(Roster);
 const SubscriptionTypeModel = getModelForClass(SubscriptionType);
 const FrequencyTypeModel = getModelForClass(FrequencyType);
 const RoleTypeModel = getModelForClass(Role);
+const SourceOfCustomerModel = getModelForClass(SourceOfCustomer);
+const TypeOfCustomerModel = getModelForClass(TypeOfCustomer);
 
-export { ProductTypeModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel,RoleTypeModel };
+export {SourceOfCustomerModel,TypeOfCustomerModel, ProductTypeModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel,RoleTypeModel };
