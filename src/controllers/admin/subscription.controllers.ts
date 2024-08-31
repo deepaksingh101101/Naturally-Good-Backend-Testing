@@ -5,33 +5,15 @@ import { BagModel } from '../../models/bag.model';
 
 export const createSubscription = async (req: Request, res: Response) => {
     try {
-        const AdminId = req['adminId'];
-        const { SubscriptionTypeId, FrequencyId, TotalDeliveryNumber, Visibility, Status, Bags, DeliveryDays, OriginalPrice, Offer, NetPrice, ImageUrl, Description } = req.body;
+        const loggedInId = req['decodedToken']?.id
+
+        const { SubscriptionTypeId, FrequencyId, TotalDeliveryNumber, Visibility, Status, Bag, DeliveryDays, OriginalPrice, Offer, NetPrice, ImageUrl, Description } = req.body;
 
         // Check if all required fields are present
-        if (!SubscriptionTypeId || !FrequencyId || !TotalDeliveryNumber || !Visibility || !Status || !Bags || !DeliveryDays || !OriginalPrice || !NetPrice || !Description) {
+        if (!SubscriptionTypeId || !FrequencyId || !TotalDeliveryNumber || !Visibility || !Status || !Bag || !DeliveryDays || !OriginalPrice || !NetPrice || !Description) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        // Check if the referenced FrequencyType exists
-        const frequencyType = await FrequencyTypeModel.findById(FrequencyId);
-        if (!frequencyType) {
-            return res.status(400).json({ error: 'Invalid FrequencyType ID' });
-        }
-
-        // Check if the referenced SubscriptionType exists
-        const subscriptionType = await SubscriptionTypeModel.findById(SubscriptionTypeId);
-        if (!subscriptionType) {
-            return res.status(400).json({ error: 'Invalid SubscriptionType ID' });
-        }
-
-        // Check if the referenced Bags exist
-        for (const bagId of Bags) {
-            const bag = await BagModel.findById(bagId);
-            if (!bag) {
-                return res.status(400).json({ error: `Invalid Bag ID: ${bagId}` });
-            }
-        }
 
         const subscription = new SubscriptionModel({
             SubscriptionTypeId,
@@ -39,14 +21,15 @@ export const createSubscription = async (req: Request, res: Response) => {
             TotalDeliveryNumber,
             Visibility,
             Status,
-            Bags,
+            Bag,
             DeliveryDays,
             OriginalPrice,
             Offer,
             NetPrice,
             ImageUrl,
             Description,
-            createdBy: AdminId
+            CreatedBy: loggedInId,
+            UpdatedBy: loggedInId
         });
 
         await subscription.save();
@@ -55,52 +38,73 @@ export const createSubscription = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
 export const getAllSubscriptions = async (req: Request, res: Response) => {
     try {
-        const currentpage = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const skip = (currentpage - 1) * limit;
+      const currentpage = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (currentpage - 1) * limit;
 
-        const subscriptions = await SubscriptionModel.find().skip(skip).limit(limit);
-        const total = await SubscriptionModel.countDocuments();
-        const totalPages = Math.ceil(total / limit);
-
-        const prevPage = currentpage > 1;
-        const nextPage = currentpage < totalPages;
-
-        res.status(200).json({
-            total,
-            currentpage,
-            totalpages: totalPages,
-            prevPage,
-            nextPage,
-            subscriptions
-        });
+      // Populate SubscriptionTypeId, FrequencyId, and Bag fields
+      const subscriptions = await SubscriptionModel.find()
+        .skip(skip)
+        .limit(limit)
+        .populate('SubscriptionTypeId') // Populate SubscriptionTypeId field
+        .populate('FrequencyId') // Populate FrequencyId field
+        .populate('Bag'); // Populate Bag field
+  
+      const total = await SubscriptionModel.countDocuments();
+      const totalPages = Math.ceil(total / limit);
+  
+      const prevPage = currentpage > 1;
+      const nextPage = currentpage < totalPages;
+  
+      res.status(200).json({
+        total,
+        currentpage,
+        totalpages: totalPages,
+        prevPage,
+        nextPage,
+        subscriptions,
+      });
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Internal server error' });
     }
-};
+  };
+  
 
-export const getSubscriptionById = async (req: Request, res: Response) => {
+  export const getSubscriptionById = async (req: Request, res: Response) => {
     try {
-        const { id } = req.params;
-
-        if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-            return res.status(400).json({ error: 'Invalid subscription ID format' });
-        }
-
-        const subscription = await SubscriptionModel.findById(id);
-
-        if (!subscription) {
-            return res.status(404).json({ error: 'Subscription not found' });
-        }
-
-        res.status(200).json(subscription);
+      const { id } = req.params;
+  
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({ error: 'Invalid subscription ID format' });
+      }
+  
+      // Populate SubscriptionTypeId, FrequencyId, Bag, CreatedBy, and UpdatedBy fields
+      const subscription = await SubscriptionModel.findById(id)
+        .populate('SubscriptionTypeId') // Populate SubscriptionTypeId field
+        .populate('FrequencyId') // Populate FrequencyId field
+        .populate('CreatedBy') // Populate CreatedBy field
+        .populate('UpdatedBy') // Populate UpdatedBy field
+        .populate({
+          path: 'Bag', // Populate Bag field
+          populate: {
+            path: 'AllowedItems', // Populate AllowedItems within Bag
+            model: 'Product', // Ensure to use the correct model name if it's different
+          },
+        });
+  
+      if (!subscription) {
+        return res.status(404).json({ error: 'Subscription not found' });
+      }
+  
+      res.status(200).json(subscription);
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ error: 'Internal server error' });
     }
-};
-
+  };
+  
 export const updateSubscription = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
@@ -208,3 +212,36 @@ export const filterSubscriptions = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 };
+
+
+export const updateSubscriptionStatus = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { Status } = req.body;
+  
+      // Validate ID format
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+        return res.status(400).json({ error: 'Invalid Subscription ID format' });
+      }
+  
+      // Ensure `Status` is a boolean
+      if (typeof Status !== 'boolean') {
+        return res.status(400).json({ error: 'Status must be a boolean value' });
+      }
+  
+      // Update the Status field of the Subscription
+      const updatedSubscription = await SubscriptionModel.findByIdAndUpdate(
+        id,
+        { Status: Status },
+        { new: true } // Return the updated document
+      );
+  
+      if (!updatedSubscription) {
+        return res.status(404).json({ error: 'Subscription not found' });
+      }
+  
+      res.status(200).json({ message: 'Subscription status updated successfully', subscription: updatedSubscription });
+    } catch (error) {
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  };
