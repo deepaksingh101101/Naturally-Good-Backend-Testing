@@ -8,11 +8,11 @@ import { Subscription } from './subscription.model';
 
 export class Coupon {
   // Coupon Type - Enum
-  @prop({ type: String, enum: ['Normal', 'Subscription'], required: true })
+  @prop({ type: String, enum: ['Normal', 'Subscription','Referred'], required: true })
   public CouponType: 'Normal' | 'Subscription' | 'Referred';
 
   @prop({ type: String, enum: ['Normal', 'FreeDelivery', 'CelebrityType', 'SeasonSpecial', 'Referred'], required: true })
-  public CouponCategory: 'Normal' | 'Subscription' | 'FreeDelivery' | 'CelebrityType' | 'SeasonSpecial' | 'Referred';
+  public CouponCategory: 'Normal' | 'FreeDelivery' | 'CelebrityType' | 'SeasonSpecial' | 'Referred';
 
   // Coupon Code
   @prop({ type: String, required: true })
@@ -22,8 +22,7 @@ export class Coupon {
   @prop({ type: String, enum: ['Percentage', 'FixedAmount'], required: true })
   public DiscountType: 'Percentage' | 'FixedAmount';
 
-  // Coupons Type - Enum
-  @prop({ type: String, enum: ['Active', 'Inactive'], required: true })
+  @prop({ type: String, enum: ['Active', 'Inactive'], required: true,default:"Active" })
   public Status: 'Active' | 'Inactive';
 
   // Discount Percentage (if applicable)
@@ -63,11 +62,11 @@ export class Coupon {
   public ImageUrl?: string;
 
   // Assigned To
-  @prop({ type: Boolean })
+  @prop({ type: Boolean,default:false })
   public AssignedTo?: boolean;
 
   // Assigned By
-  @prop({ type: Boolean })
+  @prop({ type: Boolean,default:false })
   public AssignedBy?: boolean;
 
   // Revenue Generated

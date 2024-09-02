@@ -27,6 +27,8 @@ export const createCoupon = async (req: Request, res: Response) => {
         SubscriptionIds, // Changed from SubscriptionId to SubscriptionIds to reflect an array
       } = req.body;
   
+
+
       // Check if all required fields are present
       if (!CouponType || !CouponCategory || !Code || !DiscountType || !ValidityType || !CouponVisibility || !Status) {
         return responseHandler.out(req, res, {
@@ -61,13 +63,14 @@ export const createCoupon = async (req: Request, res: Response) => {
           });
         }
       } 
-      if (CouponCategory !== 'FreeDelivery' && (DiscountType==null )) {
+      if (CouponType === 'Subscription' && (!Array.isArray(SubscriptionIds) || SubscriptionIds.length < 1)) {
         return responseHandler.out(req, res, {
           status: false,
           statusCode: 400,
-          message: 'Discount Type is required when Coupons Category is not freeDelivery',
+          message: 'SubscriptionIds must be an array with at least one element',
         });
       }
+      
 
       // Check if the coupon code already exists (case insensitive)
       const existingCoupon = await CouponModel.findOne({
