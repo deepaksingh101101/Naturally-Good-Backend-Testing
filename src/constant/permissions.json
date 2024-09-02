@@ -86,12 +86,14 @@
         ]
     },
      {
-        "moduleName": "dummy2 Management",
+        "moduleName": "Coupon Management",
         "permissions": [
-            { "name": "Create Complain Type" },
-            { "name": "Edit Complain Type" },
-            { "name": "Resolve Complain" },
-            { "name": "Complain Type Status" }
+            { "name": "Create Coupons" },
+            { "name": "Edit Coupons" },
+            { "name": "View Coupons" },
+            { "name": "Assign Customers" },
+            { "name": "Toggle Coupons" },
+            { "name": "Delete Coupons" }
         ]
     },
      {

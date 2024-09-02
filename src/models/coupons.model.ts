@@ -19,7 +19,7 @@ export class Coupon {
   public Code: string;
 
   // Discount Type - Enum
-  @prop({ type: String, enum: ['Percentage', 'FixedAmount'], required: true })
+  @prop({ type: String, enum: ['Percentage', 'FixedAmount'], required: false })
   public DiscountType: 'Percentage' | 'FixedAmount';
 
   @prop({ type: String, enum: ['Active', 'Inactive'], required: true,default:"Active" })
