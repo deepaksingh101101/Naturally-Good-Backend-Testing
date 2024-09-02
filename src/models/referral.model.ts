@@ -13,19 +13,24 @@ class Referral {
   public ReferredBy!: Ref<User>;
 
   @prop({ ref: () => User })
-  public ReferredTO!: Ref<User>;
+  public ReferredTo!: Ref<User>;
 
-  @prop({ type: Date, default: Date.now })
-  public UpdatedAt!: Date;
+  @prop({ type: Boolean, default: false })
+  public IsReferredPersonLoggedIn!: boolean;
 
-  @prop({ type: Date, default: Date.now })
-  public CreatedAt!: Date;
+
+  @prop({ type: Boolean, default: false })
+  public IsReferredPersonPurchased!: boolean;
 
   @prop({ ref: () => Subscription })
   public SubscriptionPurchased!: Ref<Subscription>;
 
-  @prop({ type: Boolean, default: false })
-  public isReferredPersonLoggedIn!: boolean;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
 
 }
 

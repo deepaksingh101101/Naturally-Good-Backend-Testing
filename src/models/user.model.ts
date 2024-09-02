@@ -1,7 +1,12 @@
-import { getModelForClass, ModelOptions, prop, Ref } from '@typegoose/typegoose';
+import { getModelForClass, ModelOptions, pre, prop, Ref } from '@typegoose/typegoose';
 import bcrypt from 'bcrypt';
 import { Employee } from './employee.model';
 import { SourceOfCustomer, TypeOfCustomer } from './dropdown.model';
+import { Coupon } from './coupons.model';
+
+@pre<User>('save', async function() {
+  this.UpdatedAt = new Date();
+})
 
 // Address Subdocument
 class Address {
@@ -49,20 +54,6 @@ class FamilyMember {
   public Allergies?: string;
 }
 
-// ReferredTo Subdocument
-class ReferredTo {
-  @prop({ ref: () => User })
-  public UserId!: Ref<User>;
-
-  @prop({ type: Date })
-  public ReferredDate!: Date;
-
-  @prop({ type: Boolean })
-  public IsLogedin?: boolean;
-
-  @prop({ type: Boolean })
-  public IsPurchased?: boolean;
-}
 
 // Main User Model
 export class User {
@@ -123,8 +114,8 @@ export class User {
   @prop({ type: String, unique: true })
   public ReferredCode?: string;
 
-  @prop({ type: [ReferredTo] })
-  public ReferredTo?: ReferredTo[];
+  @prop({ ref: () => User, required: false })
+  public ReferredBy?: Ref<User>;
 
   @prop({ ref: () => Employee, required: false })
   public AssignedEmployee?: Ref<Employee>;
@@ -135,12 +126,17 @@ export class User {
   @prop({ ref: () => TypeOfCustomer, required: false })
   public CustomerType?: Ref<TypeOfCustomer>;
 
-  // @prop({ ref: () => Coupons })
-  // public Coupons?: Array<{
-  //   coupon: Ref<any>;
-  //   isUsed?: boolean;
-  //   isExpired?: boolean;
-  // }>;
+  @prop({ ref: () => Coupon })
+  public Coupons?: Array<{
+    Coupon: Ref<Coupon>;
+    IsUsed?: boolean;
+  }>;
+
+  @prop({ type: String, required: false,unique:true })
+  public UniqueReferralCode!: string;
+
+
+
 
   // Authentication Fields
   @prop({ type: String, required: false })
@@ -158,10 +154,18 @@ export class User {
   @prop({ type: Date })
   public OtpExpiry?: Date;
 
-  // Methods
-  // public async comparePassword(candidatePassword: string): Promise<boolean> {
-  //   return bcrypt.compare(candidatePassword, this.Password);
-  // }
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ ref: () => Employee })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee })
+  public UpdatedBy!: Ref<Employee>;
+
 }
 
 // Export UserModel
