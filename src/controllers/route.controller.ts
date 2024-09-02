@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { responseHandler } from '../utils/send-response';
-import { LocalityModel, RouteModel, VehicleModel, ZoneModel } from '../models/route.model';
+import { CityModel, LocalityModel, RouteModel, VehicleModel, ZoneModel } from '../models/route.model';
 
 // Create a new Vehicle
 export const createVehicle = async (req: Request, res: Response) => {
@@ -1145,3 +1145,249 @@ export const getAllRoutes = async (req: Request, res: Response) => {
     }
 };
 
+
+// Going for city
+export const createCity = async (req: Request, res: Response) => {
+    const LoggedInId = req['decodedToken'].id; // Extract LoggedInId from token
+
+    if (!LoggedInId) {
+        return res.status(401).json({
+            status: false,
+            message: "Unauthorized"
+        });
+    }
+
+    const { CityName, Serviceable, ZoneIncluded, RouteIncluded } = req.body;
+
+    try {
+        // Check if the city name already exists (case-insensitive)
+        const existingCity = await CityModel.findOne({
+            CityName: { $regex: new RegExp(`^${CityName}$`, 'i') }
+        });
+
+        if (existingCity) {
+            return res.status(400).json({
+                status: false,
+                message: "City name already exists"
+            });
+        }
+
+        const newCity = new CityModel({
+            CityName,
+            Serviceable,
+            CreatedBy: LoggedInId,
+            UpdatedBy: LoggedInId,
+            ZoneIncluded,
+            RouteIncluded
+        });
+
+        await newCity.save();
+
+        return res.status(201).json({
+            status: true,
+            message: "City created successfully",
+            data: newCity
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: 'Internal Server Error',
+            data: error.message
+        });
+    }
+};
+
+
+export const getCity = async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    try {
+        const city = await CityModel.findById(id)
+            .populate('CreatedBy')
+            .populate('UpdatedBy')
+            .populate('ZoneIncluded')
+            .populate('RouteIncluded');
+
+        if (!city) {
+            return res.status(404).json({
+                status: false,
+                message: "City not found"
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            data: city
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: 'Internal Server Error',
+            data: error.message
+        });
+    }
+};
+
+
+export const updateCity = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const LoggedInId = req['decodedToken'].id; // Extract LoggedInId from token
+
+    if (!LoggedInId) {
+        return res.status(401).json({
+            status: false,
+            message: "Unauthorized"
+        });
+    }
+
+    const { CityName, Serviceable, ZoneIncluded, RouteIncluded } = req.body;
+
+    try {
+        // Check if the city name already exists (case-insensitive) and is not the current city
+        const existingCity = await CityModel.findOne({
+            CityName: { $regex: new RegExp(`^${CityName}$`, 'i') },
+            _id: { $ne: id }
+        });
+
+        if (existingCity) {
+            return res.status(400).json({
+                status: false,
+                message: "City name already exists"
+            });
+        }
+
+        const updatedCity = await CityModel.findByIdAndUpdate(
+            id,
+            {
+                CityName,
+                Serviceable,
+                UpdatedBy: LoggedInId,
+                UpdatedAt: new Date(),
+                ZoneIncluded,
+                RouteIncluded
+            },
+            { new: true }
+        )
+
+        if (!updatedCity) {
+            return res.status(404).json({
+                status: false,
+                message: "City not found"
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: "City updated successfully",
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: 'Internal Server Error',
+            data: error.message
+        });
+    }
+};
+export const deleteCity = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const LoggedInId = req['decodedToken'].id; // Extract LoggedInId from token
+
+    if (!LoggedInId) {
+        return res.status(401).json({
+            status: false,
+            message: "Unauthorized"
+        });
+    }
+
+    try {
+        const city = await CityModel.findByIdAndDelete(id);
+
+        if (!city) {
+            return res.status(404).json({
+                status: false,
+                message: "City not found"
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: "City deleted successfully"
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: 'Internal Server Error',
+            data: error.message
+        });
+    }
+};
+
+export const getAllCity = async (req: Request, res: Response) => {
+
+    try {
+        const city = await CityModel.find()
+            .populate('CreatedBy')
+            .populate('UpdatedBy')
+            .populate('ZoneIncluded')
+            .populate('RouteIncluded');
+
+        if (!city) {
+            return res.status(404).json({
+                status: false,
+                message: "City not found"
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            data: city
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: 'Internal Server Error',
+            data: error.message
+        });
+    }
+};
+
+export const updateServiceableStatus = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { Serviceable } = req.body;  // Expecting a boolean value
+
+    // Validate that the Serviceable field is a boolean
+    if (typeof Serviceable !== 'boolean') {
+        return res.status(400).json({
+            status: false,
+            message: "Serviceable status must be a boolean value"
+        });
+    }
+
+    try {
+        // Update the city document with the new Serviceable status
+        const updatedCity = await CityModel.findByIdAndUpdate(
+            id,
+            { Serviceable },
+            { new: true }
+        );
+
+        if (!updatedCity) {
+            return res.status(404).json({
+                status: false,
+                message: "City not found"
+            });
+        }
+
+        return res.status(200).json({
+            status: true,
+            message: "Serviceable status updated successfully",
+            data: updatedCity
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            message: 'Internal Server Error',
+            data: error.message
+        });
+    }
+};
