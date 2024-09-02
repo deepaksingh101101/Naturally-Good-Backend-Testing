@@ -46,9 +46,11 @@ export const LoginUserByGoogle = async (req: Request, res: Response): Promise<vo
                 LastLogin: new Date().toISOString(),
                 Profile:picture,
             });
-            await user.save();
+         const newUser= await user.save();
+        req['userId'] = newUser._id;
         } else {
             user.LastLogin = new Date().toISOString();
+            req['userId']=user._id;
             await user.save();
         }
 
