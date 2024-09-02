@@ -15,6 +15,7 @@ import productRoutes from "./routes/product.routes";
 import couponsRoutes from "./routes/coupons.routes";
 import subscriptionRoutes from "./routes/subscription.routes";
 import bagRoutes from "./routes/bag.routes";
+import routeRoutes from "./routes/route.routes";
 import planRoutes from "./routes/plans.routes";
 import complaintTypeRoutes from "./routes/complaints.routes";
 import dropDownRoutes from "./routes/dropdown.routes";
@@ -59,6 +60,9 @@ export class Application {
     this.app.use("/complaintType",complaintTypeRoutes );
     this.app.use("/dropDown",dropDownRoutes );
     this.app.use("/category", categoryRoutes);
+
+
+    this.app.use("/route", routeRoutes);
 
     this.app.use(express.static(path.join(__dirname, "public")));
   }
