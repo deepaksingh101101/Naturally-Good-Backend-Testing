@@ -97,12 +97,12 @@
         ]
     },
      {
-        "moduleName": "dummy3 Management",
+        "moduleName": "Route Management",
         "permissions": [
-            { "name": "Create Complain Type" },
-            { "name": "Edit Complain Type" },
-            { "name": "Resolve Complain" },
-            { "name": "Complain Type Status" }
+            { "name": "View Route" },
+            { "name": "Create Route" },
+            { "name": "Edit Route" },
+            { "name": "Toggle Route" }
         ]
     },
      {
