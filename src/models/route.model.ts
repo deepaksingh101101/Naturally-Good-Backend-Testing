@@ -115,14 +115,23 @@ export class Route {
   @prop({ type: String, required: true })
   public RouteName!: string;
 
-  @prop({ type: Boolean, default: false })
+  @prop({ type: Boolean, default: true })
   public Status!: boolean;
 
-  @prop({ ref: () => Vehicle })
-  public VehicleTagged?: Ref<Vehicle>;
 
-  @prop({ ref: () => Zone })
-  public Zones?: Ref<Zone>[];
+  @prop({
+    type: () => [Object], 
+    default: [], 
+})
+  public ZonesIncluded!: {
+    ZoneId: Ref<Zone>;  // Use Ref<Zone> to reference the Zone model
+    DeliverySequence: number;
+  }[];
+
+
+  
+  @prop({ ref: () => Vehicle })
+  public VehicleTagged?: Ref<Vehicle[]>;
 
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;
