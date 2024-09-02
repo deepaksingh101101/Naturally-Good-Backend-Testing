@@ -24,6 +24,8 @@ class Referral {
   @prop({ ref: () => Subscription })
   public SubscriptionPurchased!: Ref<Subscription>;
 
+  @prop({ type: Boolean, default: false })
+  public isReferredPersonLoggedIn!: boolean;
 
 }
 

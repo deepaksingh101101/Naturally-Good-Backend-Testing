@@ -81,6 +81,9 @@ export class User {
   @prop({ type: String })
   public Email?: string;
 
+  @prop({ type: String })
+  public Profile?: string;
+
   @prop({ type: Number })
   public AlternateContactNumber?: number;
 
@@ -140,20 +143,20 @@ export class User {
   // }>;
 
   // Authentication Fields
-  @prop({ type: String, required: true })
+  @prop({ type: String, required: false })
   public Password!: string;
 
   @prop({ type: Boolean, default: true })
   public AccountStatus!: boolean;
 
   @prop({ type: String, default: () => new Date().toISOString() })
-  public lastLogin?: string;
+  public LastLogin?: string;
 
   @prop({ type: String })
-  public otp?: string;
+  public Otp?: string;
 
   @prop({ type: Date })
-  public otpExpiry?: Date;
+  public OtpExpiry?: Date;
 
   // Methods
   // public async comparePassword(candidatePassword: string): Promise<boolean> {
