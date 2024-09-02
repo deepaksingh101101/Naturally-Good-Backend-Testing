@@ -438,3 +438,53 @@ export const getCouponById = async (req: Request, res: Response) => {
   }
 };
 
+export const updateCouponStatus = async (req: Request, res: Response) => {
+  try {
+      const { id } = req.params;
+      const { Status } = req.body;
+
+      // Validate ID format
+      if (!id.match(/^[0-9a-fA-F]{24}$/)) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 400,
+              message: 'Invalid coupon ID format',
+          });
+      }
+
+      // Validate status
+      const validStatuses = ['Active', 'Inactive'];
+      if (!validStatuses.includes(Status)) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 400,
+              message: 'Status must be either "Active" or "Inactive"',
+          });
+      }
+
+      // Update the coupon status
+      const coupon = await CouponModel.findByIdAndUpdate(id, { Status }, { new: true, runValidators: true });
+
+      if (!coupon) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: 'Coupon not found',
+          });
+      }
+
+      responseHandler.out(req, res, {
+          status: true,
+          statusCode: 200,
+          message: 'Coupon status updated successfully',
+          data: coupon,
+      });
+  } catch (error) {
+      console.error('Error updating coupon status:', error);
+      responseHandler.out(req, res, {
+          status: false,
+          statusCode: 500,
+          message: 'Internal server error',
+      });
+  }
+};
