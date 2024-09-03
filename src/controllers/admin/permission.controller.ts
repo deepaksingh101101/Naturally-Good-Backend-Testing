@@ -283,7 +283,7 @@ export const addPermissionsToAllRoles = async (req: Request, res: Response) => {
       const permissionsForRole = {
         permission: newPermission._id,
         details: newPermission.permissions.map((p: any) => ({
-          isAllowed: true, // Default isAllowed to true
+          isAllowed: true, // Default isAllowed to true for now; will adjust for roles later
           actionName: p.name,
         })),
       };
@@ -293,7 +293,16 @@ export const addPermissionsToAllRoles = async (req: Request, res: Response) => {
   
       if (roles.length > 0) {
         for (const role of roles) {
-          role.permissions.push(permissionsForRole);
+          // Set `isAllowed` to true only for "Superadmin" role
+          const permissionsForThisRole = {
+            ...permissionsForRole,
+            details: permissionsForRole.details.map((detail) => ({
+              ...detail,
+              isAllowed: role.roleName === 'Superadmin', // true if Superadmin, else false
+            })),
+          };
+  
+          role.permissions.push(permissionsForThisRole);
           await role.save();
           console.log(`Permissions added to role: ${role.roleName}`);
         }
@@ -317,6 +326,7 @@ export const addPermissionsToAllRoles = async (req: Request, res: Response) => {
       });
     }
   };
+  
   
   
   
