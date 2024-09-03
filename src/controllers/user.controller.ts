@@ -189,7 +189,8 @@ export const createUserByAdmin = async (req: Request, res: Response) => {
       ExtraNotes,
       AssignedEmployee,
       Source,
-      CustomerType
+      CustomerType,
+      AlternateAddress
     } = req.body;
 
     if (!FirstName || !LastName || !Phone || !Address || !AssignedEmployee || !Source || !CustomerType) {
@@ -244,6 +245,7 @@ export const createUserByAdmin = async (req: Request, res: Response) => {
       AssignedEmployee,
       Source,
       CustomerType,
+      AlternateAddress,
       CreatedBy: loggedInId, // Set the createdBy field to the admin's ID
       UpdatedBy: loggedInId // Optionally set the updatedBy field
     });

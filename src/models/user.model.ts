@@ -28,8 +28,6 @@ class Address {
   @prop({ type: String })
   public ZipCode?: string;
 
-  @prop({ type: String })
-  public AlternateAddress?: string;
 }
 
 // Family Member Subdocument
@@ -82,14 +80,19 @@ export class User {
   @prop({ type: String })
   public Profile?: string;
 
-  @prop({ type: Number })
+  @prop({ type: Number,
+    validate: {
+      validator: function (v: number) {
+        return /^(\+91)?[6-9]\d{9}$/.test(v.toString());
+      },
+      message: 'Phone number must be a 10-digit number starting with 6, 7, 8, or 9'
+    }
+   })
   public AlternateContactNumber?: number;
 
   @prop({ type: String })
   public Allergies?: string;
 
-  @prop({ type: Number })
-  public NumberOfFamilyMembers?: number;
 
   @prop({ type: Date })
   public DOB?: Date;
@@ -111,6 +114,9 @@ export class User {
 
   @prop({ type: String })
   public WhatDoYouUsuallyCook?: string;
+
+  @prop({ type: String })
+  public AlternateAddress?: string;
 
   @prop({ type: [FamilyMember] })
   public FamilyMembers?: FamilyMember[];
