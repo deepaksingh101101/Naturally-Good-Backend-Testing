@@ -866,7 +866,7 @@ export const createRoute = async (req: Request, res: Response) => {
 
         const newRoute = new RouteModel({
             RouteName,
-            Zones: ZonesIncluded,
+            ZonesIncluded: ZonesIncluded,
             CreatedBy: LoggedInId,
             UpdatedBy: LoggedInId,
         });
@@ -959,7 +959,7 @@ export const updateRoute = async (req: Request, res: Response) => {
             id,
             {
                 RouteName,
-                Zones,
+                ZonesIncluded:Zones,
                 UpdatedBy: LoggedInId,
                 UpdatedAt: new Date(),
             },

@@ -107,6 +107,15 @@ export class Zone {
 
 const ZoneModel = getModelForClass(Zone);
 
+
+// Route model Stared
+class ZoneInfo {
+  @prop({ ref: () => Zone, required: true })
+  public ZoneId!: Ref<Zone>;
+
+  @prop({ required: true })
+  public DeliverySequence!: number;
+}
 // Route Model
 @pre<Route>('save', function () {
   this.UpdatedAt = new Date();
@@ -119,15 +128,17 @@ export class Route {
   public Status!: boolean;
 
 
-  @prop({
-    type: () => [Object], 
-    default: [], 
-})
-  public ZonesIncluded!: {
-    ZoneId: Ref<Zone>;  // Use Ref<Zone> to reference the Zone model
-    DeliverySequence: number;
-  }[];
+//   @prop({
+//     type: () => [Object], 
+//     default: [], 
+// })
+//   public ZonesIncluded!: {
+//     ZoneId: Ref<Zone>;  // Use Ref<Zone> to reference the Zone model
+//     DeliverySequence: number;
+//   }[];
 
+@prop({ type: () => [ZoneInfo], default: [] })
+public ZonesIncluded!: ZoneInfo[];
 
   
   @prop({ ref: () => Vehicle })
