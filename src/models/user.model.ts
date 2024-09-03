@@ -1,5 +1,4 @@
 import { getModelForClass, ModelOptions, pre, prop, Ref } from '@typegoose/typegoose';
-import bcrypt from 'bcrypt';
 import { Employee } from './employee.model';
 import { SourceOfCustomer, TypeOfCustomer } from './dropdown.model';
 import { Coupon } from './coupons.model';
@@ -8,7 +7,7 @@ import { Coupon } from './coupons.model';
   this.UpdatedAt = new Date();
 })
 
-// Address Subdocument
+// Address Sub document
 class Address {
   @prop({ type: String })
   public HouseNumber?: string;
@@ -53,7 +52,6 @@ class FamilyMember {
   @prop({ type: String })
   public Allergies?: string;
 }
-
 
 // Main User Model
 export class User {
@@ -135,18 +133,18 @@ export class User {
   @prop({ type: String, required: false,unique:true })
   public UniqueReferralCode!: string;
 
-
-
-
-  // Authentication Fields
-  @prop({ type: String, required: false })
-  public Password!: string;
+  // // Authentication Fields
+  // @prop({ type: String, required: false })
+  // public Password!: string;
 
   @prop({ type: Boolean, default: true })
   public AccountStatus!: boolean;
 
   @prop({ type: String, default: () => new Date().toISOString() })
   public LastLogin?: string;
+
+  @prop({ type: Boolean, default:false })
+  public isUserVerified?: boolean;
 
   @prop({ type: String })
   public Otp?: string;

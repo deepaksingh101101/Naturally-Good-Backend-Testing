@@ -4,32 +4,152 @@ import FeedbackModel from '../models/feedback.model';
 import UserModel from '../models/user.model';
 import { BagModel } from '../models/bag.model';
 import { responseHandler } from '../utils/send-response';
+import jwt from 'jsonwebtoken';
+// import { OAuth2Client } from 'google-auth-library';
+
+// const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '525557668529-0sv0893s4r5b5gqrh82d3f6ffqgsrg4e.apps.googleusercontent.com');
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+
 
 export const sendOTP = async (req: Request, res: Response) => {
   try {
-    let { phoneNo } = req.body;
-    if (!phoneNo) {
-      return res.status(400).json({ error: 'Phone number is required' });
+    let { PhoneNo } = req.body;
+    if (!PhoneNo) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Phone number is required',
+        data: null
+      });
     }
 
-    phoneNo = phoneNo.replace(/^\+91/, '');
+    PhoneNo = PhoneNo.replace(/^\+91/, '');
 
     const otp = Math.floor(100000 + Math.random() * 900000);
+    const otpExpiry = new Date(Date.now() + 15 * 60 * 1000); // OTP expiry set to 15 minutes
 
+    // Check if the user exists
+    let user = await UserModel.findOne({ PhoneNo: PhoneNo });
 
+    if (!user) {
+      // If user does not exist, create a new user with the OTP and expiry
+      user = await UserModel.create({
+        PhoneNo: PhoneNo,
+        Otp: otp.toString(),
+        OtpExpiry: otpExpiry,
+        isUserVerified: false, // Default to false, user will need to verify
+      });
+    } else {
+      // If user exists, update the OTP and expiry
+      user.Otp = otp.toString();
+      user.OtpExpiry = otpExpiry;
+      await user.save();
+    }
+
+    // Send OTP via SMS
     await client.messages.create({
       body: `Your verification code is ${otp}`,
       from: twilioNumber,
-      to: `+91${phoneNo}`
+      to: `+91${PhoneNo}`
     });
 
-    res.status(200).json({ message: 'OTP sent successfully' });
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'OTP sent successfully',
+      data: null
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error sending OTP:', error);
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: null
+    });
   }
 };
 
+export const verifyOTP = async (req: Request, res: Response) => {
+  try {
+    let { PhoneNo, Otp } = req.body;
+
+    if (!PhoneNo || !Otp) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Phone number and OTP are required',
+        data: null
+      });
+    }
+
+    PhoneNo = PhoneNo.replace(/^\+91/, '');
+
+    // Find the user by phone number
+    const user = await UserModel.findOne({ PhoneNo: PhoneNo });
+
+    if (!user) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'User not found',
+        data: null
+      });
+    }
+
+    // Check if the OTP is correct and not expired
+    if (user.Otp !== Otp) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Invalid OTP',
+        data: null
+      });
+    }
+
+    if (new Date() > user.OtpExpiry!) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'OTP has expired',
+        data: null
+      });
+    }
+
+    // Update the user's verification status
+    user.isUserVerified = true;
+    user.Otp = undefined; // Clear OTP after successful verification
+    user.OtpExpiry = undefined; // Clear OTP expiry after successful verification
+    await user.save();
+
+    // Generate JWT token
+    const jwtToken = jwt.sign(
+      { id: user._id },
+      JWT_SECRET,
+      { expiresIn: '5h' }
+    );
+
+    // Send the response
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'OTP verified successfully',
+      data: {
+        jwtToken,
+        userId: user._id
+      }
+    });
+
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: null
+    });
+  }
+};
 
 
 
