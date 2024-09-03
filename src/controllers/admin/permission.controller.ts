@@ -3,6 +3,7 @@ import PermissionModel, { Permission } from '../../models/permission.model';
 import { responseHandler } from '../../utils/send-response';
 import path from 'path';
 import fs from 'fs';
+import RoleModel from '../../models/role.model';
 
 // Service class for handling CRUD operations on the Permission model
 class PermissionService {
@@ -221,3 +222,101 @@ export const deletePermission = async (req: Request, res: Response) => {
         });
     }
 };
+
+
+
+export const addPermissionsToAllRoles = async (req: Request, res: Response) => {
+    const { moduleName, permissions } = req.body as Permission;
+  
+    if (!moduleName || !permissions) {
+      return res.status(400).json({
+        status: false,
+        message: 'moduleName and permissions are required in the request body.',
+      });
+    }
+  
+    try {
+      // Step 1: Check if the module already exists
+      const existingModule = await PermissionModel.findOne({ moduleName: moduleName });
+  
+      if (existingModule) {
+        // Step 1.1: If the module exists, check if any permissions already exist
+        const existingPermissionNames = existingModule.permissions.map((perm: any) => perm.name);
+        const duplicatePermissions = permissions.filter((perm) => existingPermissionNames.includes(perm.name));
+  
+        if (duplicatePermissions.length > 0) {
+          return res.status(400).json({
+            status: false,
+            message: 'One or more permissions already exist in the module.',
+          });
+        }
+  
+        // Step 1.2: If the module exists but the specific permissions do not exist, add new permissions
+        existingModule.permissions.push(...permissions);
+        await existingModule.save();
+  
+        return res.status(200).json({
+          status: true,
+          message: 'Permissions successfully added to existing module.',
+        });
+      }
+  
+      // Step 2: Check if any permissions already exist in any module
+      const existingPermissions = await PermissionModel.find({
+        "permissions.name": { $in: permissions.map((perm) => perm.name) },
+      });
+  
+      if (existingPermissions.length > 0) {
+        return res.status(400).json({
+          status: false,
+          message: 'One or more permissions already exist in another module.',
+        });
+      }
+  
+      // Step 3: If no duplicates exist, create a new permission entry
+      const newPermission = await PermissionModel.create({
+        moduleName: moduleName,
+        permissions: permissions,
+      });
+  
+      // Step 4: Prepare permissions for Role update
+      const permissionsForRole = {
+        permission: newPermission._id,
+        details: newPermission.permissions.map((p: any) => ({
+          isAllowed: true, // Default isAllowed to true
+          actionName: p.name,
+        })),
+      };
+  
+      // Step 5: Find all roles and update them with new permissions
+      const roles = await RoleModel.find(); // Get all roles
+  
+      if (roles.length > 0) {
+        for (const role of roles) {
+          role.permissions.push(permissionsForRole);
+          await role.save();
+          console.log(`Permissions added to role: ${role.roleName}`);
+        }
+        return res.status(200).json({
+          status: true,
+          message: 'Permissions successfully added to all roles.',
+        });
+      } else {
+        console.log('No roles found.');
+        return res.status(404).json({
+          status: false,
+          message: 'No roles found to update.',
+        });
+      }
+    } catch (error) {
+      console.error('Error adding permissions to roles:', error.message);
+      return res.status(500).json({
+        status: false,
+        message: 'Internal Server Error',
+        error: error.message,
+      });
+    }
+  };
+  
+  
+  
