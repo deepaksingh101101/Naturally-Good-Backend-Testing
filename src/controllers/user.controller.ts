@@ -270,6 +270,252 @@ export const createUserByAdmin = async (req: Request, res: Response) => {
     });
   }
 };
+export const getAllUserByAdmin = async (req: Request, res: Response) => {
+  try {
+    // Get pagination parameters
+    const currentPage = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const skip = (currentPage - 1) * limit;
+
+    // Fetch users with pagination and populate necessary fields
+    const users = await UserModel.find()
+      .skip(skip)
+      .limit(limit)
+      .select('-Otp -OtpExpiry -Coupons') // Exclude OTP, OTP Expiry, Coupons fields
+      .populate('AssignedEmployee', 'Name Email') // Adjust fields to populate as needed
+      .populate('Source', 'Name')
+      .populate('CustomerType', 'Name')
+      .populate('CreatedBy', 'Email')
+      .populate('UpdatedBy', 'Email');
+
+      const total = await UserModel.countDocuments();
+      const totalPages = Math.ceil(total / limit);
+
+      const prevPage = currentPage > 1;
+      const nextPage = currentPage < totalPages;
+
+
+    // Return the users in the response
+    responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'Users retrieved successfully',
+      data: {
+          total,
+          currentPage,
+          totalPages,
+          prevPage,
+          nextPage,
+          users,
+      }
+  });
+
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: null
+    });
+  }
+};
+export const getUserByIdForAdmin = async (req: Request, res: Response) => {
+  const userId = req.params.id; // Extract user ID from request parameters
+
+  try {
+    // Validate the user ID
+    if (!userId) {
+      return res.status(400).json({
+        status: false,
+        statusCode: 400,
+        message: 'User ID is required',
+        data: null
+      });
+    }
+
+    // Find the user by ID and populate all related fields
+    const user = await UserModel.findById(userId)
+      .populate({
+        path: 'AssignedEmployee',
+        select: 'FirstName LastName Email' // Adjust fields as needed
+      })
+      .populate({
+        path: 'Source',
+        select: 'Name' // Adjust fields as needed
+      })
+      .populate({
+        path: 'CustomerType',
+        select: 'Name' // Adjust fields as needed
+      })
+      .populate({
+        path: 'CreatedBy',
+        select: '-Password',
+        populate: {
+          path: 'Role', // Adjust this if the role field is nested differently
+          select: 'roleName' // Adjust according to the role fields you need
+        }
+      })
+      .populate({
+        path: 'UpdatedBy',
+        select: '-Password',
+        populate: {
+          path: 'Role', // Adjust this if the role field is nested differently
+          select: 'roleName' // Adjust according to the role fields you need
+        }
+      })
+      
+      .exec();
+
+    // Check if the user was found
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        statusCode: 404,
+        message: 'User not found',
+        data: null
+      });
+    }
+
+    // Send a response with the user data
+    return res.status(200).json({
+      status: true,
+      statusCode: 200,
+      message: 'User retrieved successfully',
+      data: user
+    });
+  } catch (error) {
+    console.error('Error retrieving user:', error.message);
+    return res.status(500).json({
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: error.message
+    });
+  }
+};
+export const updateUserByAdmin = async (req: Request, res: Response) => {
+  try {
+    // Get the logged-in admin ID from the decoded token
+    const loggedInId = req['decodedToken']?.id;
+
+    if (!loggedInId) {
+      return res.status(401).json({
+        status: false,
+        statusCode: 401,
+        message: 'Unauthorized',
+        data: null
+      });
+    }
+
+    const userId = req.params.id; // Get user ID from URL parameters
+
+    if (!userId) {
+      return res.status(400).json({
+        status: false,
+        statusCode: 400,
+        message: 'User ID is required',
+        data: null
+      });
+    }
+
+    // Extract the update data from the request body, excluding Phone and Email
+    const { Phone, Email, ...updateData } = req.body;
+
+    // Find the user by ID and update with new data
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        ...updateData,
+        UpdatedBy: loggedInId // Update the updatedBy field
+      },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        status: false,
+        statusCode: 404,
+        message: 'User not found',
+        data: null
+      });
+    }
+
+    // Send a response with the updated user
+    return res.status(200).json({
+      status: true,
+      statusCode: 200,
+      message: 'User updated successfully',
+      data: updatedUser
+    });
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: null
+    });
+  }
+};
+
+export const updateAccountStatusByAdmin = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id; // Get user ID from URL parameters
+    const { AccountStatus } = req.body; // Get new account status from the request body
+
+    if (!userId) {
+      return res.status(400).json({
+        status: false,
+        statusCode: 400,
+        message: 'User ID is required',
+        data: null
+      });
+    }
+
+    if (typeof AccountStatus !== 'boolean') {
+      return res.status(400).json({
+        status: false,
+        statusCode: 400,
+        message: 'Invalid account status',
+        data: null
+      });
+    }
+
+    // Update the AccountStatus field
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      { AccountStatus },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        status: false,
+        statusCode: 404,
+        message: 'User not found',
+        data: null
+      });
+    }
+
+    // Send a response with the updated user
+    return res.status(200).json({
+      status: true,
+      statusCode: 200,
+      message: 'Account status updated successfully',
+    });
+  } catch (error) {
+    console.error('Error updating account status:', error);
+    return res.status(500).json({
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: null
+    });
+  }
+};
+
+
+
 
 
 

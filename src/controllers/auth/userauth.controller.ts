@@ -43,6 +43,7 @@ export const LoginUserByGoogle = async (req: Request, res: Response): Promise<vo
                 FirstName:given_name,
                 LastName:family_name,
                 Email:email,
+                isUserVerified: true, // Default to false, user will need to verify
                 LastLogin: new Date().toISOString(),
                 Profile:picture,
             });

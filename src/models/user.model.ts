@@ -124,7 +124,7 @@ export class User {
   @prop({ type: String })
   public ExtraNotes?: string;
 
-  @prop({ type: String, unique: true })
+  @prop({ type: String })
   public ReferredCode?: string;
 
   @prop({ ref: () => User, required: false })
@@ -144,9 +144,6 @@ export class User {
     Coupon: Ref<Coupon>;
     IsUsed?: boolean;
   }>;
-
-  @prop({ type: String, required: false,unique:true })
-  public UniqueReferralCode!: string;
 
   // // Authentication Fields
   // @prop({ type: String, required: false })
