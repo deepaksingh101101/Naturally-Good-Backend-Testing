@@ -168,7 +168,7 @@ export class City {
   @prop({ type: String, required: true })
   public CityName!: string;
 
-  @prop({ type: Boolean, default: false })
+  @prop({ type: Boolean, default: true })
   public Serviceable!: boolean;
 
   @prop({ type: Date, default: Date.now })
@@ -182,12 +182,15 @@ export class City {
 
   @prop({ ref: () => Employee, required: true })
   public UpdatedBy!: Ref<Employee>;
-
+  
   @prop({ ref: () => Zone })
-  public ZoneIncluded?: Ref<Zone[]>;
-
+  public ZoneIncluded?: Ref<Zone>[];
+  
   @prop({ ref: () => Route })
-  public RouteIncluded?: Ref<Route[]>;
+  public RouteIncluded?: Ref<Route>[];
+  
+
+  
 }
 
 const CityModel = getModelForClass(City);

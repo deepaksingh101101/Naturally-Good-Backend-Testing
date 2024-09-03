@@ -2,6 +2,7 @@ import { getModelForClass, ModelOptions, pre, prop, Ref } from '@typegoose/typeg
 import { Employee } from './employee.model';
 import { SourceOfCustomer, TypeOfCustomer } from './dropdown.model';
 import { Coupon } from './coupons.model';
+import { City } from './route.model';
 
 @pre<User>('save', async function() {
   this.UpdatedAt = new Date();
@@ -18,8 +19,8 @@ class Address {
   @prop({ type: String })
   public Sector?: string;
 
-  @prop({ type: String })
-  public City?: string;
+  @prop({ ref: () => City, required: false })
+  public City?: Ref<City>;
 
   @prop({ type: String })
   public State?: string;
@@ -61,7 +62,15 @@ export class User {
   @prop({ type: String })
   public LastName!: string;
 
-  @prop({ type: Number })
+  @prop({
+    type: Number,
+    validate: {
+      validator: function (v: number) {
+        return /^(\+91)?[6-9]\d{9}$/.test(v.toString());
+      },
+      message: 'Phone number must be a 10-digit number starting with 6, 7, 8, or 9'
+    }
+  })
   public Phone!: number;
 
   @prop({ type: () => Address, required: false })

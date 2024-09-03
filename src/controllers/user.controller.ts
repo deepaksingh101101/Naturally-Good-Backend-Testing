@@ -152,6 +152,124 @@ export const verifyOTP = async (req: Request, res: Response) => {
 };
 
 
+// Create user by admin side
+export const createUserByAdmin = async (req: Request, res: Response) => {
+  try {
+    // Get the logged-in admin ID from the decoded token
+    const loggedInId = req['decodedToken']?.id;
+
+    if (!loggedInId) {
+      return res.status(401).json({
+        status: false,
+        statusCode: 401,
+        message: 'Unauthorized',
+        data: null
+      });
+    }
+
+    // Extract user data from the request body
+    const {
+      FirstName,
+      LastName,
+      Phone,
+      Address,
+      Email,
+      Profile,
+      AlternateContactNumber,
+      Allergies,
+      NumberOfFamilyMembers,
+      DOB,
+      Height,
+      Weight,
+      Preferences,
+      Gender,
+      HowOftenYouCookedAtHome,
+      WhatDoYouUsuallyCook,
+      FamilyMembers,
+      ExtraNotes,
+      AssignedEmployee,
+      Source,
+      CustomerType
+    } = req.body;
+
+    if (!FirstName || !LastName || !Phone || !Address || !AssignedEmployee || !Source || !CustomerType) {
+      return res.status(400).json({
+        status: false,
+        statusCode: 400,
+        message: 'Missing required fields',
+        data: null
+      });
+    }
+
+    // Check if the Phone number or Email already exists
+    const existingPhoneNumber = await UserModel.findOne({ Phone });
+    if (existingPhoneNumber) {
+      return res.status(400).json({
+        status: false,
+        statusCode: 400,
+        message: 'Phone number already exists',
+        data: null
+      });
+    }
+    const existingEmailUser = await UserModel.findOne({ Email });
+    if (existingEmailUser) {
+      return res.status(400).json({
+        status: false,
+        statusCode: 400,
+        message: 'Email already exists',
+        data: null
+      });
+    }
+
+    // Create a new user object while ignoring some fields
+    const newUser = new UserModel({
+      FirstName,
+      LastName,
+      Phone,
+      Address,
+      Email,
+      Profile,
+      AlternateContactNumber,
+      Allergies,
+      NumberOfFamilyMembers,
+      DOB,
+      Height,
+      Weight,
+      Preferences,
+      Gender,
+      HowOftenYouCookedAtHome,
+      WhatDoYouUsuallyCook,
+      FamilyMembers,
+      ExtraNotes,
+      AssignedEmployee,
+      Source,
+      CustomerType,
+      CreatedBy: loggedInId, // Set the createdBy field to the admin's ID
+      UpdatedBy: loggedInId // Optionally set the updatedBy field
+    });
+
+    // Save the new user to the database
+    const savedUser = await newUser.save();
+
+    // Send a response with the newly created user
+    return res.status(201).json({
+      status: true,
+      statusCode: 201,
+      message: 'User created successfully',
+      data: savedUser
+    });
+  } catch (error) {
+    console.error('Error creating user:', error);
+    return res.status(500).json({
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: null
+    });
+  }
+};
+
+
 
 
 

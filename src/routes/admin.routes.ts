@@ -15,6 +15,7 @@ import {
 import { createRole, getAllRoles, getAllRolesNameAndId } from '../controllers/auth/role.controller';
 import { checkPermissions } from '../middleware/checkPermission';
 import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
+import { createUserByAdmin } from '../controllers/user.controller';
 
 const router = Router();
 
@@ -34,7 +35,7 @@ router.put('/editEmployee/:id', checkPermissions('Edit Employee'), editEmployeeB
 router.get('/employee/login', loginEmployee);
 
 // User/Customer Creation By Admin
-router.post('/create/user', checkPermissions('Create Customer'), createEmployee);
+router.post('/create/user', checkPermissions('Create Customer'), createUserByAdmin);
 router.get('/user',checkPermissions('View Customer') ,getAllEmployees);
 router.get('/getOneUser/:id', checkPermissions('Edit Customer'), getEmployeeById);
 router.put('/editUser/:id', checkPermissions('Customer Status'), editEmployeeById);
