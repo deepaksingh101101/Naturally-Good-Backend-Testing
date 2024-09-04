@@ -424,8 +424,8 @@ export const updateUserByAdmin = async (req: Request, res: Response) => {
     if(Email || Phone){
       return res.status(200).json({
         status: false,
-        statusCode: 200,
-        message: 'User updated successfully'
+        statusCode: 400,
+        message: 'Email and Number Cannot be updated'
       });
     }
 
