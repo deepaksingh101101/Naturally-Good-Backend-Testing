@@ -94,7 +94,7 @@ export const deleteProductType = async (req: Request, res: Response) => {
     }
     return responseHandler.out(req, res, {
       status: true,
-      statusCode: 204,
+      statusCode: 200,
       message: "Product Type deleted successfully",
   });
     // return res.status(204).json({ message: 'Type deleted' });
@@ -175,7 +175,6 @@ export const editProductType = async (req: Request, res: Response) => {
     handleError(req,res, error);
   }
 };
-
 
 // Starting Roster
 export const createRoster = async (req: Request, res: Response) => {
@@ -271,7 +270,7 @@ export const deleteRoster = async (req: Request, res: Response) => {
     }
     return responseHandler.out(req, res, {
       status: true,
-      statusCode: 204,
+      statusCode: 200,
       message: "Roster deleted successfully",
   });
     // return res.status(204).json({ message: 'Roster deleted' });
@@ -455,7 +454,7 @@ export const deleteSeason = async (req: Request, res: Response) => {
     }
     return responseHandler.out(req, res, {
       status: true,
-      statusCode: 204,
+      statusCode: 200,
       message: "Season deleted successfully",
   });
     // return res.status(204).json({ message: 'Season deleted' });
@@ -610,7 +609,7 @@ export const deleteSubscriptionType = async (req: Request, res: Response) => {
     }
     return responseHandler.out(req, res, {
       status: true,
-      statusCode: 204,
+      statusCode: 200,
       message: "Subscription Type deleted",
   });
     // return res.status(204).json({ message: 'Subscription Type deleted' });
@@ -844,7 +843,7 @@ export const deleteFrequencyType = async (req: Request, res: Response) => {
     }
     return responseHandler.out(req, res, {
       status: true,
-      statusCode: 204,
+      statusCode: 200,
       message: "Frequency Type deleted",
   });
     // return res.status(204).json({ message: 'Frequency Type deleted' });
@@ -933,7 +932,7 @@ export const deleteSourceOfCustomer = async (req: Request, res: Response) => {
     }
     return responseHandler.out(req, res, {
       status: true,
-      statusCode: 204,
+      statusCode: 200,
       message: "Source of Customer deleted successfully",
     });
   } catch (error) {
@@ -1078,7 +1077,7 @@ export const deleteTypeOfCustomer = async (req: Request, res: Response) => {
     }
     return responseHandler.out(req, res, {
       status: true,
-      statusCode: 204,
+      statusCode: 200,
       message: "Type of Customer deleted successfully",
     });
   } catch (error) {
