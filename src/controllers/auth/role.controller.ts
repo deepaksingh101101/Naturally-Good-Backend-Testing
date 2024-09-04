@@ -75,7 +75,7 @@ export const createRole = async (req: Request, res: Response) => {
 export const getAllRoles = async (req: Request, res: Response) => {
     try {
         // Fetch all roles from the database
-        const roles = await RoleModel.find()
+        const roles = await RoleModel.find({roleName:{ $ne: 'Superadmin' }})
             .exec();
 
         // Respond with the list of roles
@@ -98,10 +98,10 @@ export const getAllRoles = async (req: Request, res: Response) => {
     }
 };
 
-export const getAllRolesNameAndId = async (req: Request, res: Response) => {
+export const getAllRolesNameAndId = async (req, res) => {
     try {
-        // Fetch all roles with only name and ID fields
-        const roles = await RoleModel.find()
+        // Fetch all roles excluding those with the roleName "superadmin"
+        const roles = await RoleModel.find({ roleName: { $ne: 'Superadmin' } })
             .select('roleName _id')
             .exec();
 
@@ -109,19 +109,18 @@ export const getAllRolesNameAndId = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 200,
-            message: "Role fetched successfully",
+            message: "Roles fetched successfully",
             data:roles
         });
-        // return res.status(200).json({ roles });
-        
+
     } catch (error) {
+        console.error(error);
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
             message: 'Internal Server Error',
-            data: error.message
-          });
-        // return res.status(500).json({ error: 'Internal server error', details: error.message });
+            data:error.message
+        });
     }
 };
 

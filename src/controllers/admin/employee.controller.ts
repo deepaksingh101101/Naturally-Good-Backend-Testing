@@ -12,7 +12,11 @@ import { responseHandler } from '../../utils/send-response';
 export const createSuperAdmin = async (req: Request, res: Response) => {
     const { Email, Password, FirstName, LastName, PhoneNumber, Dob, Gender, StreetAddress, City, State } = req.body;
 
+
     try {
+
+
+        
         // Check if the "Superadmin" role already exists (case insensitive)
         let superadminRole = await RoleModel.findOne({
             roleName: { $regex: new RegExp(`^Superadmin$`, 'i') }
@@ -52,7 +56,17 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
             // return res.status(400).json({ error: 'Email already exists' });
         }
 
-       
+        // Check Super admin exist or not 
+        const isSuperAdminExists = await EmployeeModel.findOne({ 
+            Role: superadminRole._id, });
+        if (isSuperAdminExists) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: "One Super admin already exist",
+            });
+            // return res.status(400).json({ error: 'Email already exists' });
+        }
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(Password, 10);

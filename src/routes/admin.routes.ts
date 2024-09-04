@@ -20,12 +20,12 @@ import { createUserByAdmin, getAllUserByAdmin, getUserByIdForAdmin, updateAccoun
 const router = Router();
 
 // Pass the specific action name as a parameter to the middleware
-router.post('/createRole', checkPermissions('Create Role'), createRole);
-router.get('/getAllRolesForPermissions', checkPermissions('View Role'), getAllRoles);
-router.get('/getAllRolesNameAndId',isRoleLoggedIn, getAllRolesNameAndId); //No permission added
+router.post('/role', checkPermissions('Create Role'), createRole);
+router.get('/rolesandpermission', checkPermissions('View Role'), getAllRoles);
+router.get('/role',isRoleLoggedIn, getAllRolesNameAndId); //No permission added
 
 // Super Admin Creation
-router.post('/create/superAdmin', createSuperAdmin);
+router.post('/superadmin', createSuperAdmin);
 
 // Employee Creation
 router.post('/create/employee', checkPermissions('Create Employee'), createEmployee);

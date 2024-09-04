@@ -421,6 +421,14 @@ export const updateUserByAdmin = async (req: Request, res: Response) => {
     // Extract the update data from the request body, excluding Phone and Email
     const { Phone, Email, ...updateData } = req.body;
 
+    if(Email || Phone){
+      return res.status(200).json({
+        status: false,
+        statusCode: 200,
+        message: 'User updated successfully'
+      });
+    }
+
     // Find the user by ID and update with new data
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
