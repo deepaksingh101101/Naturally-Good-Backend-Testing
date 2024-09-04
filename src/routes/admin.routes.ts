@@ -28,14 +28,14 @@ router.get('/role',isRoleLoggedIn, getAllRolesNameAndId); //No permission added
 router.post('/superadmin', createSuperAdmin);
 
 // Employee Creation
-router.post('/create/employee', checkPermissions('Create Employee'), createEmployee);
+router.post('/employee', checkPermissions('Create Employee'), createEmployee);
 router.get('/employee',checkPermissions('View Employee') ,getAllEmployees);
-router.get('/getOneEmployee/:id', checkPermissions('View Employee'), getEmployeeById);
-router.put('/editEmployee/:id', checkPermissions('Edit Employee'), editEmployeeById);
+router.get('/employee/:id', checkPermissions('View Employee'), getEmployeeById);
+router.put('/employee/:id', checkPermissions('Edit Employee'), editEmployeeById);
 router.get('/employee/login', loginEmployee);
 
 // User/Customer Creation By Admin
-router.post('/create/user', checkPermissions('Create Customer'), createUserByAdmin);
+router.post('/user', checkPermissions('Create Customer'), createUserByAdmin);
 router.get('/user',checkPermissions('View Customer') ,getAllUserByAdmin);
 router.get('/user/:id', checkPermissions('View Customer'), getUserByIdForAdmin);
 router.put('/user/:id', checkPermissions('Edit Customer'), updateUserByAdmin);
