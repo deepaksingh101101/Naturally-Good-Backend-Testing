@@ -6,14 +6,13 @@ enum StatusType {
     INACTIVE = 'inactive'
 }
 
-class Compliments {
+export class Complaints {
 
     @prop({ type: Date, required: true })
     public OrderId!: Date;
 
     @prop({ ref: () => User })
-    public UserId!: Ref<User>;
-
+    public UserId?: Ref<User>;
 
     @prop({ type: String })
     public ComplaintType!: string;
@@ -36,5 +35,5 @@ class Compliments {
     @prop({ type: Date, default: Date.now })
     public UpdatedAt!: Date;
 }
-const ComplimentsModel = getModelForClass(Compliments);
+const ComplimentsModel = getModelForClass(Complaints);
 export default ComplimentsModel;

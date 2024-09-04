@@ -3,6 +3,7 @@ import { Employee } from './employee.model';
 import { SourceOfCustomer, TypeOfCustomer } from './dropdown.model';
 import { Coupon } from './coupons.model';
 import { City } from './route.model';
+import { Order } from './order.model';
 
 @pre<User>('save', async function() {
   this.UpdatedAt = new Date();
@@ -144,6 +145,10 @@ export class User {
     Coupon: Ref<Coupon>;
     IsUsed?: boolean;
   }>;
+
+
+  @prop({ ref: () => Order, required: false })
+  public CurrentSubscription?: Ref<Order>;
 
   // // Authentication Fields
   // @prop({ type: String, required: false })

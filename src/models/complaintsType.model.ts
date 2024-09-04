@@ -1,37 +1,38 @@
-import { prop, getModelForClass, modelOptions, Ref } from '@typegoose/typegoose';
+import { prop, getModelForClass, modelOptions, Ref, pre } from '@typegoose/typegoose';
 import { Admin } from './oldrole.model';
+import { Employee } from './employee.model';
 
-enum StatusType {
+export enum StatusType {
     ACTIVE = 'active',
     INACTIVE = 'inactive'
 }
 
-@modelOptions({
-    schemaOptions: {
-        timestamps: { createdAt: 'CreatedAt', updatedAt: 'UpdatedAt' }
-    }
-})
-class ComplimentsType {
+@pre<ComplaintsType>('save', async function() {
+    this.UpdatedAt = new Date();
+  })
 
-    @prop({ type: String })
+class ComplaintsType {
+    @prop({ type: String ,required: true})
     public ComplaintType!: string;
 
-    @prop({ enum: StatusType, required: true })
+    @prop({ enum: StatusType, required: false,default:true })
     public Status!: StatusType;
-
-    @prop({ type: String })
-    public Resolution?: string;
 
     @prop({ type: String })
     public Description?: string;
 
-    @prop({ ref: () => Admin })
-    public CreatedBy!: Ref<Admin>;
-
-    // Timestamps are automatically handled by @modelOptions
-    public CreatedAt!: Date;
+    @prop({ type: Date, default: Date.now })
     public UpdatedAt!: Date;
+  
+    @prop({ type: Date, default: Date.now })
+    public CreatedAt!: Date;
+  
+    @prop({ ref: () => Employee })
+    public CreatedBy!: Ref<Employee>;
+  
+    @prop({ ref: () => Employee })
+    public UpdatedBy!: Ref<Employee>;
 }
 
-const ComplimentsTypeModel = getModelForClass(ComplimentsType);
-export default ComplimentsTypeModel;
+const ComplaintsTypeModel = getModelForClass(ComplaintsType);
+export default ComplaintsTypeModel;

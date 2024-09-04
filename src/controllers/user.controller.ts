@@ -457,7 +457,6 @@ export const updateUserByAdmin = async (req: Request, res: Response) => {
     });
   }
 };
-
 export const updateAccountStatusByAdmin = async (req: Request, res: Response) => {
   try {
     const userId = req.params.id; // Get user ID from URL parameters

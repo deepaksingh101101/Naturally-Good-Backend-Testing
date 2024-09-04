@@ -10,7 +10,7 @@ import authRoutes from "./routes/auth.routes";
 import adminRoutes from "./routes/admin.routes";
 import superadminRoutes from "./routes/superadmin.routes";
 import permissionRoutes from "./routes/permissions.routes";
-import categoryRoutes from "./routes/category.routes";
+import complainRoutes from "./routes/complain.routes";
 import productRoutes from "./routes/product.routes";
 import couponsRoutes from "./routes/coupons.routes";
 import subscriptionRoutes from "./routes/subscription.routes";
@@ -59,7 +59,7 @@ export class Application {
     this.app.use("/plan", planRoutes);
     this.app.use("/complaintType",complaintTypeRoutes );
     this.app.use("/dropDown",dropDownRoutes );
-    this.app.use("/category", categoryRoutes);
+    this.app.use("/complain", complainRoutes);
 
 
     this.app.use("/route", routeRoutes);
