@@ -6,10 +6,10 @@ import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
 
 const router = Router();
 
-router.post('/create', checkPermissions('Create Subscription'), createSubscription);
-router.get('/getAll', isRoleLoggedIn, getAllSubscriptions);
-router.get('/getOne/:id', isRoleLoggedIn, getSubscriptionById);
-router.put('/updateOne/:id', checkPermissions('Edit Subscription'), updateSubscription);
+router.post('/', checkPermissions('Create Subscription'), createSubscription);
+router.get('/', isRoleLoggedIn, getAllSubscriptions);
+router.get('/:id', isRoleLoggedIn, getSubscriptionById);
+router.put('/:id', checkPermissions('Edit Subscription'), updateSubscription);
 router.put('/toggle/:id', checkPermissions('Subscription Availability'), updateSubscriptionStatus);
 router.get('/filter', filterSubscriptions);
 

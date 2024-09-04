@@ -26,10 +26,10 @@ router.delete('/roster/:id', isRoleLoggedIn, deleteRoster);
 router.put('/roster/:id', isRoleLoggedIn, editRoster);
 
 // // Subscription Types routes
-router.get('/subscription-types', isRoleLoggedIn, getSubscriptionTypes);
-router.post('/subscription-types', isRoleLoggedIn, createSubscriptionType);
-router.delete('/subscription-types/:id', isRoleLoggedIn, deleteSubscriptionType);
-router.put('/subscription-types/:id', isRoleLoggedIn, editSubscriptionType);
+router.get('/subscriptiontypes', isRoleLoggedIn, getSubscriptionTypes);
+router.post('/subscriptiontype', isRoleLoggedIn, createSubscriptionType);
+router.delete('/subscriptiontype/:id', isRoleLoggedIn, deleteSubscriptionType);
+router.put('/subscriptiontype/:id', isRoleLoggedIn, editSubscriptionType);
 
 // // Frequency Types routes
 router.get('/frequencytypes', isRoleLoggedIn, getFrequencyTypes);

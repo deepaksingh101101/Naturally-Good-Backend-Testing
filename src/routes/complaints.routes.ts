@@ -4,10 +4,10 @@ import { createComplaintType, deleteComplaintType, getAllComplaintsType, getComp
 
 const router = Router();
 
-router.post('/create', adminMiddleware,createComplaintType);
-router.get('/allComplaintType' ,adminMiddleware, getAllComplaintsType)
-router.get('/:id',adminMiddleware, getComplaintTypeById)
-router.put('/:id', adminMiddleware, updateComplaintType)
-router.delete('/:id',adminMiddleware , deleteComplaintType)
+router.post('/type', adminMiddleware,createComplaintType);
+router.get('/types' ,adminMiddleware, getAllComplaintsType)
+router.get('type/:id',adminMiddleware, getComplaintTypeById)
+router.put('type/:id', adminMiddleware, updateComplaintType)
+router.delete('type/:id',adminMiddleware , deleteComplaintType)
 
 export default router;
