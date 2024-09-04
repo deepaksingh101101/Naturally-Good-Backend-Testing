@@ -11,7 +11,7 @@ export enum StatusType {
     this.UpdatedAt = new Date();
   })
 
-class ComplaintsType {
+export class ComplaintsType {
     @prop({ type: String ,required: true})
     public ComplaintType!: string;
 
