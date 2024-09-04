@@ -734,9 +734,6 @@ export const updateZone = async (req: Request, res: Response) => {
     }
 };
 
-
-
-
 export const deleteZone = async (req: Request, res: Response) => {
     const { id } = req.params;
 
@@ -821,8 +818,6 @@ export const updateZoneServiceable = async (req: Request, res: Response) => {
         });
     }
 };
-
-
 // Going for route
 export const createRoute = async (req: Request, res: Response) => {
     const LoggedInId = req['decodedToken'].id;
@@ -889,104 +884,103 @@ export const createRoute = async (req: Request, res: Response) => {
     }
 };
 
-
 export const updateRoute = async (req: Request, res: Response) => {
-    const { id } = req.params;
-    const LoggedInId = req['decodedToken'].id;
+  const { id } = req.params;
+  const LoggedInId = req['decodedToken']?.id;
 
-    if (!LoggedInId) {
-        return responseHandler.out(req, res, {
-            status: false,
-            statusCode: 401,
-            message: "Unauthorized",
-        });
-    }
+  if (!LoggedInId) {
+      return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 401,
+          message: "Unauthorized",
+      });
+  }
 
-    try {
-        const { RouteName, Zones } = req.body;  // Expecting Zones as an array of { ZoneId, DeliverySequence }
+  try {
+      const { RouteName, ZonesIncluded, VehicleTagged } = req.body;  // Include VehicleTagged in the request body
 
-        // Check if the route name already exists (case-insensitive) and is not the current route
-        const existingRoute = await RouteModel.findOne({
-            RouteName: { $regex: new RegExp(`^${RouteName}$`, 'i') },
-            _id: { $ne: id }
-        });
+      // Check if the route name already exists (case-insensitive) and is not the current route
+      const existingRoute = await RouteModel.findOne({
+          RouteName: { $regex: new RegExp(`^${RouteName}$`, 'i') },
+          _id: { $ne: id }
+      });
 
-        if (existingRoute) {
-            return responseHandler.out(req, res, {
-                status: false,
-                statusCode: 400,
-                message: "Route name already exists",
-            });
-        }
+      if (existingRoute) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 400,
+              message: "Route name already exists",
+          });
+      }
 
-        // Validate that DeliverySequence is unique within the Zones array
-        const sequences = Zones.map(zone => zone.DeliverySequence);
-        const hasDuplicate = sequences.length !== new Set(sequences).size;
+      // Validate that DeliverySequence is unique within the Zones array
+      const sequences = ZonesIncluded.map(zone => zone.DeliverySequence);
+      const hasDuplicate = sequences.length !== new Set(sequences).size;
 
-        if (hasDuplicate) {
-            return responseHandler.out(req, res, {
-                status: false,
-                statusCode: 400,
-                message: "Duplicate Delivery Sequences found in Zones",
-            });
-        }
+      if (hasDuplicate) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 400,
+              message: "Duplicate Delivery Sequences found in Zones",
+          });
+      }
 
-        // Check for conflicting DeliverySequence values in other routes
-        for (const zone of Zones) {
-            const { ZoneId, DeliverySequence } = zone;
+      // Check for conflicting DeliverySequence values in other routes
+      for (const zone of ZonesIncluded) {
+          const { ZoneId, DeliverySequence } = zone;
 
-            const conflictingRoutes = await RouteModel.find({
-                'Zones.ZoneId': ZoneId,
-                'Zones.DeliverySequence': DeliverySequence,
-                _id: { $ne: id }  // Exclude the current route
-            });
+          const conflictingRoutes = await RouteModel.find({
+              'ZonesIncluded.ZoneId': ZoneId,
+              'ZonesIncluded.DeliverySequence': DeliverySequence,
+              _id: { $ne: id }  // Exclude the current route
+          });
 
-            if (conflictingRoutes.length > 0) {
-                // Handle the conflict according to your business logic
-                // For example, you might need to update conflicting routes
-                await RouteModel.updateMany(
-                    {
-                        'Zones.ZoneId': ZoneId,
-                        'Zones.DeliverySequence': { $gte: DeliverySequence },
-                        _id: { $ne: id }
-                    },
-                    { $inc: { 'Zones.$.DeliverySequence': 1 } }
-                );
-            }
-        }
+          if (conflictingRoutes.length > 0) {
+              await RouteModel.updateMany(
+                  {
+                      'ZonesIncluded.ZoneId': ZoneId,
+                      'ZonesIncluded.DeliverySequence': { $gte: DeliverySequence },
+                      _id: { $ne: id }
+                  },
+                  { $inc: { 'ZonesIncluded.$.DeliverySequence': 1 } }
+              );
+          }
+      }
 
-        const updatedRoute = await RouteModel.findByIdAndUpdate(
-            id,
-            {
-                RouteName,
-                ZonesIncluded:Zones,
-                UpdatedBy: LoggedInId,
-                UpdatedAt: new Date(),
-            },
-            { new: true }
-        );
+      const updatedRoute = await RouteModel.findByIdAndUpdate(
+          id,
+          {
+              RouteName,
+              ZonesIncluded: ZonesIncluded,
+              VehicleTagged,  // Update VehicleTagged field
+              UpdatedBy: LoggedInId
+          },
+          { new: true }
+      );
 
-        if (!updatedRoute) {
-            return responseHandler.out(req, res, {
-                status: false,
-                statusCode: 404,
-                message: "Route not found",
-            });
-        }
+      if (!updatedRoute) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: "Route not found",
+          });
+      }
 
-        return responseHandler.out(req, res, {
-            status: true,
-            statusCode: 200,
-            message: "Route updated successfully",
-        });
-    } catch (error) {
-        return responseHandler.out(req, res, {
-            status: false,
-            statusCode: 500,
-            message: 'Internal Server Error',
-            data: error.message,
-        });
-    }
+      return responseHandler.out(req, res, {
+          status: true,
+          statusCode: 200,
+          message: "Route updated successfully",
+          data:updatedRoute
+      });
+  } catch (error) {
+      console.error(error);
+      return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 500,
+          message: 'Internal Server Error',
+          data:error.message,
+      });
+  }
 };
 
 
@@ -996,7 +990,7 @@ export const getRouteById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     try {
-        const route = await RouteModel.findById(id).populate('VehicleTagged').populate('Zones').populate('CreatedBy').populate('UpdatedBy');
+        const route = await RouteModel.findById(id).populate('VehicleTagged').populate('ZonesIncluded').populate('CreatedBy').populate('UpdatedBy');
 
         if (!route) {
             return responseHandler.out(req, res, {
@@ -1109,7 +1103,7 @@ export const getAllRoutes = async (req: Request, res: Response) => {
             .skip(skip)
             .limit(limit)
             .populate('VehicleTagged', 'VehicleName')  // Adjust field as needed
-            .populate('Zones', 'ZoneName DeliverySequence')  // Adjust fields as needed
+            .populate('ZonesIncluded', 'ZoneName DeliverySequence')  // Adjust fields as needed
             .populate('CreatedBy', 'FirstName LastName Email')  // Adjust fields as needed
             .populate('UpdatedBy', 'FirstName LastName Email')  // Adjust fields as needed
             .exec();

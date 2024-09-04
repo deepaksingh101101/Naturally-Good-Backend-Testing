@@ -100,7 +100,11 @@ export const getComplainTypeById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const complimentType = await ComplaintsTypeModel.findById(id);
+        const complimentType = await ComplaintsTypeModel.findById(id)
+        .populate('CreatedBy','-Password')
+        .populate('UpdatedBy','-Password')
+        .exec();
+
 
         if (!complimentType) {
             return responseHandler.out(req, res, {

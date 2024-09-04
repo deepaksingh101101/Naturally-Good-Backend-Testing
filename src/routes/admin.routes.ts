@@ -32,7 +32,7 @@ router.post('/employee', checkPermissions('Create Employee'), createEmployee);
 router.get('/employee',checkPermissions('View Employee') ,getAllEmployees);
 router.get('/employee/:id', checkPermissions('View Employee'), getEmployeeById);
 router.put('/employee/:id', checkPermissions('Edit Employee'), editEmployeeById);
-router.get('/employee/login', loginEmployee);
+router.post('/employee/login', loginEmployee);
 
 // User/Customer Creation By Admin
 router.post('/user', checkPermissions('Create Customer'), createUserByAdmin);

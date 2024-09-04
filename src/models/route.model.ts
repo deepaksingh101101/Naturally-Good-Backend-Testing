@@ -128,15 +128,6 @@ export class Route {
   public Status!: boolean;
 
 
-//   @prop({
-//     type: () => [Object], 
-//     default: [], 
-// })
-//   public ZonesIncluded!: {
-//     ZoneId: Ref<Zone>;  // Use Ref<Zone> to reference the Zone model
-//     DeliverySequence: number;
-//   }[];
-
 @prop({ type: () => [ZoneInfo], default: [] })
 public ZonesIncluded!: ZoneInfo[];
 

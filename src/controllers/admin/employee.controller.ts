@@ -243,8 +243,14 @@ export const getAllEmployees = async (req: Request, res: Response) => {
 
         const roleIdToExclude = superadminRole._id; // Extract the role ID to exclude
 
+        const currentPage = parseInt(req.query.page as string, 10) || 1;
+        const limit = parseInt(req.query.limit as string, 10) || 10;
+        const skip = (currentPage - 1) * limit;
+
         // Fetch employees excluding the ones with the 'Superadmin' role
         const employees = await EmployeeModel.find({ Role: { $ne: roleIdToExclude } })
+        .skip(skip)
+        .limit(limit)
             .select('-Password') // Exclude the Password field
             .populate({
                 path: 'CreatedBy',
@@ -252,11 +258,24 @@ export const getAllEmployees = async (req: Request, res: Response) => {
             })
             .exec();
 
+            const total = await EmployeeModel.countDocuments();
+            const totalPages = Math.ceil(total / limit);
+      
+            const prevPage = currentPage > 1;
+            const nextPage = currentPage < totalPages;
+      
             return responseHandler.out(req, res, {
                 status: true,
                 statusCode: 200,
                 message: "Employees fetched successfully",
-                data:employees,
+                data: {
+                    total,
+                    currentPage,
+                    totalPages,
+                    prevPage,
+                    nextPage,
+                    employees,
+                }
             });
 
         // res.status(200).json(employees);
