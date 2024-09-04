@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { DocumentType } from '@typegoose/typegoose';
 import PermissionModel from '../../models/permission.model';
 import { responseHandler } from '../../utils/send-response';
+import { generateToken } from '../../config';
 
 
 export const createSuperAdmin = async (req: Request, res: Response) => {
@@ -177,7 +178,6 @@ export const createEmployee = async (req: Request, res: Response) => {
     }
 };
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key'; // Replace with your actual JWT secret
 export const loginEmployee = async (req: Request, res: Response) => {
     const { Email, Password } = req.body;
 
@@ -202,12 +202,8 @@ export const loginEmployee = async (req: Request, res: Response) => {
             });
             // return res.status(400).json({ error: 'Invalid password' });
         }
+        const token = generateToken({ id: employee._id, email: employee.Email, role: employee.Role });
 
-        const token = jwt.sign(
-            { id: employee._id, email: employee.Email, role: employee.Role },
-            JWT_SECRET,
-            { expiresIn: '1h' }
-        );
 
         return responseHandler.out(req, res, {
             status: true,

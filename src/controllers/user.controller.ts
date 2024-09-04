@@ -5,6 +5,7 @@ import UserModel from '../models/user.model';
 import { BagModel } from '../models/bag.model';
 import { responseHandler } from '../utils/send-response';
 import jwt from 'jsonwebtoken';
+import { generateToken } from '../config';
 // import { OAuth2Client } from 'google-auth-library';
 
 // const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '525557668529-0sv0893s4r5b5gqrh82d3f6ffqgsrg4e.apps.googleusercontent.com');
@@ -123,11 +124,13 @@ export const verifyOTP = async (req: Request, res: Response) => {
     await user.save();
 
     // Generate JWT token
-    const jwtToken = jwt.sign(
-      { id: user._id },
-      JWT_SECRET,
-      { expiresIn: '5h' }
-    );
+    // const jwtToken = jwt.sign(
+    //   { id: user._id },
+    //   JWT_SECRET,
+    //   { expiresIn: '5h' }
+    // );
+
+    const jwtToken=generateToken({ id: user._id })
 
     // Send the response
     return responseHandler.out(req, res, {

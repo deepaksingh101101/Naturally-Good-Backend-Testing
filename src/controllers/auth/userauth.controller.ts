@@ -3,6 +3,7 @@ import { OAuth2Client } from 'google-auth-library';
 import UserModel from '../../models/user.model';
 import jwt from 'jsonwebtoken';
 import { responseHandler } from '../../utils/send-response';
+import { generateToken } from '../../config';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '525557668529-0sv0893s4r5b5gqrh82d3f6ffqgsrg4e.apps.googleusercontent.com');
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
@@ -55,11 +56,13 @@ export const LoginUserByGoogle = async (req: Request, res: Response): Promise<vo
             await user.save();
         }
 
-        const jwtToken = jwt.sign(
-            { id: user._id, email: email },
-            JWT_SECRET,
-            { expiresIn: '5h' }
-        );
+        // const jwtToken = jwt.sign(
+        //     { id: user._id, email: email },
+        //     JWT_SECRET,
+        //     { expiresIn: '5h' }
+        // );
+
+        const jwtToken = generateToken({ id: user._id})
 
         responseHandler.out(req, res, {
             status: true,
