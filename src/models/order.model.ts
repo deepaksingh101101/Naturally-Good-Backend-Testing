@@ -65,6 +65,9 @@ export class Order {
   @prop({ type: Boolean,default:false })
   public isCurrentOrder!: boolean;
 
+  @prop({ type: Boolean,default:true })
+  public Status!: boolean;
+
   @prop({ ref: () => Delivery })
   public Deliveries!: Ref<Delivery>[];
 

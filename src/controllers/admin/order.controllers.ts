@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import CouponModel from '../../models/coupons.model';
 import OrderModel, { AllPaymentStatus, AllPaymentType } from '../../models/order.model';
 import SubscriptionModel from '../../models/subscription.model';
+import { responseHandler } from '../../utils/send-response';
 
 // Create order by admin
 export const createOrderByAdmin = async (req: Request, res: Response) => {
@@ -137,8 +138,8 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
     }
   };
 
-  // Get all orders by admin
-  export const getAllOrdersByAdmin = async (req: Request, res: Response) => {
+// Get all orders by admin
+export const getAllOrdersByAdmin = async (req: Request, res: Response) => {
     try {
         const currentPage = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 10;
@@ -194,3 +195,303 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         });
     }
 };
+
+// Toggle status of order by admin
+export const updateOrderStatus = async (req: Request, res: Response) => {
+    try {
+
+      const loggedInId = req['decodedToken']?.id;
+
+      if(!loggedInId){
+        return res.status(400).json({
+          status: false,
+          statusCode: 400,
+          message: 'Admin not found',
+      });
+      }
+      const OrderId=req.params.id
+        const {Status } = req.body;
+
+        if (!OrderId || Status === undefined) {
+            return res.status(400).json({
+                status: false,
+                statusCode: 400,
+                message: 'Order ID and status are required',
+            });
+        }
+
+        const order = await OrderModel.findById(OrderId);
+
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                statusCode: 404,
+                message: 'Order not found',
+            });
+        }
+
+        order.Status = Status;
+        await order.save();
+
+        res.status(200).json({
+            status: true,
+            statusCode: 200,
+            message: 'Order status updated successfully',
+            order,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error',
+            details: error.message,
+        });
+    }
+};
+
+// Get a single order by ID with full details populated
+export const getOrderByIdByAdmin = async (req: Request, res: Response) => {
+    try {
+        const loggedInId = req['decodedToken']?.id;
+        if (!loggedInId) {
+            return res.status(400).json({
+                status: false,
+                statusCode: 400,
+                message: 'Admin not found',
+            });
+        }
+
+        const OrderId  = req.params.id;
+
+        if (!OrderId) {
+            return res.status(400).json({
+                status: false,
+                statusCode: 400,
+                message: 'Order ID is required',
+            });
+        }
+
+        const order = await OrderModel.findById({_id:OrderId})
+            .populate({
+                path: 'UserId',
+                select: '-Otp -OtpExpiry -Password', // Exclude sensitive fields
+                populate: {
+                    path: 'ReferredBy AssignedEmployee Source CustomerType',
+                    populate: {
+                        path: 'CreatedBy UpdatedBy',
+                        select: 'FirstName LastName Email PhoneNumber',
+                    },
+                },
+            })
+            .populate({
+                path: 'SubscriptionId',
+                select: 'SubscriptionTypeId FrequencyId',
+                populate: [
+                    {
+                        path: 'SubscriptionTypeId',
+                        select: 'Name',
+                    },
+                    {
+                        path: 'FrequencyId',
+                        select: 'Name',
+                    },
+                ],
+            })
+            .populate('Coupons', 'Code DiscountPercentage DiscountPrice DiscountType Status')
+            .populate('Deliveries')
+            .populate('CreatedBy', 'FirstName LastName Email PhoneNumber')
+            .populate('UpdatedBy', 'FirstName LastName Email PhoneNumber');
+
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                statusCode: 404,
+                message: 'Order not found',
+            });
+        }
+
+        res.status(200).json({
+            status: true,
+            statusCode: 200,
+            message: 'Order retrieved successfully',
+            order,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error',
+            details: error.message,
+        });
+    }
+};
+
+// Get all order for logged in user
+export const getAllOrdersByUser = async (req: Request, res: Response) => {
+    try {
+        const currentPage = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (currentPage - 1) * limit;
+
+        const orders = await OrderModel.find({UserId:req['userId']})
+            .skip(skip)
+            .limit(limit)
+            .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
+            .populate({
+                path: 'SubscriptionId',
+                select: 'SubscriptionTypeId FrequencyId', // Select the fields you want
+                populate: [
+                    {
+                        path: 'SubscriptionTypeId',
+                        select: 'Name', // Populate SubscriptionType name
+                    },
+                    {
+                        path: 'FrequencyId',
+                        select: 'Name', // Populate Frequency name
+                    },
+                ],
+            })
+            .populate('-Coupons') // Populate coupon details if applicable
+            .populate('Deliveries') // Populate delivery details if applicable
+            .populate('-CreatedBy') 
+            .populate('-UpdatedBy') 
+        const total = await OrderModel.countDocuments();
+        const totalPages = Math.ceil(total / limit);
+
+        const prevPage = currentPage > 1;
+        const nextPage = currentPage < totalPages;
+
+        res.status(200).json({
+            status: true,
+            statusCode: 200,
+            message: 'Orders retrieved successfully',
+           data: {
+                total,
+                currentPage,
+                totalPages,
+                prevPage,
+                nextPage,
+                orders,
+            }
+        });
+    } catch (error) {
+       return res.status(500).json({
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error',
+            details: error.message
+        });
+    }
+};
+
+// Apply coupons from user side
+export const ApplyCouponsFromUserSide = async (req: Request, res: Response) => {
+  try {
+    const loggedInUser = req['userId'];
+    const {
+      SubscriptionId,
+      Coupon,
+    } = req.body;
+    
+    // Validate required fields
+    if (!SubscriptionId) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Missing required fields'
+      });
+    }
+
+    // Declare validCoupon outside to use it later
+    let validCoupon: any;
+
+    // Validate the coupon if provided
+    if (Coupon) {
+      validCoupon = await CouponModel.findById(Coupon);
+      if (!validCoupon) {
+        return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 404,
+          message: 'Invalid coupon'
+        });
+      }
+
+      const currentDate = new Date();
+
+      // Coupon type and usage validation
+      if (validCoupon.CouponVisibility === 'Private') {
+        // Check if coupon is assigned to the user
+        const isCouponAssignedToUser = validCoupon.AssignedTo.some(
+          (assigned) => assigned.Users.toString() === loggedInUser.toString() && !assigned.isUsed
+        );
+
+        if (!isCouponAssignedToUser) {
+          return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 400,
+            message: 'Already Claimed'
+          });
+        }
+
+        // Check coupon validity period
+        if (currentDate < validCoupon.StartDate || currentDate > validCoupon.EndDate) {
+          return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 400,
+            message: `Coupon ${validCoupon.Code} is expired`
+          });
+        }
+      } else if (validCoupon.CouponVisibility === 'Public' || validCoupon.CouponVisibility === 'Admin') {
+        // Check if the coupon has been used by the user
+        const isCouponUsedByUser = validCoupon.UsedBy.includes(loggedInUser);
+        if (isCouponUsedByUser) {
+          return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 400,
+            message: `Coupon ${validCoupon.Code} is already claimed`
+          });
+        }
+
+        // Check coupon validity period
+        if (currentDate < validCoupon.StartDate || currentDate > validCoupon.EndDate) {
+          return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 400,
+            message: `Coupon ${validCoupon.Code} is expired`
+          });
+        }
+      }
+
+      // Validate that the coupon can be applied to the given subscription
+      if (validCoupon.CouponType === 'Subscription' && !validCoupon.Subscriptions.includes(SubscriptionId)) {
+        return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 400,
+          message: `Coupon ${validCoupon.Code} is not valid for this subscription`
+        });
+      }
+    }
+
+    // Respond with the Valid Coupon
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 201,
+      message: 'Coupon applied successfully',
+      data: {
+        DiscountType: validCoupon.DiscountType,
+        DiscountPercentage: validCoupon.DiscountPercentage,
+        DiscountPrice: validCoupon.DiscountPrice,
+      }
+    });
+
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: error.message
+    });
+  }
+};
+
+
