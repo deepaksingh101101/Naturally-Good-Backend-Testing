@@ -264,7 +264,7 @@ export const createComplaint = async (req, res) => {
 
 
         // const isValidDeliveryId = await DeliveryModel.findById({_id:DeliveryId });
-        const userInfo = await UserModel.findById((req['decodedToken']?.id)?UserId:req['userId']).populate('CurrentSubscription');
+        const userInfo = await UserModel.findById((req['decodedToken']?.id)?UserId:req['userId'].id).populate('CurrentSubscription');
         if (!userInfo) {
             return responseHandler.out(req, res, {
                 status: false,
