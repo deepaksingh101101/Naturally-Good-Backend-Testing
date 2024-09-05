@@ -5,14 +5,14 @@ import { Subscription } from './subscription.model';
 import { Coupon } from './coupons.model';
 import { Delivery } from './delivery.model';
 
-export enum PaymentType {
+export enum AllPaymentType {
   Cash = 'cash',
   Card = 'card',
   Upi = 'upi',
   NetBanking = 'netbanking',
 }
 
-export enum PaymentStatus {
+export enum AllPaymentStatus {
   Paid = 'paid',
   Pending = 'pending',
   Unpaid = 'unpaid',
@@ -53,11 +53,11 @@ export class Order {
   @prop({ type: Date })
   public PaymentDate?: Date;
 
-  @prop({ type: String, enum: PaymentStatus, required: true })
-  public PaymentStatus!: PaymentStatus;
+  @prop({ type: String, enum: AllPaymentStatus, required: true })
+  public PaymentStatus!: AllPaymentStatus;
 
-  @prop({ type: String, enum: PaymentType, required: true })
-  public PaymentType!: PaymentType;
+  @prop({ type: String, enum: AllPaymentType, required: true })
+  public PaymentType!: AllPaymentType;
 
   @prop({ type: String })
   public SpecialInstruction?: string;

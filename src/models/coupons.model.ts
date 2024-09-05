@@ -115,8 +115,8 @@ export class Coupon {
   public AssignedTo?: AssignedToSchema[];
 
     // User IDs - Array of references
-    @prop({ ref: () => User, required: false })
-    public UsedBy!: Ref<User>[];
+@prop({ ref: () => User, required: false })
+public UsedBy!: Ref<User>[];
 
 
 }
