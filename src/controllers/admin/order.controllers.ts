@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import SubscriptionModel from '../../models/subscription.model';
 import CouponModel from '../../models/coupons.model';
 import OrderModel, { AllPaymentStatus, AllPaymentType } from '../../models/order.model';
-import UserModel from '../../models/user.model';
+import SubscriptionModel from '../../models/subscription.model';
 
+// Create order by admin
 export const createOrderByAdmin = async (req: Request, res: Response) => {
     try {
       const {
@@ -95,6 +95,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         PaymentType: PaymentType,
         SpecialInstruction: SpecialInstruction,
         CreatedBy: loggedInId,
+        UpdatedBy: loggedInId,
       });
   
       // Save the order to the database
@@ -114,6 +115,19 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
             await validCoupon.save();
           }
         }
+        // Update the revenue generated for the coupon
+        validCoupon.RevenueGenerated += NetPrice;
+        await validCoupon.save();
+
+        // Creating automatic Delivery  according to purchased subscription
+
+    //   const purchasedSubscription= SubscriptionModel.findById(SubscriptionId)
+    //   .populate('SubscriptionTypeId')
+    //   .populate('FrequencyId')
+
+
+
+
       }
   
       // Respond with the created order
@@ -122,7 +136,61 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
       res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   };
-  
-  
-  
-  
+
+  // Get all orders by admin
+  export const getAllOrdersByAdmin = async (req: Request, res: Response) => {
+    try {
+        const currentPage = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (currentPage - 1) * limit;
+
+        const orders = await OrderModel.find()
+            .skip(skip)
+            .limit(limit)
+            .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
+            .populate({
+                path: 'SubscriptionId',
+                select: 'SubscriptionTypeId FrequencyId', // Select the fields you want
+                populate: [
+                    {
+                        path: 'SubscriptionTypeId',
+                        select: 'Name', // Populate SubscriptionType name
+                    },
+                    {
+                        path: 'FrequencyId',
+                        select: 'Name', // Populate Frequency name
+                    },
+                ],
+            })
+            .populate('Coupons','Code DiscountPercentage DiscountPrice DiscountType Status') // Populate coupon details if applicable
+            .populate('Deliveries') // Populate delivery details if applicable
+            .populate('CreatedBy', 'FirstName LastName Email Phone') 
+            .populate('UpdatedBy', 'FirstName LastName Email Phone') 
+        const total = await OrderModel.countDocuments();
+        const totalPages = Math.ceil(total / limit);
+
+        const prevPage = currentPage > 1;
+        const nextPage = currentPage < totalPages;
+
+        res.status(200).json({
+            status: true,
+            statusCode: 200,
+            message: 'Orders retrieved successfully',
+           data: {
+                total,
+                currentPage,
+                totalPages,
+                prevPage,
+                nextPage,
+                orders,
+            }
+        });
+    } catch (error) {
+       return res.status(500).json({
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error',
+            details: error.message
+        });
+    }
+};

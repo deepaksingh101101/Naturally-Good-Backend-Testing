@@ -37,8 +37,8 @@ class AddonDetails {
 
 export class Delivery {
 
-  // @prop({ ref: () => User, required: true })
-  // public UserId!: Ref<User>;
+  @prop({ ref: () => User, required: true })
+  public UserId!: Ref<User>;
 
   @prop({ type: Date, required: true })
   public DeliveryDate!: Date;
@@ -51,9 +51,6 @@ export class Delivery {
 
   @prop({ ref: () => Route, required: true })
   public AssignedRoute!: Ref<Route>;
-
-  @prop({ ref: () => Vehicle, required: true })
-  public AssignedVehicle!: Ref<Vehicle>;
 
   @prop({ type: () => [BagDetails], required: true })
   public Bag!: BagDetails[];
