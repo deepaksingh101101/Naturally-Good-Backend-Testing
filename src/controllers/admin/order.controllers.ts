@@ -58,9 +58,9 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
           if (currentDate < validCoupon.StartDate || currentDate > validCoupon.EndDate) {
             return res.status(400).json({ error: `Coupon ${validCoupon.Code} is expired` });
           }
-        } else if (validCoupon.CouponVisibility === 'Public') {
+        } else if (validCoupon.CouponVisibility === 'Public'||'Admin') {
           // Check if the coupon has been used by the user
-          const isCouponUsedByUser = validCoupon.usedBy.includes(UserId);
+          const isCouponUsedByUser = validCoupon.UsedBy.includes(UserId);
           if (isCouponUsedByUser) {
             return res.status(400).json({ error: `Coupon ${validCoupon.Code} is already used by the user` });
           }
@@ -77,25 +77,8 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         }
       }
   
-
-  
       // Calculate amount due
       const amountDue = NetPrice - AmountReceived;
-  
-      // If coupon is valid and public, mark it as used by the user
-      if (Coupon && validCoupon && validCoupon.CouponVisibility === 'Public') {
-        validCoupon.usedBy.push(UserId);
-        await validCoupon.save();
-      }
-  
-      // If coupon is valid and private, mark it as used for the user
-      if (Coupon && validCoupon && validCoupon.CouponVisibility === 'Private') {
-        const userCoupon = validCoupon.AssignedTo.find((assigned) => assigned.Users.toString() === UserId.toString());
-        if (userCoupon) {
-          userCoupon.isUsed = true;
-          await validCoupon.save();
-        }
-      }
   
       // Create new order
       const order = new OrderModel({
@@ -114,12 +97,32 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         CreatedBy: loggedInId,
       });
   
-      await order.save();
+      // Save the order to the database
+      const isOrderCreated = await order.save();
+  
+      if (isOrderCreated && Coupon) {
+
+        if (validCoupon.CouponVisibility === 'Public'||'Admin') {
+            validCoupon.UsedBy.push(UserId);
+            await validCoupon.save();
+          }
+        // If coupon is valid and private, mark it as used for the user
+        if (validCoupon.CouponVisibility === 'Private') {
+          const userCoupon = validCoupon.AssignedTo.find((assigned) => assigned.Users.toString() === UserId.toString());
+          if (userCoupon) {
+            userCoupon.isUsed = true;
+            await validCoupon.save();
+          }
+        }
+      }
+  
+      // Respond with the created order
       res.status(201).json(order);
     } catch (error) {
       res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   };
+  
   
   
   
