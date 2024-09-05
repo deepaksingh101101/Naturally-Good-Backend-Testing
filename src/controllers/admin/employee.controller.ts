@@ -344,11 +344,19 @@ export const editEmployeeById = async (req: Request, res: Response) => {
                 statusCode: 404,
                 message: "Employee not found",
             });
-            // return res.status(404).json({ error: 'Employee not found' });
         }
 
         // Extract new data from the request body
         const newData = req.body;
+
+        // Check if the request body contains 'phone' or 'email'
+        if (newData.phone || newData.email) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: "Cannot update phone number or email address",
+            });
+        }
 
         // Set the UpdatedBy field to the logged-in user's ID
         newData.UpdatedBy = loggedInId;
@@ -366,24 +374,21 @@ export const editEmployeeById = async (req: Request, res: Response) => {
                 statusCode: 404,
                 message: "Failed to update employee",
             });
-            // return res.status(404).json({ error: 'Failed to update employee' });
         }
 
-             return responseHandler.out(req, res, {
-                status: true,
-                statusCode: 200,
-                message: "Employee Updated Successfully",
-                data:updatedEmployee
-            });
-
-        // res.json(updatedEmployee);
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: "Employee updated successfully",
+            data: updatedEmployee,
+        });
     } catch (error) {
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
             message: 'Internal Server Error',
-            data: error.message
-          });
-        // res.status(500).json({ error: 'Internal server error', details: error.message });
+            data: error.message,
+        });
     }
 };
+
