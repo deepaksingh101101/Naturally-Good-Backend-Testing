@@ -61,7 +61,7 @@ export class Order {
   public AmountDue!: number;
 
   @prop({ ref: () => Delivery })
-  public Deliveries!: Ref<Delivery>;
+  public Deliveries!: Ref<Delivery>[];
 
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;

@@ -23,7 +23,7 @@ export const isUserLoggedIn = async (req: Request, res: Response, next: NextFunc
             return res.status(404).json({ error: 'User not found' });
         }
 
-        req['userId'] = user._id;
+        req['userId'] = user;
 
         next();
     } catch (error) {

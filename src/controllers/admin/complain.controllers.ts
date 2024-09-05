@@ -1,6 +1,9 @@
+import { DocumentType } from "@typegoose/typegoose";
 import ComplaintModel from "../../models/complaints.model";
 import ComplaintsTypeModel, { StatusType } from "../../models/complaintsType.model";
-import DeliveryModel from "../../models/delivery.model";
+import DeliveryModel, { Delivery } from "../../models/delivery.model";
+import OrderModel, { Order } from "../../models/order.model";
+import UserModel from "../../models/user.model";
 import { responseHandler } from "../../utils/send-response";
 
 // Create Compliment Type
@@ -234,9 +237,10 @@ export const deleteComplainType = async (req, res) => {
     }
 };
 
-// Create complain by admin
-export const createComplaintByAdmin = async (req, res) => {
-    const loggedInId = req['decodedToken']?.id;
+
+// Create complain by admin or user
+export const createComplaint = async (req, res) => {
+    const loggedInId = req['decodedToken']?.id||req['userId']?.id;
 
     const {
         DeliveryId,
@@ -245,6 +249,8 @@ export const createComplaintByAdmin = async (req, res) => {
         Status = 'active',
         Description,
     } = req.body;
+
+
 
     if (!loggedInId) {
         return responseHandler.out(req, res, {
@@ -256,16 +262,38 @@ export const createComplaintByAdmin = async (req, res) => {
 
     try {
 
-        const isValidDeliveryComplain = await DeliveryModel.findById({_id:DeliveryId });
 
-        if(!isValidDeliveryComplain){
+        // const isValidDeliveryId = await DeliveryModel.findById({_id:DeliveryId });
+        const userInfo = await UserModel.findById((req['decodedToken']?.id)?UserId:req['userId']).populate('CurrentSubscription');
+        if (!userInfo) {
             return responseHandler.out(req, res, {
                 status: false,
                 statusCode: 404,
-                message: 'Delivery Does not exist'
+                message: 'User not found'
             });
-
         }
+
+
+         // Fetch the order to get deliveries
+         const order = userInfo.CurrentSubscription as DocumentType<Order>;     
+             if (!order) {
+            return res.status(404).json({
+                status: false,
+                message: 'Order not found'
+            });
+        }
+        const deliveryExists = order.Deliveries.some((delivery: Delivery) => {
+            return (delivery as DocumentType<Delivery>)._id.toString() === DeliveryId;
+        });
+
+        if (!deliveryExists) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Delivery does not exist or does not belong to this user'
+            });
+        }
+    
 
         // Check if a complaint already exists for the same DeliveryId
         const existingComplaint = await ComplaintModel.findOne({ DeliveryId });
@@ -280,12 +308,12 @@ export const createComplaintByAdmin = async (req, res) => {
 
         const newComplaint = new ComplaintModel({
             DeliveryId,
-            UserId,
+            UserId: req['decodedToken']?.id || req['userId'],
             ComplaintTypeId,
             Status,
             Description,
-            CreatedBy: loggedInId,
-            UpdatedBy: loggedInId // Assuming initially UpdatedBy is the same as CreatedBy
+            CreatedBy: req['decodedToken'] ? req['decodedToken'].id : null,
+            UpdatedBy: req['decodedToken'] ? req['decodedToken'].id : null // Assuming initially UpdatedBy is the same as CreatedBy
         });
 
         await newComplaint.save();
@@ -297,7 +325,6 @@ export const createComplaintByAdmin = async (req, res) => {
             data:newComplaint
         });
     } catch (error) {
-        console.error(error);
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
@@ -307,10 +334,9 @@ export const createComplaintByAdmin = async (req, res) => {
 };
 
 // Update complain by admin
-export const updateComplaintByAdmin = async (req, res) => {
+export const updateComplaint = async (req, res) => {
     const { id } = req.params;
     const loggedInId = req['decodedToken']?.id;
-
     const {
         DeliveryId,
         UserId,
@@ -433,54 +459,37 @@ export const getAllComplaintsByAdmin = async (req, res) => {
 // Resolve complains by admin
 
 
-// create complain by user
-export const createComplaintByUser = async (req, res) => {
-    const loggedInId = req['userId'];
-
-    const {
-        DeliveryId,
-        ComplaintTypeId,
-        Status = 'active',
-        Description,
-    } = req.body;
-
-    if (!loggedInId) {
-        return responseHandler.out(req, res, {
-            status: false,
-            statusCode: 400,
-            message: 'Forbidden'
-        });
-    }
-
+// Get one complain by admin 
+export const getComplaintById = async (req, res) => {
     try {
-        // Check if a complaint already exists for the same DeliveryId
-        const existingComplaint = await ComplaintModel.findOne({ DeliveryId });
+        const complaintId = req.params.id;
 
-        if (existingComplaint) {
+        if (!complaintId) {
             return responseHandler.out(req, res, {
                 status: false,
                 statusCode: 400,
-                message: 'A complaint already exists for this delivery'
+                message: 'Complaint ID is required'
             });
         }
 
-        const newComplaint = new ComplaintModel({
-            DeliveryId,
-            UserId:loggedInId,
-            ComplaintTypeId,
-            Status,
-            Description,
-            CreatedBy: loggedInId,
-            UpdatedBy: loggedInId // Assuming initially UpdatedBy is the same as CreatedBy
-        });
+        const complaint = await ComplaintModel.findById(complaintId)
+            .populate('UserId')
+            .populate('ComplaintTypeId', 'ComplaintType')
+            .populate('DeliveryId');
 
-        await newComplaint.save();
+        if (!complaint) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Complaint not found'
+            });
+        }
 
         return responseHandler.out(req, res, {
             status: true,
-            statusCode: 201,
-            message: 'Complaint created successfully',
-            data:newComplaint
+            statusCode: 200,
+            message: 'Complaint fetched successfully',
+            data:complaint
         });
     } catch (error) {
         console.error(error);
@@ -491,3 +500,45 @@ export const createComplaintByUser = async (req, res) => {
         });
     }
 };
+
+// get complaint of logged in user
+export const getComplaintByLoggedInUser = async (req, res) => {
+    try {
+        const loggedInId =req['userId']?.id;
+
+        if (!loggedInId) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'User ID not found'
+            });
+        }
+
+        const complaint = await ComplaintModel.find({UserId:loggedInId})
+            .populate('ComplaintTypeId', 'ComplaintType')
+            .populate('DeliveryId');
+
+        if (!complaint) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Complaint not found'
+            });
+        }
+
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Complaint fetched successfully',
+            data:complaint
+        });
+    } catch (error) {
+        console.error(error);
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error'
+        });
+    }
+};
+

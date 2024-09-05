@@ -31,8 +31,8 @@ export class Complaints {
     @prop({ enum: ResolutionType })
     public Resolution?: ResolutionType;
 
-    @prop({ type: Number, default: 1 })
-    public Description!: number;
+    @prop({ type: String, required: true })
+    public Description!: string;
 
     @prop({ type: Date, default: Date.now })
     public UpdatedAt!: Date;

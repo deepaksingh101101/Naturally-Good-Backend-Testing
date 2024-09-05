@@ -4,6 +4,7 @@ import { Product } from './product.model';
 import { Route, Vehicle } from './route.model';
 import { Employee } from './employee.model';
 import { Complaints } from './complaints.model';
+import { User } from './user.model';
 
 export enum DeliveryStatus {
   Pending = 'pending',
@@ -35,6 +36,10 @@ class AddonDetails {
 })
 
 export class Delivery {
+
+  // @prop({ ref: () => User, required: true })
+  // public UserId!: Ref<User>;
+
   @prop({ type: Date, required: true })
   public DeliveryDate!: Date;
 

@@ -17,7 +17,6 @@ import subscriptionRoutes from "./routes/subscription.routes";
 import bagRoutes from "./routes/bag.routes";
 import routeRoutes from "./routes/route.routes";
 import planRoutes from "./routes/plans.routes";
-import complaintTypeRoutes from "./routes/complaints.routes";
 import dropDownRoutes from "./routes/dropdown.routes";
 import { setupSwagger } from "./swaggerConfig";  // Import the Swagger configuration
 
@@ -57,7 +56,6 @@ export class Application {
 
 
     this.app.use("/plan", planRoutes);
-    this.app.use("/complaintType",complaintTypeRoutes );
     this.app.use("/dropDown",dropDownRoutes );
     this.app.use("/complain", complainRoutes);
 
