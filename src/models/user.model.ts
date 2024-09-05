@@ -147,8 +147,8 @@ export class User {
   }>;
 
 
-  @prop({ ref: () => Order, required: false })
-  public CurrentSubscription?: Ref<Order>;
+  // @prop({ ref: () => Order, required: false })
+  // public CurrentSubscription?: Ref<Order>;
 
   // // Authentication Fields
   // @prop({ type: String, required: false })

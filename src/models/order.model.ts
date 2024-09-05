@@ -21,8 +21,8 @@ export enum PaymentStatus {
 })
 
 export class Order {
-  // @prop({ ref: () => User, required: true })
-  // public userId!: Ref<User>;
+  @prop({ ref: () => User, required: true })
+  public UserId!: Ref<User>;
 
   // @prop({ ref: () => Subscription, required: true })
   // public SubscriptionId!: Ref<Subscription>;
