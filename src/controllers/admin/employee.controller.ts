@@ -350,7 +350,7 @@ export const editEmployeeById = async (req: Request, res: Response) => {
         const newData = req.body;
 
         // Check if the request body contains 'phone' or 'email'
-        if (newData.phone || newData.email) {
+        if (newData.PhoneNumber || newData.Email) {
             return responseHandler.out(req, res, {
                 status: false,
                 statusCode: 400,
