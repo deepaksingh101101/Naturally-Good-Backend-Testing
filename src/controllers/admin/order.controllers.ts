@@ -494,4 +494,62 @@ export const ApplyCouponsFromUserSide = async (req: Request, res: Response) => {
   }
 };
 
+// Get a single order by ID for the logged-in user
+export const getSingleOrderByUser = async (req: Request, res: Response) => {
+    try {
+        const userId = req['userId']; // Assuming userId is set in the request, e.g., by a middleware
+        const  OrderId  = req.params.id;
+
+        if (!OrderId) {
+            return res.status(400).json({
+                status: false,
+                statusCode: 400,
+                message: 'Order ID is required',
+            });
+        }
+
+        const order = await OrderModel.findOne({ _id: OrderId, UserId: userId })
+            .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
+            .populate({
+                path: 'SubscriptionId',
+                select: 'SubscriptionTypeId FrequencyId',
+                populate: [
+                    {
+                        path: 'SubscriptionTypeId',
+                        select: 'Name',
+                    },
+                    {
+                        path: 'FrequencyId',
+                        select: 'Name',
+                    },
+                ],
+            })
+            .populate('Coupons', 'Code DiscountPercentage DiscountPrice DiscountType Status') // Populate coupon details if applicable
+            // .populate('Deliveries') // Populate delivery details if applicable
+            .populate('-CreatedBy')
+            .populate('-UpdatedBy');
+
+        if (!order) {
+            return res.status(404).json({
+                status: false,
+                statusCode: 404,
+                message: 'Order not found',
+            });
+        }
+
+        res.status(200).json({
+            status: true,
+            statusCode: 200,
+            message: 'Order retrieved successfully',
+            order,
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error',
+            details: error.message,
+        });
+    }
+};
 
