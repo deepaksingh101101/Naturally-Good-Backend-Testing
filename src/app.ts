@@ -14,6 +14,7 @@ import complainRoutes from "./routes/complain.routes";
 import productRoutes from "./routes/product.routes";
 import couponsRoutes from "./routes/coupons.routes";
 import subscriptionRoutes from "./routes/subscription.routes";
+import orderRoutes from "./routes/order.routes";
 import bagRoutes from "./routes/bag.routes";
 import routeRoutes from "./routes/route.routes";
 import planRoutes from "./routes/plans.routes";
@@ -52,6 +53,7 @@ export class Application {
     this.app.use("/bag", bagRoutes);
     this.app.use("/coupons", couponsRoutes);
     this.app.use("/subscription", subscriptionRoutes);
+    this.app.use("/order", orderRoutes);
 
 
 

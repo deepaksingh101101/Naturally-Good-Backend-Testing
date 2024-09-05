@@ -140,11 +140,11 @@ export class User {
   @prop({ ref: () => TypeOfCustomer, required: false })
   public CustomerType?: Ref<TypeOfCustomer>;
 
-  @prop({ ref: () => Coupon })
-  public Coupons?: Array<{
-    Coupon: Ref<Coupon>;
-    IsUsed?: boolean;
-  }>;
+  // @prop({ ref: () => Coupon })
+  // public Coupons?: Array<{
+  //   Coupon: Ref<Coupon>;
+  //   usedTimes: number;
+  // }>;
 
 
   // @prop({ ref: () => Order, required: false })

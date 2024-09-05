@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import CouponModel from '../../models/coupons.model';
 import SubscriptionModel from '../../models/subscription.model';
 import { responseHandler } from '../../utils/send-response';
+import UserModel from '../../models/user.model';
 
 
 export const createCoupon = async (req: Request, res: Response) => {
@@ -488,3 +489,89 @@ export const updateCouponStatus = async (req: Request, res: Response) => {
       });
   }
 };
+
+
+export const AssignCouponsToCustomer = async (req: Request, res: Response) => {
+  try {
+    const { UserIds } = req.body;
+    const CouponId = req.params.id;
+
+    // Validate required fields
+    if (!CouponId || !UserIds || !Array.isArray(UserIds) || UserIds.length === 0) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Missing required fields: couponId and userIds',
+      });
+    }
+
+    // Find the coupon by ID
+    const coupon = await CouponModel.findById(CouponId);
+    if (!coupon) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'Coupon not found',
+      });
+    }
+
+    if (coupon.CouponVisibility !== "Private") {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Admin or Public Coupons Cannot Be Assigned',
+      });
+    }
+
+    // Ensure AssignedTo is initialized as an array
+    if (!Array.isArray(coupon.AssignedTo)) {
+      coupon.AssignedTo = [];
+    }
+
+    // Identify user IDs that are already assigned
+    const alreadyAssignedUserIds = coupon.AssignedTo.map(assigned => assigned.Users.toString());
+
+    const newUserIds = UserIds.filter(userId => !alreadyAssignedUserIds.includes(userId));
+
+    // If no new users to assign, return a message with names
+    if (newUserIds.length === 0) {
+      const alreadyAssignedUsers = await UserModel.find({ _id: { $in: alreadyAssignedUserIds } });
+      const alreadyAssignedUserNames = alreadyAssignedUsers.map(user => user.FirstName);
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: `The following users already have the coupon assigned: ${alreadyAssignedUserNames.join(', ')}`,
+      });
+    }
+
+    // Construct new assignments without changing the schema structure
+    const newAssignments = newUserIds.map(userId => ({
+      Users: userId,  // Directly use the userId
+      isUsed: false,  // Set default value for isUsed
+    }));
+
+    // Update the coupon document by pushing new assignments
+    await CouponModel.updateOne(
+      { _id: CouponId },
+      { $push: { AssignedTo: { $each: newAssignments } } }  // Use $push with $each to add multiple entries
+    );
+
+    // Fetch the updated coupon
+    const updatedCoupon = await CouponModel.findById(CouponId);
+
+    responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'Coupon assigned to users successfully',
+      data: updatedCoupon,
+    });
+  } catch (error) {
+    console.error('Error assigning coupon to users:', error);
+    responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+    });
+  }
+};
+

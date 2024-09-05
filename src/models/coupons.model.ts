@@ -1,6 +1,16 @@
 import { getModelForClass, ModelOptions, pre, prop, Ref } from '@typegoose/typegoose';
 import { Employee } from './employee.model';
 import { Subscription } from './subscription.model';
+import { User } from './user.model';
+
+
+class AssignedToSchema {
+  @prop({ ref: () => User, required: true }) // Ensure that ref is specified correctly
+  public Users!: Ref<User>;
+
+  @prop({ required: true })
+  public isUsed!: boolean;
+}
 
 @pre<Coupon>('save', async function() {
   this.UpdatedAt = new Date();
@@ -63,11 +73,11 @@ export class Coupon {
 
   // Assigned To
   @prop({ type: Boolean,default:false })
-  public AssignedTo?: boolean;
+  public ReferredTo?: boolean;
 
   // Assigned By
   @prop({ type: Boolean,default:false })
-  public AssignedBy?: boolean;
+  public ReferredBy?: boolean;
 
   // Revenue Generated
   @prop({ type: Number })
@@ -92,6 +102,22 @@ export class Coupon {
   // Subscription IDs - Array of references
   @prop({ ref: () => Subscription, required: false })
   public Subscriptions!: Ref<Subscription>[];
+
+
+  // User IDs - Array of reference
+  // @prop({ ref: () => User })
+  // public AssignedTo?: Array<{
+  //   Users: Ref<User>;
+  //   isUsed: boolean;
+  // }>;
+
+  @prop({ type: () => [AssignedToSchema] }) // Array of subdocuments
+  public AssignedTo?: AssignedToSchema[];
+
+    // User IDs - Array of references
+    @prop({ ref: () => User, required: false })
+    public UsedBy!: Ref<User>[];
+
 
 }
 
