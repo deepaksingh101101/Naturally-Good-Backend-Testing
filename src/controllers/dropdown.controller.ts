@@ -715,44 +715,43 @@ export const getFrequencyTypes = async (req: Request, res: Response) => {
 
 export const createFrequencyType = async (req: Request, res: Response) => {
   try {
-    const { Name, Value } = req.body;
-    
-    if (!Name || Value === undefined) {
+    const { Name, Value, DayBasis } = req.body;
+
+    if (!Name || Value === undefined || !DayBasis) {
       return responseHandler.out(req, res, {
         status: false,
         statusCode: 400,
         message: "Missing required fields",
-    });
-      // return res.status(400).json({ error: 'Missing required fields' });
+      });
     }
 
-    // Check if Frequency Type with the same name exists (case-insensitive)
-    const existing = await FrequencyTypeModel.findOne({ 
-      Name: { $regex: new RegExp(`^${Name}$`, 'i') } 
+    // Check if Frequency Type with the same Name, Value, and DayBasis exists
+    const existing = await FrequencyTypeModel.findOne({
+      Name: { $regex: new RegExp(`^${Name}$`, 'i') },
+      Value,
+      DayBasis
     });
 
     if (existing) {
       return responseHandler.out(req, res, {
         status: false,
         statusCode: 400,
-        message: "Frequency Type already exists",
-    });
-      // return res.status(400).json({ error: 'Frequency Type already exists' });
+        message: "Frequency Type with the same Name, Value, and DayBasis already exists",
+      });
     }
 
     // Create and save the new Frequency Type
-    const newFrequencyType = new FrequencyTypeModel({ Name, Value });
+    const newFrequencyType = new FrequencyTypeModel({ Name, Value, DayBasis });
     await newFrequencyType.save();
-    
+
     return responseHandler.out(req, res, {
-      status: false,
+      status: true,
       statusCode: 201,
       message: "Frequency Type created successfully",
-      data: newFrequencyType
-  });
-    // res.status(201).json(newFrequencyType);
+      data:newFrequencyType
+    });
   } catch (error) {
-    handleError(req,res, error);
+    handleError(req, res, error);
   }
 };
 
@@ -761,16 +760,15 @@ export const createFrequencyType = async (req: Request, res: Response) => {
 export const editFrequencyType = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { Name, Value } = req.body;
+    const { Name, Value, DayBasis } = req.body;
 
     // Validate ID format
     if (!id.match(/^[0-9a-fA-F]{24}$/)) {
-    return responseHandler.out(req, res, {
-      status: false,
-      statusCode: 400,
-      message: "Invalid frequency type ID format",
-  });
-      // return res.status(400).json({ error: 'Invalid frequency type ID format' });
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: "Invalid frequency type ID format",
+      });
     }
 
     // Prepare update object
@@ -778,9 +776,11 @@ export const editFrequencyType = async (req: Request, res: Response) => {
 
     // If Name is provided, validate and include it in the update
     if (Name) {
-      // Check if a Frequency Type with the same name already exists (case-insensitive)
+      // Check if a Frequency Type with the same Name, Value, and DayBasis already exists (case-insensitive)
       const existing = await FrequencyTypeModel.findOne({
         Name: { $regex: new RegExp(`^${Name}$`, 'i') },
+        Value,
+        DayBasis,
         _id: { $ne: id }
       });
 
@@ -788,17 +788,21 @@ export const editFrequencyType = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
           status: false,
           statusCode: 400,
-          message: "Frequency Type with this name already exists",
-      });
-        // return res.status(400).json({ error: 'Frequency Type with this name already exists' });
+          message: "Frequency Type with the same Name, Value, and DayBasis already exists",
+        });
       }
-      
-      updateData.Name = Name; // Use the provided name as is
+
+      updateData.Name = Name;
     }
 
     // If Value is provided, include it in the update
     if (Value !== undefined) {
       updateData.Value = Value;
+    }
+
+    // If DayBasis is provided, include it in the update
+    if (DayBasis) {
+      updateData.DayBasis = DayBasis;
     }
 
     // Find and update the frequency type
@@ -813,8 +817,7 @@ export const editFrequencyType = async (req: Request, res: Response) => {
         status: false,
         statusCode: 404,
         message: "Frequency Type not found",
-    });
-      // return res.status(404).json({ error: 'Frequency Type not found' });
+      });
     }
 
     return responseHandler.out(req, res, {
@@ -822,10 +825,9 @@ export const editFrequencyType = async (req: Request, res: Response) => {
       statusCode: 200,
       message: "Frequency Type updated successfully",
       data:updatedFrequencyType
-  });
-    // return res.status(200).json(updatedFrequencyType);
+    });
   } catch (error) {
-    handleError(req,res, error);
+    handleError(req, res, error);
   }
 };
 

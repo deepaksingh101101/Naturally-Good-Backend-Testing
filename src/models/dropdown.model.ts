@@ -111,6 +111,9 @@ export class FrequencyType {
   @prop({ required: true })
   public Value!: number;
 
+  @prop({ required: true })
+  public DayBasis!: number;
+
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;
 
