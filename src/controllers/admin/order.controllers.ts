@@ -7,6 +7,8 @@ import DeliveryModel from '../../models/delivery.model';
 import { FrequencyType } from '../../models/dropdown.model';
 import { Bag } from '../../models/bag.model';
 import { Ref } from '@typegoose/typegoose';
+import { LocalityModel, RouteModel, ZoneModel } from '../../models/route.model';
+import UserModel from '../../models/user.model';
 
 // Create order by admin
 export const createOrderByAdmin = async (req: Request, res: Response) => {
@@ -138,28 +140,24 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
   // After saving the order, proceed to create deliveries
   if (isOrderCreated) {
     try {
-      // Retrieve the subscription details and populate FrequencyId and Bag
       const subscription = await SubscriptionModel.findById(SubscriptionId)
         .populate<{ FrequencyId: FrequencyType }>('FrequencyId')
         .populate<{ Bag: Bag }>('Bag');
-  
+
       if (!subscription) {
         return res.status(404).json({ error: 'Subscription not found' });
       }
-  
-      // Ensure Bag is populated
+
       const bagId = subscription.Bag as Ref<Bag>;
-  
+
       if (!bagId) {
         return res.status(404).json({ error: 'Bag not found in subscription' });
       }
-  
-      // Type assertion to ensure FrequencyId is populated
+
       const frequency = subscription.FrequencyId as FrequencyType;
       const totalDeliveries = subscription.TotalDeliveryNumber;
       const dayBasis = frequency.DayBasis;
-  
-      // Calculate delivery dates
+
       const deliveryDates = [];
       const startDate = new Date(DeliveryStartDate);
       for (let i = 0; i < totalDeliveries; i++) {
@@ -167,22 +165,61 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         deliveryDate.setDate(startDate.getDate() + i * dayBasis);
         deliveryDates.push(deliveryDate);
       }
-  
-      // Create deliveries
+
+      // Fetch user details to retrieve address
+      const user = await UserModel.findById(UserId).populate('Address.City');
+      if (!user || !user.Address || !user.Address.ZipCode || !user.Address.City) {
+        return res.status(404).json({ error: 'User address not found' });
+      }
+
+      console.log(user)
+      // Find the locality and zone based on ZIP code and city
+      const locality = await LocalityModel.findOne({
+        Pin: { $in: [user.Address.ZipCode] },
+        Serviceable: true,
+      });
+      console.log(locality)
+
+      if (!locality) {
+        return res.status(404).json({ error: 'Serviceable locality not found for the provided ZIP code' });
+      }
+
+      const zone = await ZoneModel.findOne({
+        Localities: locality._id,
+        Serviceable: true,
+      });
+
+      if (!zone) {
+        return res.status(404).json({ error: 'Zone not found for the locality' });
+      }
+
+      // Find a route that includes the zone
+      const route = await RouteModel.findOne({
+        'ZonesIncluded.ZoneId': zone._id,
+        Status: true,
+      });
+
+      console.log(route)
+
+      if (!route) {
+        return res.status(404).json({ error: 'Route not found for the zone' });
+      }
+
+      // Create deliveries with assigned route
       const deliveryPromises = deliveryDates.map(async (date) => {
         const delivery = new DeliveryModel({
           OrderId: order._id,
-          UserId: UserId,
+          UserId,
           DeliveryDate: date,
-          Status: 'pending', // Or whatever initial status you prefer
-          Bag: [{ BagID: bagId, BagWeight: 0 }], // Assuming BagWeight is to be set, adjust as needed
+          Status: 'pending',
+          Bag: [{ BagID: bagId, BagWeight: 0 }],
+          AssignedRoute: route._id,
         });
         return await delivery.save();
       });
-  
+
       const deliveries = await Promise.all(deliveryPromises);
-  
-      // Respond with success message including order and deliveries
+
       return res.status(201).json({ deliveries, message: 'Order and deliveries created successfully' });
     } catch (err) {
       res.status(500).json({ error: 'Failed to create deliveries', details: err.message });
