@@ -198,7 +198,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
           return responseHandler.out(req, res, {
             status: false,
             statusCode: 404,
-            message: 'Serviceable locality not found for the provided ZIP code'
+            message: `Oops's We are not serviceable in your area `
           });
         }
 
@@ -211,7 +211,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
           return responseHandler.out(req, res, {
             status: false,
             statusCode: 404,
-            message: 'Zone not found for the locality'
+            message: 'We are serviceable in this area but no zone include this locality'
           });
         }
 
@@ -224,7 +224,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
           return responseHandler.out(req, res, {
             status: false,
             statusCode: 404,
-            message: 'Route not found for the zone'
+            message: 'We are serviceable in this area but no route cover this zone'
           });
         }
 
@@ -245,7 +245,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
           status: true,
           statusCode: 201,
-          message: 'Order and deliveries created successfully',
+          message: 'Order created successfully',
         });
       } catch (err) {
         return responseHandler.out(req, res, {
