@@ -5,6 +5,8 @@ import SubscriptionModel from '../../models/subscription.model';
 import { responseHandler } from '../../utils/send-response';
 import DeliveryModel from '../../models/delivery.model';
 import { FrequencyType } from '../../models/dropdown.model';
+import { Bag } from '../../models/bag.model';
+import { Ref } from '@typegoose/typegoose';
 
 // Create order by admin
 export const createOrderByAdmin = async (req: Request, res: Response) => {
@@ -134,47 +136,60 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
       }
 
   // After saving the order, proceed to create deliveries
-if (isOrderCreated) {
-  try {
-    // Retrieve the subscription details and populate FrequencyId
-    const subscription = await SubscriptionModel.findById(SubscriptionId)
-      .populate<{ FrequencyId: FrequencyType }>('FrequencyId');
-
-    if (!subscription) {
-      return res.status(404).json({ error: 'Subscription not found' });
-    }
-    // Type assertion to ensure FrequencyId is populated
-    const frequency = subscription.FrequencyId as FrequencyType;
-    const totalDeliveries = subscription.TotalDeliveryNumber;
-    const dayBasis = frequency.DayBasis;
-
-    // Calculate delivery dates
-    const deliveryDates = [];
-    const startDate = new Date(DeliveryStartDate);
-    for (let i = 0; i < totalDeliveries; i++) {
-      const deliveryDate = new Date(startDate);
-      deliveryDate.setDate(startDate.getDate() + i * dayBasis);
-      deliveryDates.push(deliveryDate);
-    }
-    // Create deliveries
-    const deliveryPromises = deliveryDates.map(async (date) => {
-      const delivery = new DeliveryModel({
-        OrderId: order._id,
-        UserId: UserId,
-        DeliveryDate: date,
-        Status: 'pending', // Or whatever initial status you prefer
+  if (isOrderCreated) {
+    try {
+      // Retrieve the subscription details and populate FrequencyId and Bag
+      const subscription = await SubscriptionModel.findById(SubscriptionId)
+        .populate<{ FrequencyId: FrequencyType }>('FrequencyId')
+        .populate<{ Bag: Bag }>('Bag');
+  
+      if (!subscription) {
+        return res.status(404).json({ error: 'Subscription not found' });
+      }
+  
+      // Ensure Bag is populated
+      const bagId = subscription.Bag as Ref<Bag>;
+  
+      if (!bagId) {
+        return res.status(404).json({ error: 'Bag not found in subscription' });
+      }
+  
+      // Type assertion to ensure FrequencyId is populated
+      const frequency = subscription.FrequencyId as FrequencyType;
+      const totalDeliveries = subscription.TotalDeliveryNumber;
+      const dayBasis = frequency.DayBasis;
+  
+      // Calculate delivery dates
+      const deliveryDates = [];
+      const startDate = new Date(DeliveryStartDate);
+      for (let i = 0; i < totalDeliveries; i++) {
+        const deliveryDate = new Date(startDate);
+        deliveryDate.setDate(startDate.getDate() + i * dayBasis);
+        deliveryDates.push(deliveryDate);
+      }
+  
+      // Create deliveries
+      const deliveryPromises = deliveryDates.map(async (date) => {
+        const delivery = new DeliveryModel({
+          OrderId: order._id,
+          UserId: UserId,
+          DeliveryDate: date,
+          Status: 'pending', // Or whatever initial status you prefer
+          Bag: [{ BagID: bagId, BagWeight: 0 }], // Assuming BagWeight is to be set, adjust as needed
+        });
+        return await delivery.save();
       });
-      return await delivery.save();
-    });
-
-   const delivery= await Promise.all(deliveryPromises);
-
-    // Respond with success message including order and deliveries
-    return res.status(201).json({ delivery, message: 'Order and deliveries created successfully' });
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to create deliveries', details: err.message });
+  
+      const deliveries = await Promise.all(deliveryPromises);
+  
+      // Respond with success message including order and deliveries
+      return res.status(201).json({ deliveries, message: 'Order and deliveries created successfully' });
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to create deliveries', details: err.message });
+    }
   }
-}    } catch (error) {
+
+} catch (error) {
       res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   };
