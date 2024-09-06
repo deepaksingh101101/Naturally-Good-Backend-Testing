@@ -43,13 +43,13 @@ export class Delivery {
   @prop({ type: Date, required: true })
   public DeliveryDate!: Date;
 
-  @prop({ type: String, required: true })
+  @prop({ type: String, required: false })
   public DeliveryTime!: string;
 
   @prop({ type: String, enum: DeliveryStatus, required: true, default: DeliveryStatus.Pending })
   public Status!: DeliveryStatus;
 
-  @prop({ ref: () => Route, required: true })
+  @prop({ ref: () => Route, required: false })
   public AssignedRoute!: Ref<Route>;
 
   @prop({ type: () => [BagDetails], required: true })

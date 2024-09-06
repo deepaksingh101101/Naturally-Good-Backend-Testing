@@ -92,7 +92,7 @@ export class SubscriptionType {
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;
 
-  @prop({ type: Date, default: Date.now })
+@prop({ type:Date, default: Date.now })
   public UpdatedAt!: Date;
 
   @prop({ ref: () => Employee, required: false })
@@ -111,7 +111,7 @@ export class FrequencyType {
   @prop({ required: true })
   public Value!: number;
 
-  @prop({ required: true })
+  @prop({ Type:Number,required: true,default:0 })
   public DayBasis!: number;
 
   @prop({ type: Date, default: Date.now })

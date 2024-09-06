@@ -3,6 +3,8 @@ import CouponModel from '../../models/coupons.model';
 import OrderModel, { AllPaymentStatus, AllPaymentType } from '../../models/order.model';
 import SubscriptionModel from '../../models/subscription.model';
 import { responseHandler } from '../../utils/send-response';
+import DeliveryModel from '../../models/delivery.model';
+import { FrequencyType } from '../../models/dropdown.model';
 
 // Create order by admin
 export const createOrderByAdmin = async (req: Request, res: Response) => {
@@ -130,10 +132,49 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
 
 
       }
-  
-      // Respond with the created order
-      res.status(201).json(order);
-    } catch (error) {
+
+  // After saving the order, proceed to create deliveries
+if (isOrderCreated) {
+  try {
+    // Retrieve the subscription details and populate FrequencyId
+    const subscription = await SubscriptionModel.findById(SubscriptionId)
+      .populate<{ FrequencyId: FrequencyType }>('FrequencyId');
+
+    if (!subscription) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+    // Type assertion to ensure FrequencyId is populated
+    const frequency = subscription.FrequencyId as FrequencyType;
+    const totalDeliveries = subscription.TotalDeliveryNumber;
+    const dayBasis = frequency.DayBasis;
+
+    // Calculate delivery dates
+    const deliveryDates = [];
+    const startDate = new Date(DeliveryStartDate);
+    for (let i = 0; i < totalDeliveries; i++) {
+      const deliveryDate = new Date(startDate);
+      deliveryDate.setDate(startDate.getDate() + i * dayBasis);
+      deliveryDates.push(deliveryDate);
+    }
+    // Create deliveries
+    const deliveryPromises = deliveryDates.map(async (date) => {
+      const delivery = new DeliveryModel({
+        OrderId: order._id,
+        UserId: UserId,
+        DeliveryDate: date,
+        Status: 'pending', // Or whatever initial status you prefer
+      });
+      return await delivery.save();
+    });
+
+   const delivery= await Promise.all(deliveryPromises);
+
+    // Respond with success message including order and deliveries
+    return res.status(201).json({ delivery, message: 'Order and deliveries created successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to create deliveries', details: err.message });
+  }
+}    } catch (error) {
       res.status(500).json({ error: 'Internal server error', details: error.message });
     }
   };
@@ -552,4 +593,5 @@ export const getSingleOrderByUser = async (req: Request, res: Response) => {
         });
     }
 };
+
 
