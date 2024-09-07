@@ -180,7 +180,6 @@ export const createEmployee = async (req: Request, res: Response) => {
 
 export const loginEmployee = async (req: Request, res: Response) => {
     const { Email, Password } = req.body;
-
     try {
         const employee = await EmployeeModel.findOne({ Email }) as DocumentType<Employee>;
         if (!employee) {
@@ -202,8 +201,8 @@ export const loginEmployee = async (req: Request, res: Response) => {
             });
             // return res.status(400).json({ error: 'Invalid password' });
         }
-        const token = generateToken({ id: employee._id, email: employee.Email, role: employee.Role });
 
+        const token = generateToken({ id: employee._id, email: employee.Email, role: employee.Role });
 
         return responseHandler.out(req, res, {
             status: true,
@@ -391,4 +390,68 @@ export const editEmployeeById = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const getPermissionByEmployeeId = async (req: Request, res: Response) => {
+    const { id } = req.params; // Get employee ID from the request parameters
+    try {
+        // Find the employee by ID
+        const employee = await EmployeeModel.findById(id) as DocumentType<Employee>;
+        if (!employee) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: "Employee not found",
+            });
+        }
+
+        // Find the role associated with the employee
+        const role = await RoleModel.findById(employee.Role).populate({
+            path: 'permissions.permission',
+            model: PermissionModel, // Ensure that this is the correct path to the Permission model
+            select: 'moduleName' // Only select the moduleName field
+        });
+
+        if (!role) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: "Role not found for this employee",
+            });
+        }
+
+        // Extract permissions from the role with populated moduleName
+        const permissions = role.permissions.map(permission => {
+            // Type checking and casting to ensure it is populated
+            if (permission.permission instanceof PermissionModel) {
+                return {
+                    permissionId: permission.permission._id, // Use populated permission's _id
+                    moduleName: permission.permission.moduleName, // Select populated moduleName
+                    details: permission.details.map(detail => ({
+                        actionName: detail.actionName,
+                        isAllowed: detail.isAllowed
+                    }))
+                };
+            } else {
+                return null; // Or handle the case where it's not populated
+            }
+        }).filter(p => p !== null); // Filter out any nulls if any
+
+        // Return the permissions
+        return responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: "Permissions fetched successfully",
+            data: permissions
+        });
+
+    } catch (error) {
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal Server Error',
+            data: error.message
+        });
+    }
+};
+
 

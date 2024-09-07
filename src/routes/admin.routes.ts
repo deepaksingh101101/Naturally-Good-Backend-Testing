@@ -10,6 +10,7 @@ import {
   editEmployeeById,
   getAllEmployees,
   getEmployeeById,
+  getPermissionByEmployeeId,
   loginEmployee
 } from '../controllers/admin/employee.controller';
 import { createRole, getAllRoles, getAllRolesNameAndId } from '../controllers/auth/role.controller';
@@ -33,6 +34,8 @@ router.get('/employee',checkPermissions('View Employee') ,getAllEmployees);
 router.get('/employee/:id', checkPermissions('View Employee'), getEmployeeById);
 router.put('/employee/:id', checkPermissions('Edit Employee'), editEmployeeById);
 router.post('/employee/login', loginEmployee);
+
+router.get('/employee/permissions/:id', isRoleLoggedIn,getPermissionByEmployeeId);
 
 // User/Customer Creation By Admin
 router.post('/user', checkPermissions('Create Customer'), createUserByAdmin);
