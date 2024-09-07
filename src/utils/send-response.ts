@@ -19,7 +19,7 @@ export const responseHandler = {
                 response.status(401).json({ message: 'Unauthorized user' });
                 break;
             case 500:
-                response.status(500).json({ message: 'Internal server error Or Invalid data' });
+                response.status(500).json({ message: 'Token has expired' });
                 break;
             case 400:
                 response.status(400).json({ message: 'Bad request', fields: data });
