@@ -106,30 +106,25 @@
         ]
     },
      {
-        "moduleName": "dummy4 Management",
+        "moduleName": "Referral Management",
         "permissions": [
-            { "name": "Create Complain Type" },
-            { "name": "Edit Complain Type" },
-            { "name": "Resolve Complain" },
-            { "name": "Complain Type Status" }
+            { "name": "View Referral" }
         ]
     },
      {
-        "moduleName": "dummy5 Management",
+        "moduleName": "Report And Analytics",
         "permissions": [
-            { "name": "Create Complain Type" },
-            { "name": "Edit Complain Type" },
-            { "name": "Resolve Complain" },
-            { "name": "Complain Type Status" }
+            { "name": "View Reports" }
         ]
     },
      {
-        "moduleName": "dummy6 Management",
+        "moduleName": "Settings Management",
         "permissions": [
-            { "name": "Create Complain Type" },
-            { "name": "Edit Complain Type" },
-            { "name": "Resolve Complain" },
-            { "name": "Complain Type Status" }
+            { "name": "General Setting" },
+            { "name": "Payment Settings" },
+            { "name": "Notification Settings" },
+            { "name": "Permissions Settings" },
+            { "name": "API Settings" }
         ]
     }
 
