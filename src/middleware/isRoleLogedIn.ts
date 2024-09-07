@@ -9,7 +9,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
 
 export const isRoleLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
-
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return responseHandler.out(req, res, {
             status: false,
@@ -25,6 +24,7 @@ export const isRoleLoggedIn = async (req: Request, res: Response, next: NextFunc
 
         const roleId = decoded.role;
         req['decodedToken'] = decoded.id;
+        console.log(decoded)
 
         // Fetch the role details by ID, including its permissions
         const role = await RoleModel.findById(roleId).populate('permissions.permission');
