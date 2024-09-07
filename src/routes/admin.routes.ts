@@ -35,7 +35,7 @@ router.get('/employee/:id', checkPermissions('View Employee'), getEmployeeById);
 router.put('/employee/:id', checkPermissions('Edit Employee'), editEmployeeById);
 router.post('/employee/login', loginEmployee);
 
-router.get('/employee/permissions/:id', isRoleLoggedIn,getPermissionByEmployeeId);
+router.get('/employee/permissions/', isRoleLoggedIn,getPermissionByEmployeeId);
 
 // User/Customer Creation By Admin
 router.post('/user', checkPermissions('Create Customer'), createUserByAdmin);

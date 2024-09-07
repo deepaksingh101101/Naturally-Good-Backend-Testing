@@ -392,7 +392,7 @@ export const editEmployeeById = async (req: Request, res: Response) => {
 };
 
 export const getPermissionByEmployeeId = async (req: Request, res: Response) => {
-    const { id } = req.params; // Get employee ID from the request parameters
+    const  id  = req['decodedToken'] // Get employee ID from the request parameters
     try {
         // Find the employee by ID
         const employee = await EmployeeModel.findById(id) as DocumentType<Employee>;
