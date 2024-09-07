@@ -392,8 +392,7 @@ export const editEmployeeById = async (req: Request, res: Response) => {
 };
 
 export const getPermissionByEmployeeId = async (req: Request, res: Response) => {
-    const  id  = req['decodedToken'] // Get employee ID from the request parameters
-    console.log(id)
+    const id = req['decodedToken']; // Get employee ID from the request parameters
     try {
         // Find the employee by ID
         const employee = await EmployeeModel.findById(id) as DocumentType<Employee>;
@@ -421,21 +420,26 @@ export const getPermissionByEmployeeId = async (req: Request, res: Response) => 
         }
 
         // Extract permissions from the role with populated moduleName
-        const permissions = role.permissions.map(permission => {
-            // Type checking and casting to ensure it is populated
-            if (permission.permission instanceof PermissionModel) {
-                return {
-                    permissionId: permission.permission._id, // Use populated permission's _id
-                    moduleName: permission.permission.moduleName, // Select populated moduleName
-                    details: permission.details.map(detail => ({
-                        actionName: detail.actionName,
-                        isAllowed: detail.isAllowed
-                    }))
-                };
-            } else {
-                return null; // Or handle the case where it's not populated
-            }
-        }).filter(p => p !== null); // Filter out any nulls if any
+        const permissions = role.permissions
+            .map(permission => {
+                // Type checking and casting to ensure it is populated
+                if (permission.permission instanceof PermissionModel) {
+                    return {
+                        permissionId: permission.permission._id, // Use populated permission's _id
+                        moduleName: permission.permission.moduleName, // Select populated moduleName
+                        details: permission.details
+                            .filter(detail => detail.isAllowed) // Filter to include only allowed details
+                            .map(detail => ({
+                                actionName: detail.actionName,
+                                isAllowed: detail.isAllowed
+                            }))
+                    };
+                } else {
+                    return null; // Or handle the case where it's not populated
+                }
+            })
+            .filter(p => p !== null) // Filter out any nulls if any
+            .filter(permission => permission.details.length > 0); // Ensure we only include permissions with allowed details
 
         // Return the permissions
         return responseHandler.out(req, res, {
