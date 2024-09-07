@@ -446,7 +446,9 @@ export const getPermissionByEmployeeId = async (req: Request, res: Response) => 
             status: true,
             statusCode: 200,
             message: "Permissions fetched successfully",
-            data: permissions
+            data: {permissions:permissions,
+                    employee:employee
+            }
         });
 
     } catch (error) {
