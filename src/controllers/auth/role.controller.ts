@@ -17,13 +17,16 @@ export const createRole = async (req: Request, res: Response) => {
     // const superAdminId = "66d00c12bcecdc9aabfe3a91";
     try {
         // Check if the role already exists (case-insensitive)
+        const trimmedRoleName = roleName.trim(); // Trim the roleName
+
         const existingRole = await RoleModel.findOne({
-            roleName: { $regex: new RegExp(`^${roleName}$`, 'i') }
+            roleName: { $regex: new RegExp(`^${trimmedRoleName}$`, 'i') } // Use the trimmed role name
         });
+        
         if (existingRole) {
             return responseHandler.out(req, res, {
                 status: false,
-                statusCode: 400,
+                statusCode: 403,
                 message: "Role already exists",
             });
             // return res.status(400).json({ error: 'Role already exists' });
@@ -55,13 +58,14 @@ export const createRole = async (req: Request, res: Response) => {
         });
 
         // Save the new role
-        await newRole.save();
+       const role= await newRole.save();
 
         // Respond after saving
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 201,
             message: "Role created successfully",
+            data:role
         });
         
     } catch (error) {

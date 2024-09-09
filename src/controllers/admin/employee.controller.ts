@@ -113,7 +113,7 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
 
 
 export const createEmployee = async (req: Request, res: Response) => {
-    const { Email, Password, FirstName, LastName, PhoneNumber, Dob, Gender, StreetAddress, City, State, roleId } = req.body;
+    const { Email, Password, FirstName, LastName, PhoneNumber, Dob, Gender, StreetAddress, City, State, RoleId } = req.body;
     const loggedInId = req['decodedToken']?.id;
 
     if (!loggedInId) {
@@ -125,7 +125,7 @@ export const createEmployee = async (req: Request, res: Response) => {
         // return res.status(400).json({ error: 'Invalid Login user' });
     }
     try {
-        const role = await RoleModel.findById(roleId);
+        const role = await RoleModel.findById(RoleId);
         if (!role) {
             return responseHandler.out(req, res, {
                 status: false,
@@ -159,7 +159,7 @@ export const createEmployee = async (req: Request, res: Response) => {
             City,
             State,
             CreatedBy: loggedInId,
-            Role: roleId,
+            Role: RoleId,
         });
 
         await newEmployee.save();
@@ -167,7 +167,7 @@ export const createEmployee = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 201,
-            message: "Employee created successfully",
+            message: "Employee created",
         });
         // res.status(201).json({ message: 'Employee created successfully' });
     } catch (error) {
