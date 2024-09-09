@@ -282,9 +282,12 @@ export const addPermissionsToAllRoles = async (req: Request, res: Response) => {
       // Step 4: Prepare permissions for Role update
       const permissionsForRole = {
         permission: newPermission._id,
+        icon:newPermission.icon,
         details: newPermission.permissions.map((p: any) => ({
           isAllowed: true, // Default isAllowed to true for now; will adjust for roles later
           actionName: p.name,
+          href:p.href,
+          isInSidebar:p.isInSidebar
         })),
       };
   
@@ -299,6 +302,8 @@ export const addPermissionsToAllRoles = async (req: Request, res: Response) => {
             details: permissionsForRole.details.map((detail) => ({
               ...detail,
               isAllowed: role.roleName === 'Superadmin', // true if Superadmin, else false
+              href:detail.href,
+              isInSidebar:detail.isInSidebar
             })),
           };
   

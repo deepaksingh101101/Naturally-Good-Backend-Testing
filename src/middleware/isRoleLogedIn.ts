@@ -17,7 +17,10 @@ export const isRoleLoggedIn = async (req: Request, res: Response, next: NextFunc
         });
     }
 
+
     const token = authHeader.split(' ')[1];
+    console.log(token)
+
 
     try {
         const decoded = jwt.verify(token, JWT_SECRET) as { id: string, email: string, role: string };

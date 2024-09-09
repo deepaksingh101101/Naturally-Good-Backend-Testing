@@ -4,98 +4,101 @@
     {
         "moduleName": "Product Management",
         "permissions": [
-            { "name": "Create Product" },
-            { "name": "View Product" },
-            { "name": "Edit Product" },
-            { "name": "Product Availability" }
-        ]
+            { "name": "Create Product" ,"href":"/product","isInSidebar":false},
+            { "name": "Edit Product" ,"href":"/product/edit","isInSidebar":false},
+            { "name": "View Product" ,"href":"/product/view","isInSidebar":false},
+            { "name": "View Product Table" ,"href":"/product-management","isInSidebar":true},
+            { "name": "Product Availability","href":"" ,"isInSidebar":false}
+        ],
+        "icon":"product"
     },
     {
         "moduleName": "Bag Management",
         "permissions": [
-            { "name": "Create Bag" },
-            { "name": "View Bag" },
-            { "name": "Edit Bag" },
-            { "name": "Bag Availability" }
-        ]
+            { "name": "Create Bag","href":"/bag-management","isInSidebar":false },
+            { "name": "View Bag","href":"/bag/view","isInSidebar":false },
+            { "name": "Edit Bag" ,"href":"/bag/edit","isInSidebar":false},
+            { "name": "Bag Availability","href":"" ,"isInSidebar":false },
+            { "name": "View Product Table" ,"href":"/bag","isInSidebar":true}
+        ],
+        "icon":"order"
     },
     {
         "moduleName": "Subscription Management",
         "permissions": [
-            { "name": "Create Subscription" },
-            { "name": "View Subscription" },
-            { "name": "Edit Subscription" },
-            { "name": "Subscription Availability" }
-        ]
+            { "name": "Create Subscription","href":"/subscription-form","isInSidebar":false },
+            { "name": "View Subscription","href":"/subscription/view" ,"isInSidebar":false},
+            { "name": "View Subscription Table","href":"/subscriptions","isInSidebar":true },
+            { "name": "Edit Subscription","href":"/subscription/edit" ,"isInSidebar":false},
+            { "name": "Subscription Availability","href":"" ,"isInSidebar":false}
+        ],
+        "icon":"order"
     },
+    
     {
         "moduleName": "Employee Management",
         "permissions": [
-            { "name": "Create Employee" },
-            { "name": "Delete Employee" },
-            { "name": "View Employee" },
-            { "name": "Edit Employee" }
-        ]
+            { "name": "Create Employee","href":"/employee","isInSidebar":false },
+            { "name": "Delete Employee" ,"href":"/employee/delete","isInSidebar":false},
+            { "name": "View Employee","href":"/employee/view","isInSidebar":false },
+            { "name": "View Employee Table" ,"href":"/employee-management","isInSidebar":true},
+            { "name": "Edit Employee" ,"href":"","isInSidebar":false}
+        ],
+        "icon":"order"
     },
     {
         "moduleName": "Customer Management",
         "permissions": [
-            { "name": "Create Customer" },
-            { "name": "View Customer" },
-            { "name": "Edit Customer" },
-            { "name": "Customer Status" }
-        ]
+            { "name": "Create Customer" ,"href":"/user/profile","isInSidebar":false},
+            { "name": "View Customer","href":"/user/view" ,"isInSidebar":false},
+            { "name": "View Customer Table","href":"/user-management" ,"isInSidebar":true},
+            { "name": "Edit Customer","href":"/user/edit","isInSidebar":false },
+            { "name": "Customer Status","href":"","isInSidebar":false} 
+        ],
+        "icon":"order"
     },
     {
         "moduleName": "Order Management",
         "permissions": [
-            { "name": "Create Order" },
-            { "name": "View Order" },
-            { "name": "Edit Order" },
-            { "name": "Upgrade Order" },
-            { "name": "Net Price Editable" },
-            { "name": "Edit Delivery" },
-            { "name": "Order Status" }
-        ]
+            { "name": "Create Order","href":"/order","isInSidebar":false },
+            { "name": "View Order" ,"href":"/order/view","isInSidebar":false},
+            { "name": "View Order Table" ,"href":"/order-management","isInSidebar":true},
+            { "name": "Edit Order","href":"/order/edit","isInSidebar":false },
+            { "name": "Upgrade Order" ,"href":"/order/updateSubscription","isInSidebar":false},
+            { "name": "Net Price Editable" ,"href":"","isInSidebar":false},
+            { "name": "Edit Delivery","href":"/order/view","isInSidebar":false },
+            { "name": "Order Status","href":"","isInSidebar":false }
+        ],
+        "icon":"order"
     },
     {
         "moduleName": "Delivery Management",
         "permissions": [
-            { "name": "Modify Delivery Bag" },
-            { "name": "Edit Delivery Details" },
-            { "name": "Skip Delivery" },
-            { "name": "Delivery Status" }
-        ]
+            { "name": "Modify Delivery Bag","href":"/order/assignOrder","isInSidebar":false },
+            { "name": "Skip Delivery","href":"","isInSidebar":false },
+            { "name": "Delivery Status","href":"","isInSidebar":false },
+            { "name": "View Delivery Table","href":"/delivery-management","isInSidebar":true }
+        ],
+        "icon":"order"
+
     },
     {
         "moduleName": "Complain Management",
         "permissions": [
-            { "name": "Create Complain Type" },
-            { "name": "Edit Complain Type" },
-            { "name": "Resolve Complain" },
-            { "name": "Complain Type Status" }
-        ]
+            { "name": "Create Complain Type","href":"/complaint","isInSidebar":false  },
+            { "name": "View Complain Table","href":"/complaint-management","isInSidebar":true  },
+            { "name": "Edit Complain Type","href":"/complaint/edit","isInSidebar":false },
+            { "name": "Resolve Complain","href":"/complaint/view","isInSidebar":false },
+            { "name": "Complain Type Status","href":"","isInSidebar":false },
+            { "name": "Create Complain","href":"/received-complaint","isInSidebar":false  },
+            { "name": "Edit Complain","href":"/complaints/edit","isInSidebar":false },
+            { "name": "View Complain","href":"/complaints/view","isInSidebar":false },
+            { "name": "Resolve Complain","href":"/complaint/view","isInSidebar":false },
+            { "name": "Complain Type Status","href":"","isInSidebar":false }
+        ],
+        "icon":"order"
     },
-     {
-        "moduleName": "Role Management",
-        "permissions": [
-            { "name": "Create Role" },
-            { "name": "View Role" },
-            { "name": "Edit Role" },
-            { "name": "Delete Role" }
-        ]
-    },
-     {
-        "moduleName": "Coupon Management",
-        "permissions": [
-            { "name": "Create Coupons" },
-            { "name": "Edit Coupons" },
-            { "name": "View Coupons" },
-            { "name": "Assign Customers" },
-            { "name": "Toggle Coupons" },
-            { "name": "Delete Coupons" }
-        ]
-    },
+    
      {
         "moduleName": "Route Management",
         "permissions": [
@@ -105,27 +108,43 @@
             { "name": "Toggle Route" }
         ]
     },
-     {
-        "moduleName": "Referral Management",
-        "permissions": [
-            { "name": "View Referral" }
-        ]
-    },
-     {
-        "moduleName": "Report And Analytics",
-        "permissions": [
-            { "name": "View Reports" }
-        ]
-    },
-     {
-        "moduleName": "Settings Management",
-        "permissions": [
-            { "name": "General Setting" },
-            { "name": "Payment Settings" },
-            { "name": "Notification Settings" },
-            { "name": "Permissions Settings" },
-            { "name": "API Settings" }
-        ]
-    }
+
+   {
+    "moduleName": "Coupon Management",
+    "permissions": [
+      { "name": "Create Coupons", "href": "/coupons/create", "isInSidebar": false },
+      { "name": "Edit Coupons", "href": "/coupons/edit", "isInSidebar": false },
+      { "name": "View Coupons", "href": "/coupons/view", "isInSidebar": false },
+      { "name": "Assign Customers", "href": "/coupons/assign", "isInSidebar": false },
+      { "name": "Toggle Coupons", "href": "/coupons/toggle", "isInSidebar": false },
+      { "name": "Delete Coupons", "href": "/coupons/delete", "isInSidebar": false }
+    ],
+    "icon": "order"
+  },
+  {
+    "moduleName": "Referral Management",
+    "permissions": [
+      { "name": "View Referral", "href": "/referral/view", "isInSidebar": false }
+    ],
+    "icon": "order"
+  },
+  {
+    "moduleName": "Report And Analytics",
+    "permissions": [
+      { "name": "View Reports", "href": "/report/view", "isInSidebar": false }
+    ],
+    "icon": "report"
+  },
+  {
+    "moduleName": "Settings Management",
+    "permissions": [
+      { "name": "General Setting", "href": "/settings/general", "isInSidebar": false },
+      { "name": "Payment Settings", "href": "/settings/payment", "isInSidebar": false },
+      { "name": "Notification Settings", "href": "/settings/notifications", "isInSidebar": false },
+      { "name": "Permissions Settings", "href": "/settings/permissions", "isInSidebar": false },
+      { "name": "API Settings", "href": "/settings/api", "isInSidebar": false }
+    ],
+    "icon": "settings"
+  }
 
 ]

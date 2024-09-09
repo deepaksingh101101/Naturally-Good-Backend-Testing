@@ -30,9 +30,12 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
             // Map permissions with `isAllowed` set to false
             const mappedPermissions = permissions.map(per => ({
                 permission: per._id,
+                icon:per.icon,
                 details: per.permissions.map(perm => ({
                     isAllowed: true, // Set `isAllowed` to false for each permission
                     actionName: perm.name,
+                    href:perm.href,
+                    isInSidebar:perm.isInSidebar,
                 }))
             }));
 
@@ -427,11 +430,14 @@ export const getPermissionByEmployeeId = async (req: Request, res: Response) => 
                     return {
                         permissionId: permission.permission._id, // Use populated permission's _id
                         moduleName: permission.permission.moduleName, // Select populated moduleName
+                        icon:permission.icon,
                         details: permission.details
                             .filter(detail => detail.isAllowed) // Filter to include only allowed details
                             .map(detail => ({
                                 actionName: detail.actionName,
-                                isAllowed: detail.isAllowed
+                                isAllowed: detail.isAllowed,
+                                href:detail.href,
+                                isInSidebar:detail.isInSidebar
                             }))
                     };
                 } else {

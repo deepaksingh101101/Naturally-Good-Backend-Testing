@@ -7,6 +7,12 @@ export class PermissionItem {
     @prop({ required: true })
     public name!: string;
 
+    @prop({ required: false })
+    public href!: string;
+
+    @prop({ Type:Boolean, required: false })
+    public isInSidebar!: boolean;
+
     // Include the `_id` property
     public _id!: Types.ObjectId;
 }
@@ -25,6 +31,9 @@ export class Permission {
         required: true,
     })
     public permissions!: PermissionItem[];
+
+    @prop({ required: false })
+    public icon!: string;
 }
 
 const PermissionModel = getModelForClass(Permission);

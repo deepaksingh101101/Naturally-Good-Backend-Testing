@@ -27,7 +27,10 @@ export class Role {
         details: {
             actionName: string;
             isAllowed: boolean;
+            href:string,
+            isInSidebar:boolean
         }[];
+        icon:string
     }[];
 }
 

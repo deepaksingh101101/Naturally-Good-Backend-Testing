@@ -34,11 +34,14 @@ export const createRole = async (req: Request, res: Response) => {
         // Map permissions with isAllowed set to false
         const mappedPermissions = permissions.map(per => ({
             permission: per._id, 
+            icon:per.icon,
             details: per.permissions.map(perm => {
                 return {
                     // Assuming you want to map some properties from `permission`
                     isAllowed: false,
                     actionName: perm.name,
+                    href:perm.href,
+                    isInSidebar:perm.isInSidebar,
                 };
         })
         }));
