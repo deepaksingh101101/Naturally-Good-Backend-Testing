@@ -8,13 +8,16 @@ export const createProduct = async (req: Request, res: Response) => {
         const loggedInId = req['decodedToken']?.id;
         const { ProductName } = req.body;
 
+        const trimmedProductName = ProductName.trim(); // Trim whitespace from the input
+
         const existingProduct = await ProductModel.findOne({ 
-            ProductName: { $regex: new RegExp('^' + ProductName + '$', 'i') } 
+            ProductName: { $regex: new RegExp(`^${trimmedProductName}$`, 'i') } 
         });
+
         if (existingProduct) {
             return responseHandler.out(req, res, {
                 status: false,
-                statusCode: 400,
+                statusCode: 409,
                 message: 'Product name already exists'
             });
         }
@@ -101,8 +104,8 @@ export const getProductById = async (req: Request, res: Response) => {
             .populate('Type', 'Name')
             .populate('Season', 'Name')
             .populate('Roster', 'Name')
-            .populate('CreatedBy', 'Email')
-            .populate('UpdatedBy', 'Email');
+            .populate('CreatedBy', 'Email FirstName LastName PhoneNumber')
+            .populate('UpdatedBy', 'Email FirstName LastName PhoneNumber');
 
         if (!product) {
             return responseHandler.out(req, res, {

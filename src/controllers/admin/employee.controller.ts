@@ -254,6 +254,7 @@ export const getAllEmployees = async (req: Request, res: Response) => {
                 path: 'CreatedBy',
                 select: '-Password' // Exclude sensitive fields from CreatedBy
             })
+            .populate({path:"Role",select:"roleName"})
             .exec();
 
             const total = await EmployeeModel.countDocuments();
@@ -299,6 +300,14 @@ export const getEmployeeById = async (req: Request, res: Response) => {
             .populate({
                 path: 'CreatedBy',
                 select: '-Password' // Exclude sensitive fields from CreatedBy
+            })
+            .populate({
+                path: 'UpdatedBy',
+                select: '-Password' // Exclude sensitive fields from CreatedBy
+            })
+            .populate({
+                path: 'Role', // Populate the Role field
+                select: 'roleName' // Exclude sensitive fields from CreatedBy
             })
             .exec();
 

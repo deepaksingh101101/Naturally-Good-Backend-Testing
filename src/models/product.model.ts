@@ -11,19 +11,19 @@ export class Product {
   @prop({ type: String, required: true })
   public ProductName!: string;
 
-  @prop({ ref: () => ProductType })
+  @prop({ ref: () => ProductType,required:true })
   public Type!: Ref<ProductType>;
 
-  @prop({ ref: () => Season })
+  @prop({ ref: () => Season ,required:true})
   public Season!: Ref<Season>;
 
-  @prop({ type: String, required: false })
+  @prop({ type: String, required: true })
   public Priority?: string;
 
   @prop({ ref: () => Roster })
   public Roster!: Ref<Roster>;
 
-  @prop({ type: String, required: false })
+  @prop({ type: String, required: true })
   public Group?: string;
 
   @prop({ type: String, required: true })
@@ -41,19 +41,19 @@ export class Product {
   @prop({ type: Number, required: true })
   public MaximumUnits!: number;
 
-  @prop({ type: String, required: true })
+  @prop({ type: String, required: false })
   public ImageURL!: string;
 
   @prop({ type: String, required: false })
   public Description?: string;
 
-  @prop({ type: Number, required: false })
+  @prop({ type: Number,required:true })
   public Buffer?: number;
 
   @prop({ type: Boolean, required: false, default: true })
   public Available?: boolean;
 
-  @prop({ type: String, enum: ['Admin', 'Public'], required: false, default: 'Admin' })
+  @prop({ type: String, enum: ['Admin', 'Public'], required: true, default: 'Admin' })
   public Visibility?: string;
 
   @prop({ type: Date, default: Date.now })

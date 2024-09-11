@@ -30,9 +30,9 @@ router.post('/superadmin', createSuperAdmin);
 
 // Employee Creation
 router.post('/employee', checkPermissions('Create Employee'), createEmployee);
+router.put('/employee/:id', checkPermissions('Edit Employee'), editEmployeeById);
 router.get('/employee',checkPermissions('View Employee') ,getAllEmployees);
 router.get('/employee/:id', checkPermissions('View Employee'), getEmployeeById);
-router.put('/employee/:id', checkPermissions('Edit Employee'), editEmployeeById);
 router.post('/employee/login', loginEmployee);
 
 router.get('/emplooyee/permission', isRoleLoggedIn,getPermissionByEmployeeId);

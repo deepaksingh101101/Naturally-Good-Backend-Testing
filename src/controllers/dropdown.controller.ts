@@ -23,18 +23,20 @@ export const createProductType = async (req: Request, res: Response) => {
     if (!Name || SortOrder === undefined) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 400,
+        statusCode: 409,
         message: "Missing required fields",
     });
       // return res.status(400).json({ error: 'Missing required fields' });
     }
 
     // Check if Name already exists (ignoring case)
-    const existingName = await ProductTypeModel.findOne({ Name: { $regex: new RegExp(`^${Name}$`, 'i') } });
-    if (existingName) {
+    const existingName = await ProductTypeModel.findOne({
+      Name: { $regex: new RegExp(`^${Name.trim()}$`, 'i') } // Trimmed and case insensitive match
+  });
+      if (existingName) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 400,
+        statusCode: 409,
         message: "Name already exists",
     });
       // return res.status(400).json({ error: 'Name already exists' });
@@ -45,7 +47,7 @@ export const createProductType = async (req: Request, res: Response) => {
     if (existingSortOrder) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 400,
+        statusCode: 409,
         message: "Sort order already exists",
     });
       // return res.status(400).json({ error: 'Sort order already exists' });
@@ -125,12 +127,12 @@ export const editProductType = async (req: Request, res: Response) => {
     if (Name) {
       const existingName = await ProductTypeModel.findOne({
         _id: { $ne: id }, 
-        Name: { $regex: new RegExp(`^${Name}$`, 'i') }, // Case insensitive match
-      });
+        Name: { $regex: new RegExp(`^${Name.trim()}$`, 'i') }, // Trimmed and case insensitive match
+    });
       if (existingName) {
         return responseHandler.out(req, res, {
           status: false,
-          statusCode: 400,
+          statusCode: 409,
           message: "Name already exists",
       });
         // return res.status(400).json({ error: 'Name already exists' });
@@ -147,7 +149,7 @@ export const editProductType = async (req: Request, res: Response) => {
       if (existingSortOrder) {
         return responseHandler.out(req, res, {
           status: false,
-          statusCode: 400,
+          statusCode: 409,
           message: "Sort order already exists",
       });
         // return res.status(400).json({ error: 'Sort order already exists' });
@@ -193,11 +195,14 @@ export const createRoster = async (req: Request, res: Response) => {
     }
 
     // Check if Name already exists (ignoring case)
-    const existingName = await RosterModel.findOne({ Name: { $regex: new RegExp(`^${Name}$`, 'i') } });
-    if (existingName) {
+    const existingName = await RosterModel.findOne({
+      Name: { $regex: new RegExp(`^${Name.trim()}$`, 'i') } // Trimmed and case insensitive match
+  });
+  
+  if (existingName) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 400,
+        statusCode: 409,
         message: "Name already exists",
     });
       // return res.status(400).json({ error: 'Name already exists' });
@@ -208,7 +213,7 @@ export const createRoster = async (req: Request, res: Response) => {
     if (existingSortOrder) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 400,
+        statusCode: 409,
         message: "Sort order already exists",
     });
       // return res.status(400).json({ error: 'Sort order already exists' });
@@ -306,13 +311,13 @@ export const editRoster = async (req: Request, res: Response) => {
     // Check if Name is provided and is not the same as the current one (ignoring case)
     if (Name) {
       const existingName = await RosterModel.findOne({
-        _id: { $ne: id }, 
-        Name: { $regex: new RegExp(`^${Name}$`, 'i') }, // Case insensitive match
-      });
+        _id: { $ne: id },
+        Name: { $regex: new RegExp(`^${Name.trim()}$`, 'i') } // Trimmed and case insensitive match
+    });
       if (existingName) {
         return responseHandler.out(req, res, {
           status: false,
-          statusCode: 400,
+          statusCode: 409,
           message: "Name already exists",
       });
         // return res.status(400).json({ error: 'Name already exists' });
@@ -329,7 +334,7 @@ export const editRoster = async (req: Request, res: Response) => {
       if (existingSortOrder) {
         return responseHandler.out(req, res, {
           status: false,
-          statusCode: 400,
+          statusCode: 409,
           message: "Sort order already exists",
       });
         // return res.status(400).json({ error: 'Sort order already exists' });
@@ -382,8 +387,10 @@ export const createSeason = async (req: Request, res: Response) => {
     }
 
     // Check if Name already exists (ignoring case)
-    const existingSeason = await SeasonModel.findOne({ Name: { $regex: new RegExp(`^${Name}$`, 'i') } });
-    if (existingSeason) {
+    const existingSeason = await SeasonModel.findOne({
+      Name: { $regex: new RegExp(`^${Name.trim()}$`, 'i') } // Trimmed and case insensitive match
+  });
+      if (existingSeason) {
       return responseHandler.out(req, res, {
         status: false,
         statusCode: 400,
@@ -490,9 +497,9 @@ export const editSeason = async (req: Request, res: Response) => {
     // Check if Name is provided and is not the same as the current one (ignoring case)
     if (Name) {
       const existingName = await SeasonModel.findOne({
-        _id: { $ne: id }, 
-        Name: { $regex: new RegExp(`^${Name}$`, 'i') }, // Case insensitive match
-      });
+        _id: { $ne: id },
+        Name: { $regex: new RegExp(`^${Name.trim()}$`, 'i') } // Trimmed and case insensitive match
+    });
       if (existingName) {
         return responseHandler.out(req, res, {
           status: false,

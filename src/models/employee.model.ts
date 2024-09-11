@@ -53,7 +53,7 @@ export class Employee {
     public CreatedByModel?: 'Employee';
 
     @prop({ default: true })
-    public isActive!: boolean;
+    public IsActive!: boolean;
 
     public async hashPassword(Password: string): Promise<string> {
         const saltRounds = 10;
