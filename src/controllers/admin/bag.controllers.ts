@@ -47,7 +47,10 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
             BagDescription,
             AllowedItems,
             CreatedBy: loggedInId,
+            UpdatedBy: loggedInId,
         });
+
+        console.log(bag)
 
         await bag.save();
         return responseHandler.out(req, res, {
@@ -57,7 +60,7 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
             data: bag
         });
     } catch (error) {
-        console.error('Error creating bag:', error);
+        console.log(error)
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
@@ -202,7 +205,9 @@ export const getOneBag = async (req: Request, res: Response) => {
                         select: 'Name'
                     }
                 ]
-            });
+            })
+            .populate('CreatedBy', 'FirstName LastName PhoneNumber Email')
+            .populate('UpdatedBy', 'FirstName LastName PhoneNumber Email')
 
         if (!bag) {
             return responseHandler.out(req, res, {

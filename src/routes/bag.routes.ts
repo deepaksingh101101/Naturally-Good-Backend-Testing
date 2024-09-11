@@ -6,7 +6,7 @@ import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
 
 const router = Router();
 
-router.post('/create', checkPermissions('Create Bag'),createBagByAdmin);
+router.post('/', checkPermissions('Create Bag'),createBagByAdmin);
 router.put('/:id', checkPermissions('Edit Bag'), updateBag)
 router.get('/bags' , getAllBags)
 router.get('/:id', getOneBag)

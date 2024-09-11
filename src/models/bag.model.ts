@@ -19,10 +19,10 @@ export class Bag {
   @prop({ type: Boolean, default: true })
   public Status!: boolean;
 
-  @prop({ type: String })
+  @prop({ type: String, required: false})
   public BagImageUrl?: string;
 
-  @prop({ type: String })
+  @prop({ type: String,required: false })
   public BagDescription?: string;
 
   @prop({ ref: () => Product, required: true })
