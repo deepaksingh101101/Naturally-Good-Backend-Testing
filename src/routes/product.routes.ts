@@ -7,10 +7,10 @@ const router = Router();
 
 router.post('/', checkPermissions('Create Product'), createProduct);
 router.get('/' , getAllProducts)
+router.get('/filter', filterProducts);
 router.get('/:id',getProductById)
 router.put('/:id', checkPermissions('Edit Product'), updateProduct)
 router.put('/toggleAvailability/:id', checkPermissions('Product Availability'), toggleProductAvailability)
 // router.delete('/deleteOne/:id',checkPermissions('Create Product') , deleteProduct)
-router.get('/filter', filterProducts);
 
 export default router;

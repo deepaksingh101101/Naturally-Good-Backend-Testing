@@ -264,11 +264,8 @@ export const deleteProduct = async (req: Request, res: Response) => {
 export const filterProducts = async (req: Request, res: Response) => {
     try {
         const filters = req.query;
-        const query: any = {};
-
-        // Initialize aggregation pipeline
         const pipeline: any[] = [];
-
+    console.log("helo")
         // ProductName filter using regex for case-insensitive match
         if (filters.ProductName) {
             pipeline.push({
@@ -282,15 +279,10 @@ export const filterProducts = async (req: Request, res: Response) => {
         if (filters.Type) {
             pipeline.push({
                 $lookup: {
-                    from: 'producttypes', // Collection name of ProductType
-                    localField: 'Type', // Field in Product schema
-                    foreignField: '_id', // Field in ProductType schema
-                    as: 'TypeInfo', // Output array field
-                },
-            });
-            pipeline.push({
-                $match: {
-                    'TypeInfo.Name': filters.Type, // Match the ProductType Name
+                    from: 'producttypes',
+                    localField: 'Type',
+                    foreignField: '_id',
+                    as: 'TypeInfo',
                 },
             });
         }
@@ -299,15 +291,10 @@ export const filterProducts = async (req: Request, res: Response) => {
         if (filters.Season) {
             pipeline.push({
                 $lookup: {
-                    from: 'seasons', // Collection name of Season
-                    localField: 'Season', // Field in Product schema
-                    foreignField: '_id', // Field in Season schema
-                    as: 'SeasonInfo', // Output array field
-                },
-            });
-            pipeline.push({
-                $match: {
-                    'SeasonInfo.Name': filters.Season, // Match the Season Name
+                    from: 'seasons',
+                    localField: 'Season',
+                    foreignField: '_id',
+                    as: 'SeasonInfo',
                 },
             });
         }
@@ -316,33 +303,42 @@ export const filterProducts = async (req: Request, res: Response) => {
         if (filters.Roster) {
             pipeline.push({
                 $lookup: {
-                    from: 'rosters', // Collection name of Roster
-                    localField: 'Roster', // Field in Product schema
-                    foreignField: '_id', // Field in Roster schema
-                    as: 'RosterInfo', // Output array field
-                },
-            });
-            pipeline.push({
-                $match: {
-                    'RosterInfo.Name': filters.Roster, // Match the Roster Name
+                    from: 'rosters',
+                    localField: 'Roster',
+                    foreignField: '_id',
+                    as: 'RosterInfo',
                 },
             });
         }
 
-        // Group filter (direct match since Group is a field in Product)
+        // Add a single match stage after all lookups
+        const matchConditions: any = {};
+
+        if (filters.Type) {
+            matchConditions['TypeInfo.Name'] = filters.Type;
+        }
+
+        if (filters.Season) {
+            matchConditions['SeasonInfo.Name'] = filters.Season;
+        }
+
+        if (filters.Roster) {
+            matchConditions['RosterInfo.Name'] = filters.Roster;
+        }
+
         if (filters.Group) {
-            pipeline.push({
-                $match: {
-                    Group: filters.Group,
-                },
-            });
+            matchConditions.Group = filters.Group;
+        }
+
+        if (Object.keys(matchConditions).length > 0) {
+            pipeline.push({ $match: matchConditions });
         }
 
         // Execute the aggregation pipeline
         const products = await ProductModel.aggregate(pipeline);
 
         if (products.length === 0) {
-            return res.status(404).json({ error: 'Products not found' });
+            return res.status(404).json({ error: 'No products found matching the criteria.' });
         }
 
         res.status(200).json(products);
