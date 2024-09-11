@@ -265,7 +265,12 @@ export const filterProducts = async (req: Request, res: Response) => {
     try {
         const filters = req.query;
         const pipeline: any[] = [];
-    console.log("helo")
+        
+        // Pagination setup
+        const currentPage = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (currentPage - 1) * limit;
+
         // ProductName filter using regex for case-insensitive match
         if (filters.ProductName) {
             pipeline.push({
@@ -334,17 +339,47 @@ export const filterProducts = async (req: Request, res: Response) => {
             pipeline.push({ $match: matchConditions });
         }
 
+        // Add pagination to the pipeline
+        pipeline.push({ $skip: skip });
+        pipeline.push({ $limit: limit });
+
         // Execute the aggregation pipeline
         const products = await ProductModel.aggregate(pipeline);
 
+        const total = await ProductModel.countDocuments(); // Total documents count for pagination
+        const totalPages = Math.ceil(total / limit); // Total number of pages
+
+        const prevPage = currentPage > 1;
+        const nextPage = currentPage < totalPages;
+
         if (products.length === 0) {
-            return res.status(404).json({ error: 'No products found matching the criteria.' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'No products found matching the criteria.',
+            });
         }
 
-        res.status(200).json(products);
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Products retrieved successfully',
+            data:{
+                total,
+                currentPage,
+                totalPages,
+                prevPage,
+                nextPage,
+                products,
+            }
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error',
+        });
     }
 };
 
