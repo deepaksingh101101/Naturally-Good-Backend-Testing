@@ -37,6 +37,19 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
             });
         }
 
+        const isBagExist = await BagModel.find({
+            BagName,AllowedItems,BagMaxWeight
+        });
+        
+        if (isBagExist.length > 0) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 403,
+                message: 'Bag already exist'
+            });
+        }
+        
+
         // Create a new Bag
         const bag = new BagModel({
             BagName,
@@ -117,11 +130,12 @@ export const getAllBags = async (req: Request, res: Response) => {
 export const updateBag = async (req: Request, res: Response) => {
     try {
         const loggedInId = req['decodedToken']?.id;
-
         const { id } = req.params;
-        const {
-            AllowedItems, // Array of Product IDs
-        } = req.body;
+        console.log("id is " + id);
+        const { AllowedItems } = req.body; // Array of Product IDs
+
+        // Log the whole request body
+        console.log("Request Body:", req.body);
 
         // Check if Bag exists
         const bag = await BagModel.findById(id);
@@ -133,10 +147,20 @@ export const updateBag = async (req: Request, res: Response) => {
             });
         }
 
+        console.log("AllowedItems:", AllowedItems);
+
         // Validate allowedItems - check if all product IDs are valid
-        if (AllowedItems) {
-            const products = await ProductModel.find({ _id: { $in: AllowedItems } });
-            if (products.length !== AllowedItems.length) {
+        if (AllowedItems && Array.isArray(AllowedItems)) {
+            // Extract valid product IDs from AllowedItems
+            const validProductIds = AllowedItems.map(item => {
+                return item.itemId; // Extract the itemId from each object
+            });
+
+            console.log("Valid Product IDs:", validProductIds);
+
+            // Fetch products to check their existence
+            const products = await ProductModel.find({ _id: { $in: validProductIds } });
+            if (products.length !== validProductIds.length) {
                 return responseHandler.out(req, res, {
                     status: false,
                     statusCode: 400,
@@ -149,7 +173,8 @@ export const updateBag = async (req: Request, res: Response) => {
         const updatedBag = await BagModel.findByIdAndUpdate(
             id,
             {
-                ...req.body, // Spread the fields from req.body
+                ...req.body,
+                AllowedItems: AllowedItems.map(item => item.itemId), // Update AllowedItems with just the IDs
                 UpdatedBy: loggedInId, // Add or update additional fields
             },
             {
@@ -162,7 +187,7 @@ export const updateBag = async (req: Request, res: Response) => {
             status: true,
             statusCode: 200,
             message: 'Bag updated successfully',
-            data: updatedBag
+            data:updatedBag
         });
     } catch (error) {
         console.error('Error updating bag:', error);
@@ -329,36 +354,96 @@ export const deleteBag = async (req: Request, res: Response) => {
 export const filterBags = async (req: Request, res: Response) => {
     try {
         const filters = req.query;
-        const query: any = {};
+        const pipeline: any[] = [];
 
-        // Apply filters based on query parameters
-        if (filters.bagName) {
-            query.bagName = { $regex: new RegExp(filters.bagName as string, 'i') }; 
-        }
-        if (filters.bagMaxWeight) {
-            query.bagMaxWeight = +filters.bagMaxWeight;
-        }
-        if (filters.bagVisibility) {
-            query.bagVisibility = filters.bagVisibility;
-        }
-        if (filters.status) {
-            query.status = filters.status;
-        }
-        if (filters.bagImageUrl) {
-            query.bagImageUrl = filters.bagImageUrl;
-        }
-    
+        // Pagination setup
+        const currentPage = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (currentPage - 1) * limit;
 
-        const bags = await BagModel.find(query);
+        // Match stage for filtering bags
+        const matchConditions: any = {};
+
+        // BagName filter using regex for case-insensitive match
+        if (filters.BagName) {
+            matchConditions.BagName = { $regex: new RegExp(filters.BagName as string, 'i') };
+        }
+
+        // BagMaxWeight filter
+        if (filters.BagMaxWeight) {
+            matchConditions.BagMaxWeight = +filters.BagMaxWeight; // Convert to number
+        }
+
+        // BagVisibility filter
+        if (filters.BagVisibility) {
+            matchConditions.BagVisibility = filters.BagVisibility;
+        }
+
+        // Status filter
+        if (filters.Status) {
+            matchConditions.Status = filters.Status === 'true'; // Convert to boolean
+        }
+
+        // Add main match stage for bags
+        if (Object.keys(matchConditions).length > 0) {
+            pipeline.push({ $match: matchConditions });
+        }
+
+        // Optional: Add lookups if you want to enrich bag data with related models
+        // Example: Lookup for AllowedItems if needed
+        if (filters.allowedItems) {
+            pipeline.push({
+                $lookup: {
+                    from: 'products', // Assuming products are linked to bags
+                    localField: 'AllowedItems',
+                    foreignField: '_id',
+                    as: 'AllowedItemsInfo',
+                },
+            });
+        }
+
+        // Add pagination to the pipeline
+        pipeline.push({ $skip: skip });
+        pipeline.push({ $limit: limit });
+
+        // Execute the aggregation pipeline
+        const bags = await BagModel.aggregate(pipeline);
+
+        const total = await BagModel.countDocuments(matchConditions); // Total documents count for pagination
+        const totalPages = Math.ceil(total / limit); // Total number of pages
+
+        const prevPage = currentPage > 1;
+        const nextPage = currentPage < totalPages;
 
         if (bags.length === 0) {
-            return res.status(404).json({ error: 'Bags not found' });
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'No bags found matching the criteria.',
+            });
         }
 
-        res.status(200).json(bags);
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Bags retrieved successfully',
+            data:{
+                total,
+                currentPage,
+                totalPages,
+                prevPage,
+                nextPage,
+                bags,
+            },
+        });
+
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error.',
+        });
     }
 };
 

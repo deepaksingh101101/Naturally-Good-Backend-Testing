@@ -13,7 +13,7 @@ export class Bag {
   @prop({ required: true })
   public BagMaxWeight!: number;
 
-  @prop({ type: String, enum: ['Admin', 'Public'], required: true })
+  @prop({ type: String, enum: ['Admin', 'Public'],default:"Admin", required: true })
   public BagVisibility!: string;
 
   @prop({ type: Boolean, default: true })

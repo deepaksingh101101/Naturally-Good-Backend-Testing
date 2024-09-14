@@ -2,17 +2,46 @@ import { Request, Response } from 'express';
 import ProductModel from '../../models/product.model';
 import { CategoryType } from '../../models/category.model';
 import { responseHandler } from '../../utils/send-response';
+import { ProductTypeModel, RosterModel, SeasonModel } from '../../models/dropdown.model';
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
         const loggedInId = req['decodedToken']?.id;
-        const { ProductName } = req.body;
+        const { ProductName,Type, Season,Roster } = req.body;
+
+
+        const isRosterExist=await RosterModel.findById(Roster)
+        if(!isRosterExist){
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Roster not found'
+            });
+        }
+        const isTypeExist=await ProductTypeModel.findById(Type)
+        if(!isTypeExist){
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Product Type not found'
+            });
+        }
+        const isSeasonExist=await SeasonModel.findById({_id:Season})
+        if(!isSeasonExist){
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Season  not found'
+            });
+        }
 
         const trimmedProductName = ProductName.trim(); // Trim whitespace from the input
 
         const existingProduct = await ProductModel.findOne({ 
             ProductName: { $regex: new RegExp(`^${trimmedProductName}$`, 'i') } 
         });
+
+
 
         if (existingProduct) {
             return responseHandler.out(req, res, {

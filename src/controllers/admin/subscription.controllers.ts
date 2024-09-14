@@ -18,7 +18,49 @@ export const createSubscription = async (req: Request, res: Response) => {
               message: 'Missing required fields'
           });
       }
+      const isSubscriptionTypeExist=await SubscriptionTypeModel.findById(SubscriptionTypeId)
+      if(!isSubscriptionTypeExist){
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: 'Subscription Type not found'
+          });
+      }
 
+      const isFrequencyExist=await FrequencyTypeModel.findById(FrequencyId)
+      if(!isFrequencyExist){
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: 'Frequency Type not found'
+          });
+      }
+      const isBagExist=await BagModel.findById(Bag)
+      if(!isBagExist){
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: 'Bag not found'
+          });
+      }
+
+
+      const isSubscriptionExist = await SubscriptionModel.find({
+        SubscriptionTypeId,
+        FrequencyId,
+        Bag,
+        DeliveryDays,
+        TotalDeliveryNumber
+    });
+    
+    if (isSubscriptionExist.length > 0) {
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 404,
+            message: 'Subscription already exist'
+        });
+    }
+      
       const subscription = new SubscriptionModel({
           SubscriptionTypeId,
           FrequencyId,
@@ -55,9 +97,9 @@ export const createSubscription = async (req: Request, res: Response) => {
 
 export const getAllSubscriptions = async (req: Request, res: Response) => {
   try {
-      const currentpage = parseInt(req.query.page as string) || 1;
+      const currentPage = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 10;
-      const skip = (currentpage - 1) * limit;
+      const skip = (currentPage - 1) * limit;
 
       // Populate SubscriptionTypeId, FrequencyId, and Bag fields
       const subscriptions = await SubscriptionModel.find()
@@ -70,8 +112,8 @@ export const getAllSubscriptions = async (req: Request, res: Response) => {
       const total = await SubscriptionModel.countDocuments();
       const totalPages = Math.ceil(total / limit);
 
-      const prevPage = currentpage > 1;
-      const nextPage = currentpage < totalPages;
+      const prevPage = currentPage > 1;
+      const nextPage = currentPage < totalPages;
 
       responseHandler.out(req, res, {
           status: true,
@@ -79,8 +121,8 @@ export const getAllSubscriptions = async (req: Request, res: Response) => {
           message: 'Subscriptions fetched successfully',
           data: {
               total,
-              currentpage,
-              totalpages: totalPages,
+              currentPage,
+              totalPages,
               prevPage,
               nextPage,
               subscriptions,

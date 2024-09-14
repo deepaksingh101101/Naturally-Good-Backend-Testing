@@ -48,7 +48,7 @@ export class Subscription {
   @prop({ type: Number, required: true })
   public NetPrice!: number;
 
-  @prop({ type: String, required: true })
+  @prop({ type: String, required: false })
   public ImageUrl!: string;
 
   @prop({ type: String, required: false })

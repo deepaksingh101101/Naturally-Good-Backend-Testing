@@ -162,6 +162,9 @@ export class City {
   @prop({ type: Boolean, default: true })
   public Serviceable!: boolean;
 
+  @prop({ type: Number, required: true})
+  public SortOrder!: number;
+
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;
 

@@ -559,8 +559,9 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
         const { ZoneName } = req.body;
 
         // Check if a zone with the same name exists (case insensitive)
+        const trimmedZoneName = ZoneName.trim();
         const existingZone = await ZoneModel.findOne({
-            ZoneName: { $regex: new RegExp(`^${ZoneName}$`, 'i') }
+            ZoneName: { $regex: new RegExp(`^${trimmedZoneName}$`, 'i') }
         });
 
         if (existingZone) {
@@ -1142,53 +1143,66 @@ export const getAllRoutes = async (req: Request, res: Response) => {
 
 // Going for city
 export const createCity = async (req: Request, res: Response) => {
-    const LoggedInId = req['decodedToken'].id; // Extract LoggedInId from token
+  const LoggedInId = req['decodedToken'].id;
 
-    if (!LoggedInId) {
-        return res.status(401).json({
-            status: false,
-            message: "Unauthorized"
-        });
-    }
+  if (!LoggedInId) {
+      return res.status(401).json({
+          status: false,
+          message: "Unauthorized"
+      });
+  }
 
-    const { CityName, Serviceable, ZoneIncluded, RouteIncluded } = req.body;
+  let { CityName, Serviceable, ZoneIncluded, RouteIncluded, SortOrder } = req.body;
 
-    try {
-        // Check if the city name already exists (case-insensitive)
-        const existingCity = await CityModel.findOne({
-            CityName: { $regex: new RegExp(`^${CityName}$`, 'i') }
-        });
+  // Trim the CityName and any other string inputs
+  CityName = CityName.trim();
 
-        if (existingCity) {
-            return res.status(400).json({
-                status: false,
-                message: "City name already exists"
-            });
-        }
+  try {
+      // Check if the city name already exists (case-insensitive)
+      const existingCity = await CityModel.findOne({
+          CityName: { $regex: new RegExp(`^${CityName}$`, 'i') }
+      });
 
-        const newCity = new CityModel({
-            CityName,
-            Serviceable,
-            CreatedBy: LoggedInId,
-            UpdatedBy: LoggedInId,
-            ZoneIncluded,
-            RouteIncluded
-        });
+      if (existingCity) {
+          return res.status(400).json({
+              status: false,
+              message: "City name already exists"
+          });
+      }
 
-        await newCity.save();
+      // Check if the sort order already exists
+      if (SortOrder !== undefined) {
+          const existingSortOrder = await CityModel.findOne({ SortOrder });
 
-        return res.status(201).json({
-            status: true,
-            message: "City created successfully",
-            data: newCity
-        });
-    } catch (error) {
-        return res.status(500).json({
-            status: false,
-            message: 'Internal Server Error',
-            data: error.message
-        });
-    }
+          if (existingSortOrder) {
+              return res.status(400).json({
+                  status: false,
+                  message: "Sort order already exists"
+              });
+          }
+      }
+
+      const newCity = new CityModel({
+          CityName,
+          Serviceable,
+          CreatedBy: LoggedInId,
+          UpdatedBy: LoggedInId,
+          SortOrder // Include SortOrder if it's part of the model
+      });
+
+      await newCity.save();
+
+      return res.status(201).json({
+          status: true,
+          message: "City created successfully",
+          newCity
+      });
+  } catch (error) {
+      return res.status(500).json({
+          status: false,
+          message: 'Internal Server Error',
+      });
+  }
 };
 
 
@@ -1257,8 +1271,6 @@ export const updateCity = async (req: Request, res: Response) => {
                 Serviceable,
                 UpdatedBy: LoggedInId,
                 UpdatedAt: new Date(),
-                ZoneIncluded,
-                RouteIncluded
             },
             { new: true }
         )

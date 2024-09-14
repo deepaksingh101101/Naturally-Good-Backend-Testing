@@ -31,6 +31,8 @@ router.post('/subscriptiontype', isRoleLoggedIn, createSubscriptionType);
 router.delete('/subscriptiontype/:id', isRoleLoggedIn, deleteSubscriptionType);
 router.put('/subscriptiontype/:id', isRoleLoggedIn, editSubscriptionType);
 
+
+
 // // Frequency Types routes
 router.get('/frequencytypes', isRoleLoggedIn, getFrequencyTypes);
 router.post('/frequencytype', isRoleLoggedIn, createFrequencyType);

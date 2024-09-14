@@ -573,11 +573,13 @@ export const createSubscriptionType = async (req: Request, res: Response) => {
     const name = Name.toLowerCase();
 
     // Check if subscription type with the same name already exists
-    const existing = await SubscriptionTypeModel.findOne({ Name: name });
+    const existing = await SubscriptionTypeModel.findOne({
+      Name: { $regex: new RegExp(`^${name.trim()}$`, 'i') }
+    });
     if (existing) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 400,
+        statusCode: 403,
         message: "Subscription Type already exists",
     });
       // return res.status(400).json({ error: 'Subscription Type already exists' });
@@ -724,7 +726,10 @@ export const createFrequencyType = async (req: Request, res: Response) => {
   try {
     const { Name, Value, DayBasis } = req.body;
 
-    if (!Name || Value === undefined || !DayBasis) {
+    // Trim the Name to remove leading or trailing whitespace
+    const trimmedName = Name ? Name.trim() : '';
+
+    if (!trimmedName || Value === undefined || !DayBasis) {
       return responseHandler.out(req, res, {
         status: false,
         statusCode: 400,
@@ -732,23 +737,21 @@ export const createFrequencyType = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if Frequency Type with the same Name, Value, and DayBasis exists
+    // Check if Frequency Type with the same trimmed Name already exists
     const existing = await FrequencyTypeModel.findOne({
-      Name: { $regex: new RegExp(`^${Name}$`, 'i') },
-      Value,
-      DayBasis
+      Name: { $regex: new RegExp(`^${trimmedName}$`, 'i') }
     });
 
     if (existing) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 400,
-        message: "Frequency Type with the same Name, Value, and DayBasis already exists",
+        statusCode: 403,
+        message: "Frequency Type with the same Name already exists",
       });
     }
 
     // Create and save the new Frequency Type
-    const newFrequencyType = new FrequencyTypeModel({ Name, Value, DayBasis });
+    const newFrequencyType = new FrequencyTypeModel({ Name: trimmedName, Value, DayBasis });
     await newFrequencyType.save();
 
     return responseHandler.out(req, res, {
