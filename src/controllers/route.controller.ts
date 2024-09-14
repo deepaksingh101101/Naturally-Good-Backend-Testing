@@ -16,10 +16,12 @@ export const createVehicle = async (req: Request, res: Response) => {
   
     try {
       // Check if a vehicle with the same name exists (case insensitive)
+      const existingVehicleName = req.body.VehicleName.trim(); // Trim whitespace from input
+
       const existingVehicle = await VehicleModel.findOne({
-        VehicleName: { $regex: new RegExp(`^${req.body.VehicleName}$`, 'i') }
+        VehicleName: { $regex: new RegExp(`^${existingVehicleName}$`, 'i') }
       });
-  
+      
       if (existingVehicle) {
         return responseHandler.out(req, res, {
           status: false,
@@ -255,14 +257,13 @@ export const updateVehicleStatus = async (req: Request, res: Response) => {
         },
         { new: true }
       );
-
-      console.log(updatedVehicle)
   
       if (!updatedVehicle) {
         return responseHandler.out(req, res, {
           status: false,
           statusCode: 404,
           message: "Vehicle not found",
+
         });
       }
   
@@ -270,6 +271,8 @@ export const updateVehicleStatus = async (req: Request, res: Response) => {
         status: true,
         statusCode: 200,
         message: "Vehicle status updated successfully",
+        data: updatedVehicle,
+
       });
     } catch (error) {
       return responseHandler.out(req, res, {
