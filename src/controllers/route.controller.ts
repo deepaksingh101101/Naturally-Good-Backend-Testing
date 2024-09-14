@@ -55,16 +55,35 @@ export const createVehicle = async (req: Request, res: Response) => {
 // Get all Vehicles
 export const getAllVehicles = async (req: Request, res: Response) => {
   try {
+    const currentPage = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (currentPage - 1) * limit;
     const vehicles = await VehicleModel.find()
-      .populate('CreatedBy', 'name')
-      .populate('UpdatedBy', 'name')
+    .skip(skip)
+    .limit(limit)
+      .populate('CreatedBy', 'First Name LastName PhoneNumber')
+      .populate('UpdatedBy', 'First Name LastName PhoneNumber')
       .exec();
+
+      const total = await VehicleModel.countDocuments();
+      const totalPages = Math.ceil(total / limit);
+
+      const prevPage = currentPage > 1;
+      const nextPage = currentPage < totalPages;
+
 
     return responseHandler.out(req, res, {
       status: true,
       statusCode: 200,
       message: "Vehicles fetched successfully",
-      data: vehicles,
+      data: {
+        total,
+        currentPage,
+        totalPages,
+        prevPage,
+        nextPage,
+        vehicles,
+    }
     });
   } catch (error) {
     return responseHandler.out(req, res, {
@@ -1143,65 +1162,73 @@ export const getAllRoutes = async (req: Request, res: Response) => {
 
 // Going for city
 export const createCity = async (req: Request, res: Response) => {
-  const LoggedInId = req['decodedToken'].id;
+  const LoggedInId = req['decodedToken']?.id;
 
   if (!LoggedInId) {
-      return res.status(401).json({
-          status: false,
-          message: "Unauthorized"
-      });
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 401,
+      message: "Unauthorized"
+    });
   }
 
-  let { CityName, Serviceable, ZoneIncluded, RouteIncluded, SortOrder } = req.body;
+  let { CityName, Serviceable, SortOrder } = req.body;
 
-  // Trim the CityName and any other string inputs
-  CityName = CityName.trim();
+  // Trim the CityName if it exists
+  CityName = CityName?.trim();
 
   try {
-      // Check if the city name already exists (case-insensitive)
-      const existingCity = await CityModel.findOne({
-          CityName: { $regex: new RegExp(`^${CityName}$`, 'i') }
+    // Check if the city name already exists (case-insensitive)
+    const existingCity = await CityModel.findOne({
+      CityName: { $regex: new RegExp(`^${CityName}$`, 'i') }
+    });
+
+    if (existingCity) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 403,
+        message: "City name already exists"
       });
+    }
 
-      if (existingCity) {
-          return res.status(400).json({
-              status: false,
-              message: "City name already exists"
-          });
-      }
+    // Check if the sort order already exists
+    if (SortOrder !== undefined) {
+      const existingSortOrder = await CityModel.findOne({ SortOrder });
 
-      // Check if the sort order already exists
-      if (SortOrder !== undefined) {
-          const existingSortOrder = await CityModel.findOne({ SortOrder });
-
-          if (existingSortOrder) {
-              return res.status(400).json({
-                  status: false,
-                  message: "Sort order already exists"
-              });
-          }
-      }
-
-      const newCity = new CityModel({
-          CityName,
-          Serviceable,
-          CreatedBy: LoggedInId,
-          UpdatedBy: LoggedInId,
-          SortOrder // Include SortOrder if it's part of the model
-      });
-
-      await newCity.save();
-
-      return res.status(201).json({
-          status: true,
-          message: "City created successfully",
-          newCity
-      });
-  } catch (error) {
-      return res.status(500).json({
+      if (existingSortOrder) {
+        return responseHandler.out(req, res, {
           status: false,
-          message: 'Internal Server Error',
-      });
+          statusCode: 403,
+          message: "Sort order already exists"
+        });
+      }
+    }
+
+    const newCity = new CityModel({
+      CityName,
+      Serviceable,
+      CreatedBy: LoggedInId,
+      UpdatedBy: LoggedInId,
+      SortOrder // Include SortOrder if it's part of the model
+    });
+
+    await newCity.save();
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 201,
+      message: "City created successfully",
+      data:newCity
+    });
+  } catch (error) {
+    console.error('Error creating city:', error); // Log error for debugging
+
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data:error.message
+    });
   }
 };
 
@@ -1236,19 +1263,19 @@ export const getCity = async (req: Request, res: Response) => {
     }
 };
 
-
 export const updateCity = async (req: Request, res: Response) => {
     const { id } = req.params;
     const LoggedInId = req['decodedToken'].id; // Extract LoggedInId from token
 
     if (!LoggedInId) {
-        return res.status(401).json({
+        return responseHandler.out(req, res, {
             status: false,
+            statusCode: 401,
             message: "Unauthorized"
         });
     }
 
-    const { CityName, Serviceable, ZoneIncluded, RouteIncluded } = req.body;
+    const { CityName, Serviceable } = req.body;
 
     try {
         // Check if the city name already exists (case-insensitive) and is not the current city
@@ -1258,8 +1285,9 @@ export const updateCity = async (req: Request, res: Response) => {
         });
 
         if (existingCity) {
-            return res.status(400).json({
+            return responseHandler.out(req, res, {
                 status: false,
+                statusCode: 400,
                 message: "City name already exists"
             });
         }
@@ -1273,27 +1301,33 @@ export const updateCity = async (req: Request, res: Response) => {
                 UpdatedAt: new Date(),
             },
             { new: true }
-        )
+        );
 
         if (!updatedCity) {
-            return res.status(404).json({
+            return responseHandler.out(req, res, {
                 status: false,
+                statusCode: 404,
                 message: "City not found"
             });
         }
 
-        return res.status(200).json({
+        return responseHandler.out(req, res, {
             status: true,
+            statusCode: 200,
             message: "City updated successfully",
+            data: updatedCity
         });
-    } catch (error) {
-        return res.status(500).json({
+    } catch (error: any) {
+        return responseHandler.out(req, res, {
             status: false,
-            message: 'Internal Server Error',
+            statusCode: 500,
+            message: "Internal Server Error",
             data: error.message
         });
     }
 };
+
+
 export const deleteCity = async (req: Request, res: Response) => {
     const { id } = req.params;
     const LoggedInId = req['decodedToken'].id; // Extract LoggedInId from token
@@ -1329,33 +1363,109 @@ export const deleteCity = async (req: Request, res: Response) => {
 };
 
 export const getAllCity = async (req: Request, res: Response) => {
+  try {
+    const currentPage = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const skip = (currentPage - 1) * limit;
 
-    try {
-        const city = await CityModel.find()
-            .populate('CreatedBy')
-            .populate('UpdatedBy')
-            .populate('ZoneIncluded')
-            .populate('RouteIncluded');
-
-        if (!city) {
-            return res.status(404).json({
-                status: false,
-                message: "City not found"
-            });
+    const city = await CityModel.aggregate([
+      {
+        $skip: skip
+      },
+      {
+        $limit: limit
+      },
+      {
+        $lookup: {
+          from: 'employees',
+          localField: 'CreatedBy',
+          foreignField: '_id',
+          as: 'CreatedBy'
         }
+      },
+      {
+        $lookup: {
+          from: 'employees',
+          localField: 'UpdatedBy',
+          foreignField: '_id',
+          as: 'UpdatedBy'
+        }
+      },
+      {
+        $unwind: {
+          path: '$CreatedBy',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $unwind: {
+          path: '$UpdatedBy',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          // Explicitly include all the fields you want
+          CityName: 1,
+          Serviceable: 1,   // Example city field
+          SortOrder: 1,   // Example city field
+          CreatedAt: 1,    // Example city field
+          UpdatedAt: 1,    // Example city field
+          CreatedBy: {
+            FirstName: 1,
+            LastName: 1,
+            PhoneNumber: 1
+          },
+          UpdatedBy: {
+            FirstName: 1,
+            LastName: 1,
+            PhoneNumber: 1
+          },
+          // Calculate counts for ZoneIncluded and RouteIncluded
+          ZoneIncludedCount: { $size: { $ifNull: ['$ZoneIncluded', []] } },
+          RouteIncludedCount: { $size: { $ifNull: ['$RouteIncluded', []] } }
+          // Do not include ZoneIncluded and RouteIncluded by simply not mentioning them here
+        }
+      }
+    ]);
 
-        return res.status(200).json({
-            status: true,
-            data: city
-        });
-    } catch (error) {
-        return res.status(500).json({
-            status: false,
-            message: 'Internal Server Error',
-            data: error.message
-        });
+    if (!city || city.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "City not found"
+      });
     }
+
+    const total = await CityModel.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+
+    const prevPage = currentPage > 1;
+    const nextPage = currentPage < totalPages;
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Cities retrieved successfully",
+      data: {
+        total,
+        currentPage,
+        totalPages,
+        prevPage,
+        nextPage,
+        citys:city
+      }
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
 };
+
+
 
 export const updateServiceableStatus = async (req: Request, res: Response) => {
     const { id } = req.params;

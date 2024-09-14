@@ -23,7 +23,7 @@ export class Vehicle {
   public DriverName!: string;
 
   @prop({ required: true })
-  public DriverNumber!: number;
+  public DriverNumber!: string;
 
   @prop({ ref: () => Employee, required: true })
   public CreatedBy!: Ref<Employee>;
