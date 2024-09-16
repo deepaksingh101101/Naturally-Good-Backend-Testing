@@ -680,44 +680,67 @@ export const getAllZones = async (req: Request, res: Response) => {
 };
 
 export const getZoneById = async (req: Request, res: Response) => {
-    const { id } = req.params;
+  const { id } = req.params;
 
-    try {
-        const zone = await ZoneModel.findById(id)
-            .populate('CreatedBy', 'FirstName LastName PhoneNumber')
-            .populate('UpdatedBy', 'FirstName LastName PhoneNumber')
-            .select('-Localities')
-            .exec();
+  try {
+      // Fetch the zone details, excluding the 'Localities' field
+      const zone = await ZoneModel.findById(id)
+          .populate('CreatedBy', 'FirstName LastName PhoneNumber')
+          .populate('UpdatedBy', 'FirstName LastName PhoneNumber')
+          .select('-Localities')
+          .exec();
 
-           let dee= await CityModel.findOne({ ZoneIncluded: id })
-              console.log(dee)
-        if (!zone) {
-            return responseHandler.out(req, res, {
-                status: false,
-                statusCode: 404,
-                message: "Zone not found",
-            });
-        }
+      // If no zone is found, return a 404 response
+      if (!zone) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: "Zone not found",
+          });
+      }
 
-        return responseHandler.out(req, res, {
-            status: true,
-            statusCode: 200,
-            message: "Zone fetched successfully",
-            data: zone,
-        });
-    } catch (error) {
-        return responseHandler.out(req, res, {
-            status: false,
-            statusCode: 500,
-            message: 'Internal Server Error',
-            data: error.message,
-        });
-    }
+      // Fetch the city that includes this zone
+      const city = await CityModel.findOne({ ZoneIncluded: { $in: id } })
+      .select('CityName _id')  // Only return CityName and _id fields        
+      // .populate('-CreatedBy')
+      // .populate('-UpdatedBy')
+      // .populate('-ZoneIncluded')
+      // .populate('-RouteIncluded')
+
+      .exec();
+  
+
+      // If no city is found, return a 404 response
+      if (!city) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: "City not found for this zone",
+          });
+      }
+
+      // Return both the zone and the city
+      return responseHandler.out(req, res, {
+          status: true,
+          statusCode: 200,
+          message: "Zone and city fetched successfully",
+          data: { zone, city },
+      });
+  } catch (error) {
+      return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 500,
+          message: 'Internal Server Error',
+          data: error.message,
+      });
+  }
 };
+
 
 
 export const updateZone = async (req: Request, res: Response) => {
     const { id } = req.params;
+    console.log(req.body)
     const LoggedInId = req['decodedToken'].id;
 
     if (!LoggedInId) {
@@ -729,20 +752,32 @@ export const updateZone = async (req: Request, res: Response) => {
     }
 
     try {
-        const { ZoneName } = req.body;
+        const { ZoneName ,City} = req.body;
+
+        const trimmedZoneName = ZoneName.trim(); // Trim leading and trailing spaces
 
         // Check if a zone with the same name exists (case insensitive) but not the current zone
         const existingZoneByName = await ZoneModel.findOne({
-            ZoneName: { $regex: new RegExp(`^${ZoneName}$`, 'i') },
+            ZoneName: { $regex: new RegExp(`^${trimmedZoneName}$`, 'i') },
             _id: { $ne: id }
         });
-
+        
         if (existingZoneByName) {
             return responseHandler.out(req, res, {
                 status: false,
                 statusCode: 400,
                 message: "Zone with the same name already exists",
             });
+        }
+
+        let isCityExist=   await CityModel.findById({_id:City})
+
+        if(!isCityExist){
+           return responseHandler.out(req, res, {
+               status: false,
+               statusCode: 404,
+               message: "City not found",
+           });
         }
 
         const updatedZone = await ZoneModel.findByIdAndUpdate(
@@ -754,7 +789,6 @@ export const updateZone = async (req: Request, res: Response) => {
             },
             { new: true }
         );
-
         if (!updatedZone) {
             return responseHandler.out(req, res, {
                 status: false,
@@ -763,10 +797,17 @@ export const updateZone = async (req: Request, res: Response) => {
             });
         }
 
+        // await CityModel.findByIdAndUpdate(
+        //   City,
+        //   { $addToSet: { ZoneIncluded: newZone._id } }, // Add only if the ID is not already present
+        //   { new: true }
+        // );
+
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 200,
             message: "Zone updated successfully",
+            data:updatedZone
         });
     } catch (error) {
         return responseHandler.out(req, res, {

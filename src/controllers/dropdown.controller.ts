@@ -883,8 +883,8 @@ export const createSourceOfCustomer = async (req: Request, res: Response) => {
     if (existingSource) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 400,
-        message: "Source of Customer name already exists",
+        statusCode: 403,
+        message: "Source type  already exists",
       });
     }
 
@@ -1028,7 +1028,7 @@ export const createTypeOfCustomer = async (req: Request, res: Response) => {
     if (existingType) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 400,
+        statusCode: 403,
         message: "Type of Customer name already exists",
       });
     }
