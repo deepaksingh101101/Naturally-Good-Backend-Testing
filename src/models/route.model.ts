@@ -182,9 +182,6 @@ export class City {
   
   @prop({ ref: () => Route })
   public RouteIncluded?: Ref<Route>[];
-  
-
-  
 }
 
 const CityModel = getModelForClass(City);

@@ -578,7 +578,9 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
     }
 
     try {
-        const { ZoneName } = req.body;
+        const { ZoneName,City } = req.body;
+
+
 
         // Check if a zone with the same name exists (case insensitive)
         const trimmedZoneName = ZoneName.trim();
@@ -589,10 +591,20 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
         if (existingZone) {
             return responseHandler.out(req, res, {
                 status: false,
-                statusCode: 400,
+                statusCode: 403,
                 message: "Zone with the same name already exists",
             });
         }
+
+     let isCityExist=   await CityModel.findById({_id:City})
+
+     if(!isCityExist){
+        return responseHandler.out(req, res, {
+            status: false,
+            statusCode: 404,
+            message: "City not found",
+        });
+     }
 
         const newZone = new ZoneModel({
             ...req.body,
@@ -600,8 +612,15 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
             UpdatedBy: LoggedInId,
         });
 
+        
+        
         await newZone.save();
-
+        await CityModel.findByIdAndUpdate(
+          City,
+          { $addToSet: { ZoneIncluded: newZone._id } }, // Add only if the ID is not already present
+          { new: true }
+        );
+        
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 201,
@@ -667,9 +686,11 @@ export const getZoneById = async (req: Request, res: Response) => {
         const zone = await ZoneModel.findById(id)
             .populate('CreatedBy', 'FirstName LastName PhoneNumber')
             .populate('UpdatedBy', 'FirstName LastName PhoneNumber')
-            .populate('Localities', 'LocalityName')
+            .select('-Localities')
             .exec();
 
+           let dee= await CityModel.findOne({ ZoneIncluded: id })
+              console.log(dee)
         if (!zone) {
             return responseHandler.out(req, res, {
                 status: false,
@@ -1510,3 +1531,67 @@ export const updateServiceableStatus = async (req: Request, res: Response) => {
         });
     }
 };
+
+
+export const filterCities = async (req: Request, res: Response) => {
+  try {
+      const filters = req.query;
+      const pipeline: any[] = [];
+
+      // Ensure query parameters are correctly passed
+      if (filters.CityName) {
+          pipeline.push({
+              $match: {
+                  CityName: { $regex: new RegExp(filters.CityName as string, 'i') },
+              },
+          });
+      }
+
+      if (filters.SortOrder) {
+          const sortOrder = parseInt(filters.SortOrder as string);
+          if (!isNaN(sortOrder)) {
+              pipeline.push({
+                  $match: {
+                      SortOrder: sortOrder,
+                  },
+              });
+          } else {
+              return res.status(400).json({
+                  status: false,
+                  message: 'Invalid SortOrder value',
+              });
+          }
+      }
+
+      const currentPage = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (currentPage - 1) * limit;
+      pipeline.push({ $skip: skip });
+      pipeline.push({ $limit: limit });
+
+      const cities = await CityModel.aggregate(pipeline);
+
+      const total = await CityModel.countDocuments();
+      const totalPages = Math.ceil(total / limit);
+
+      res.status(200).json({
+          status: true,
+          message: 'Cities retrieved successfully',
+          data: {
+              total,
+              currentPage,
+              totalPages,
+              cities,
+          },
+      });
+  } catch (error) {
+      console.error("Error in filterCities:", error);
+      res.status(500).json({
+          status: false,
+          message: 'Internal Server Error',
+          data: error.message,
+      });
+  }
+};
+
+
