@@ -47,6 +47,9 @@ export class Product {
   @prop({ type: String, required: false })
   public Description?: string;
 
+  @prop({ type: String, required: false })
+  public Notes?: string;
+
   @prop({ type: Number,required:true })
   public Buffer?: number;
 

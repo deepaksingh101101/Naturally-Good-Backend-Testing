@@ -8,6 +8,7 @@ import {
   createEmployee,
   createSuperAdmin,
   editEmployeeById,
+  filterEmployees,
   getAllEmployees,
   getEmployeeById,
   getPermissionByEmployeeId,
@@ -30,6 +31,7 @@ router.post('/superadmin', createSuperAdmin);
 
 // Employee Creation
 router.post('/employee', checkPermissions('Create Employee'), createEmployee);
+router.get('/employee/filter', checkPermissions('View Employee'), filterEmployees);
 router.put('/employee/:id', checkPermissions('Edit Employee'), editEmployeeById);
 router.get('/employee',checkPermissions('View Employee') ,getAllEmployees);
 router.get('/employee/:id', checkPermissions('View Employee'), getEmployeeById);

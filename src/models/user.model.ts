@@ -180,7 +180,6 @@ export class User {
 
   @prop({ ref: () => Employee })
   public UpdatedBy!: Ref<Employee>;
-
 }
 
 // Export UserModel
