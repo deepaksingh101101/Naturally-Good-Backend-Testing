@@ -8,11 +8,11 @@ import {
   createEmployee,
   createSuperAdmin,
   editEmployeeById,
-  filterEmployees,
   getAllEmployees,
   getEmployeeById,
   getPermissionByEmployeeId,
-  loginEmployee
+  loginEmployee,
+  searchEmployee
 } from '../controllers/admin/employee.controller';
 import { createRole, getAllRoles, getAllRolesNameAndId } from '../controllers/auth/role.controller';
 import { checkPermissions } from '../middleware/checkPermission';
@@ -31,7 +31,7 @@ router.post('/superadmin', createSuperAdmin);
 
 // Employee Creation
 router.post('/employee', checkPermissions('Create Employee'), createEmployee);
-router.get('/employee/filter', checkPermissions('View Employee'), filterEmployees);
+router.get('/employee/filter', checkPermissions('View Employee'), searchEmployee);
 router.put('/employee/:id', checkPermissions('Edit Employee'), editEmployeeById);
 router.get('/employee',checkPermissions('View Employee') ,getAllEmployees);
 router.get('/employee/:id', checkPermissions('View Employee'), getEmployeeById);

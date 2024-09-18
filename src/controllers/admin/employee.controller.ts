@@ -477,7 +477,7 @@ export const getPermissionByEmployeeId = async (req: Request, res: Response) => 
 };
 
 
-export const filterEmployees = async (req: Request, res: Response) => {
+export const searchEmployee = async (req: Request, res: Response) => {
     try {
         const filters = req.query;
         const pipeline: any[] = [];
