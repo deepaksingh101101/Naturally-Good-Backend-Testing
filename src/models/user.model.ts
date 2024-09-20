@@ -22,6 +22,8 @@ class Address {
 
   @prop({ ref: () => City, required: false })
   public City?: Ref<City>;
+  
+  
 
   @prop({ type: String })
   public State?: string;
@@ -110,7 +112,7 @@ export class User {
   @prop({ type: String })
   public Gender?: string; // Could be enum or string
 
-  @prop({ enum: ['2-3-Times', '3-5-Times', 'MoreThan5'] })
+  @prop({ enum: ['2-3', '3-5', 'more than 5'] })
   public HowOftenYouCookedAtHome?: string;
 
   @prop({ type: String })

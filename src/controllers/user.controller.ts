@@ -269,7 +269,7 @@ export const createUserByAdmin = async (req: Request, res: Response) => {
       status: false,
       statusCode: 500,
       message: 'Internal server error',
-      data: null
+      data: error
     });
   }
 };
@@ -366,7 +366,10 @@ export const getUserByIdForAdmin = async (req: Request, res: Response) => {
           select: 'roleName' // Adjust according to the role fields you need
         }
       })
-      
+      .populate({
+        path: 'Address.City', // Populate the City field inside Address
+        select: 'CityName'
+      })
       .exec();
 
     // Check if the user was found
@@ -512,6 +515,7 @@ export const updateAccountStatusByAdmin = async (req: Request, res: Response) =>
       status: true,
       statusCode: 200,
       message: 'Account status updated successfully',
+      data:updatedUser
     });
   } catch (error) {
     console.error('Error updating account status:', error);
