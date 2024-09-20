@@ -553,3 +553,77 @@ export const searchEmployee = async (req: Request, res: Response) => {
 };
 
 
+export const searchUser = async (req: Request, res: Response) => {
+    try {
+        const filters = req.query;
+        const pipeline: any[] = [];
+        
+        // Pagination setup
+        const currentPage = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (currentPage - 1) * limit;
+
+        // Filter based on term
+        if (filters.term) {
+            const term = filters.term as string;
+            pipeline.push({
+                $match: {
+                    $or: [
+                        { FirstName: { $regex: new RegExp(term, 'i') } },
+                        { LastName: { $regex: new RegExp(term, 'i') } },
+                        { Phone: { $regex: new RegExp(term, 'i') } },
+                        { Email: { $regex: new RegExp(term, 'i') } }
+                    ],
+                },
+            });
+        }
+
+        // Add pagination to the pipeline
+        pipeline.push({ $skip: skip });
+        pipeline.push({ $limit: limit });
+
+        // Execute the aggregation pipeline
+        const users = await UserModel.aggregate(pipeline);
+
+        // Count documents after filtering for total count
+        const countPipeline = [...pipeline];
+        countPipeline.pop(); // Remove limit stage for count
+        countPipeline.pop(); // Remove skip stage for count
+
+        const total = await UserModel.aggregate([...countPipeline, { $count: 'total' }]);
+        const totalCount = total[0]?.total || 0;
+        const totalPages = Math.ceil(totalCount / limit);
+
+        const prevPage = currentPage > 1;
+        const nextPage = currentPage < totalPages;
+
+        if (users.length === 0) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'No user found matching the criteria.',
+            });
+        }
+
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Users retrieved successfully',
+            data: {
+                total: totalCount,
+                currentPage,
+                totalPages,
+                prevPage,
+                nextPage,
+                users,
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error',
+        });
+    }
+};

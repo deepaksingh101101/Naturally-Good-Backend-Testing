@@ -12,7 +12,8 @@ import {
   getEmployeeById,
   getPermissionByEmployeeId,
   loginEmployee,
-  searchEmployee
+  searchEmployee,
+  searchUser
 } from '../controllers/admin/employee.controller';
 import { createRole, getAllRoles, getAllRolesNameAndId } from '../controllers/auth/role.controller';
 import { checkPermissions } from '../middleware/checkPermission';
@@ -42,6 +43,7 @@ router.get('/emplooyee/permission', isRoleLoggedIn,getPermissionByEmployeeId);
 // User/Customer Creation By Admin
 router.post('/user', checkPermissions('Create Customer'), createUserByAdmin);
 router.put('/user/toggle/:id', checkPermissions('Customer Status'), updateAccountStatusByAdmin);
+router.get('/user/filter', checkPermissions('View Employee'), searchUser);
 router.get('/user',checkPermissions('View Customer') ,getAllUserByAdmin);
 router.get('/user/:id', checkPermissions('View Customer'), getUserByIdForAdmin);
 router.put('/user/:id', checkPermissions('Edit Customer'), updateUserByAdmin);

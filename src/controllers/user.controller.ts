@@ -340,7 +340,7 @@ export const getUserByIdForAdmin = async (req: Request, res: Response) => {
     const user = await UserModel.findById(userId)
       .populate({
         path: 'AssignedEmployee',
-        select: 'FirstName LastName Email' // Adjust fields as needed
+        select: 'FirstName LastName Email Phone' // Adjust fields as needed
       })
       .populate({
         path: 'Source',
