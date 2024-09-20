@@ -33,8 +33,6 @@ export class Subscription {
   @prop({ ref: () => Bag }) // Changed from array to single reference
   public Bag!: Ref<Bag>;
 
-  // @prop({ ref: () => Coupon })
-  // public Coupons!: Ref<Coupon>[];
 
   @prop({ type: () => [DeliveryDay], required: true })
   public DeliveryDays!: DeliveryDay[];

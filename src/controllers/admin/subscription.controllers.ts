@@ -383,77 +383,102 @@ export const filterSubscriptions = async (req: Request, res: Response) => {
 
 
 
-// export const searchSubscription = async (req: Request, res: Response) => {
-//     try {
-//         const filters = req.query;
-//         const pipeline: any[] = [];
-        
-//         // Pagination setup
-//         const currentPage = parseInt(req.query.page as string) || 1;
-//         const limit = parseInt(req.query.limit as string) || 10;
-//         const skip = (currentPage - 1) * limit;
+export const searchSubscription = async (req: Request, res: Response) => {
+    try {
+        const filters = req.query;
+        const pipeline: any[] = [];
 
-//         // Filter based on term
-//         if (filters.term) {
-//             const term = filters.term as string;
-//             pipeline.push({
-//                 $match: {
-//                     $or: [
-//                         { FirstName: { $regex: new RegExp(term, 'i') } },
-//                         { LastName: { $regex: new RegExp(term, 'i') } },
-//                         { Phone: { $regex: new RegExp(term, 'i') } },
-//                         { Email: { $regex: new RegExp(term, 'i') } }
-//                     ],
-//                 },
-//             });
-//         }
+        // Pagination setup
+        const currentPage = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (currentPage - 1) * limit;
 
-//         // Add pagination to the pipeline
-//         pipeline.push({ $skip: skip });
-//         pipeline.push({ $limit: limit });
+        // Filter based on term
+        if (filters.term) {
+            const term = filters.term as string;
+            pipeline.push(
+                {
+                    $lookup: {
+                        from: 'subscriptiontypes', // Collection name for SubscriptionType
+                        localField: 'SubscriptionTypeId',
+                        foreignField: '_id',
+                        as: 'subscriptionType',
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'frequencytypes', // Collection name for FrequencyType
+                        localField: 'FrequencyId',
+                        foreignField: '_id',
+                        as: 'frequencyType',
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'bags', // Collection name for Bag
+                        localField: 'Bag',
+                        foreignField: '_id',
+                        as: 'bag',
+                    },
+                },
+                {
+                    $match: {
+                        $or: [
+                            { 'subscriptionType.Name': { $regex: new RegExp(term, 'i') } },
+                            { 'frequencyType.Name': { $regex: new RegExp(term, 'i') } },
+                            { 'bag.BagName': { $regex: new RegExp(term, 'i') } },
+                        ],
+                    },
+                }
+            );
+        }
 
-//         // Execute the aggregation pipeline
-//         const users = await UserModel.aggregate(pipeline);
+        // Add pagination to the pipeline
+        pipeline.push({ $skip: skip });
+        pipeline.push({ $limit: limit });
 
-//         // Count documents after filtering for total count
-//         const countPipeline = [...pipeline];
-//         countPipeline.pop(); // Remove limit stage for count
-//         countPipeline.pop(); // Remove skip stage for count
+        // Execute the aggregation pipeline
+        const subscriptions = await SubscriptionModel.aggregate(pipeline);
 
-//         const total = await UserModel.aggregate([...countPipeline, { $count: 'total' }]);
-//         const totalCount = total[0]?.total || 0;
-//         const totalPages = Math.ceil(totalCount / limit);
+        // Count documents after filtering for total count
+        const countPipeline = [...pipeline];
+        countPipeline.pop(); // Remove limit stage for count
+        countPipeline.pop(); // Remove skip stage for count
 
-//         const prevPage = currentPage > 1;
-//         const nextPage = currentPage < totalPages;
+        const total = await SubscriptionModel.aggregate([...countPipeline, { $count: 'total' }]);
+        const totalCount = total[0]?.total || 0;
+        const totalPages = Math.ceil(totalCount / limit);
 
-//         if (users.length === 0) {
-//             return responseHandler.out(req, res, {
-//                 status: false,
-//                 statusCode: 404,
-//                 message: 'No user found matching the criteria.',
-//             });
-//         }
+        const prevPage = currentPage > 1;
+        const nextPage = currentPage < totalPages;
 
-//         responseHandler.out(req, res, {
-//             status: true,
-//             statusCode: 200,
-//             message: 'Users retrieved successfully',
-//             data: {
-//                 total: totalCount,
-//                 currentPage,
-//                 totalPages,
-//                 prevPage,
-//                 nextPage,
-//                 users,
-//             },
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         responseHandler.out(req, res, {
-//             status: false,
-//             statusCode: 500,
-//             message: 'Internal server error',
-//         });
-//     }
-// };
+        if (subscriptions.length === 0) {
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'No Subscription found matching the criteria.',
+            });
+        }
+
+        responseHandler.out(req, res, {
+            status: true,
+            statusCode: 200,
+            message: 'Subscriptions retrieved successfully',
+            data: {
+                total: totalCount,
+                currentPage,
+                totalPages,
+                prevPage,
+                nextPage,
+                subscriptions,
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        responseHandler.out(req, res, {
+            status: false,
+            statusCode: 500,
+            message: 'Internal server error',
+        });
+    }
+};
