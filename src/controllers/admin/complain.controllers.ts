@@ -1,6 +1,6 @@
 import { DocumentType } from "@typegoose/typegoose";
 import ComplaintModel from "../../models/complaints.model";
-import ComplaintsTypeModel, { StatusType } from "../../models/complaintsType.model";
+import ComplaintsTypeModel from "../../models/complaintsType.model";
 import DeliveryModel, { Delivery } from "../../models/delivery.model";
 import OrderModel, { Order } from "../../models/order.model";
 import UserModel from "../../models/user.model";
@@ -28,24 +28,18 @@ export const createComplainType = async (req, res) => {
         });
     }
 
-    if (Status && !Object.values(StatusType).includes(Status)) {
-        return responseHandler.out(req, res, {
-            status: false,
-            statusCode: 400,
-            message: `Status must be one of the following: ${Object.values(StatusType).join(', ')}`
-        });
-    }
 
     try {
         // Check if the complaint type already exists (case-insensitive)
         const existingComplaintType = await ComplaintsTypeModel.findOne({
-            ComplaintType: { $regex: new RegExp(`^${ComplaintType}$`, 'i') }
-        });
+            ComplaintType: { $regex: new RegExp(`^${ComplaintType.trim()}$`, 'i') }
+          });
+          
 
         if (existingComplaintType) {
             return responseHandler.out(req, res, {
                 status: false,
-                statusCode: 400,
+                statusCode: 403,
                 message: 'ComplaintType already exists'
             });
         }
@@ -81,12 +75,32 @@ export const createComplainType = async (req, res) => {
 // Get all Compliment Types
 export const getAllComplainTypes = async (req, res) => {
     try {
-        const complimentTypes = await ComplaintsTypeModel.find();
+        const currentPage = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (currentPage - 1) * limit;
+
+        const complimentTypes = await ComplaintsTypeModel.find()
+        .skip(skip)
+        .limit(limit);
+
+        const total = await ComplaintsTypeModel.countDocuments();
+        const totalPages = Math.ceil(total / limit);
+
+        const prevPage = currentPage > 1;
+        const nextPage = currentPage < totalPages;
+
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 200,
             message: "Compliment Types fetched successfully",
-            data:complimentTypes
+            data: {
+                total,
+                currentPage,
+                totalPages,
+                prevPage,
+                nextPage,
+                complimentTypes,
+            }
         });
     } catch (error) {
         console.error(error);
@@ -158,13 +172,7 @@ export const updateComplainType = async (req, res) => {
             });
         }
 
-        if (Status && !Object.values(StatusType).includes(Status)) {
-            return responseHandler.out(req, res, {
-                status: false,
-                statusCode: 400,
-                message: `Status must be one of the following: ${Object.values(StatusType).join(', ')}`
-            });
-        }
+
 
         // Check if the updated complaint type already exists (case-insensitive)
         if (ComplaintType) {

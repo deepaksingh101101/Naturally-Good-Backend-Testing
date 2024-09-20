@@ -8,9 +8,9 @@ const router = Router();
 
 // For admin only
 router.post('/type', checkPermissions('Create Complain Type'),createComplainType);
-router.get('/types',checkPermissions('View Complain Type'), getAllComplainTypes);
+router.get('/types',checkPermissions('View Complain Table'), getAllComplainTypes);
 router.put('/type/:id',checkPermissions('Edit Complain Type'), updateComplainType);
-router.get('/type/:id',checkPermissions('Toggle Complain Type'), getComplainTypeById);
+router.get('/type/:id',checkPermissions('View Complain Table'), getComplainTypeById);
 router.delete('/type/:id',checkPermissions('Delete Complain Type'),deleteComplainType );
 
 router.post('/', checkPermissions('Create Complain'),createComplaint);

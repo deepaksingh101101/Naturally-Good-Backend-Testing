@@ -2,10 +2,6 @@ import { prop, getModelForClass, modelOptions, Ref, pre } from '@typegoose/typeg
 import { Admin } from './oldrole.model';
 import { Employee } from './employee.model';
 
-export enum StatusType {
-    ACTIVE = 'active',
-    INACTIVE = 'inactive'
-}
 
 @pre<ComplaintsType>('save', async function() {
     this.UpdatedAt = new Date();
@@ -15,8 +11,8 @@ export class ComplaintsType {
     @prop({ type: String ,required: true})
     public ComplaintType!: string;
 
-    @prop({ enum: StatusType, required: false,default:true })
-    public Status!: StatusType;
+    @prop({ type:Boolean, required: false,default:true })
+    public Status!: boolean;
 
     @prop({ type: String })
     public Description?: string;
