@@ -79,9 +79,12 @@ export const getAllComplainTypes = async (req, res) => {
         const limit = parseInt(req.query.limit as string) || 10;
         const skip = (currentPage - 1) * limit;
 
-        const complimentTypes = await ComplaintsTypeModel.find()
+        const complainTypes = await ComplaintsTypeModel.find()
         .skip(skip)
-        .limit(limit);
+        .limit(limit)
+        .populate('CreatedBy','FirstName LastName Email PhoneNumber')
+        .populate('UpdatedBy','FirstName LastName Email PhoneNumber')
+        .exec();
 
         const total = await ComplaintsTypeModel.countDocuments();
         const totalPages = Math.ceil(total / limit);
@@ -99,7 +102,7 @@ export const getAllComplainTypes = async (req, res) => {
                 totalPages,
                 prevPage,
                 nextPage,
-                complimentTypes,
+                complainTypes,
             }
         });
     } catch (error) {
