@@ -4,8 +4,8 @@ const jwt = require('jsonwebtoken');
 config();
 
 export const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://127.0.0.1/naturally-goods";
-export const PORT = process.env.PORT || 3001;
+  process.env.MONGODB_URI 
+export const PORT = process.env.PORT;
 
 export const JWT_SECRET = process.env.JWT_SECRET || "NFC@#$@#@@EDCRWVG#R@R@F$#R#$";
 
