@@ -83,9 +83,6 @@ export class Zone {
   @prop({ type: Boolean, default: true })
   public Serviceable!: boolean;
 
-  // @prop({ required: true })   //Moved to routes model
-  // public DeliverySequence!: number;
-
   @prop({ type: Number, required: true})
   public DeliveryCost?: number;
 

@@ -299,9 +299,12 @@ export const createLocality = async (req: Request, res: Response) => {
   
     try {
       // Check if a locality with the same name exists (case insensitive)
+      const localityName = req.body.LocalityName.trim(); // Trim the input
+
       const existingLocality = await LocalityModel.findOne({
-        LocalityName: { $regex: new RegExp(`^${req.body.LocalityName}$`, 'i') }
+        LocalityName: { $regex: new RegExp(`^${localityName}$`, 'i') }
       });
+      
   
       if (existingLocality) {
         return responseHandler.out(req, res, {
@@ -637,47 +640,70 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
 };
 
 export const getAllZones = async (req: Request, res: Response) => {
-    try {
-        const currentPage = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const skip = (currentPage - 1) * limit;
+  try {
+      const currentPage = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (currentPage - 1) * limit;
 
-        const zones = await ZoneModel.find()
-            .skip(skip)
-            .limit(limit)
-            .populate('CreatedBy', 'Email')  // Populate CreatedBy with Email
-            .populate('UpdatedBy', 'Email')  // Populate UpdatedBy with Email
-            .populate('Localities', 'LocalityName')  // Populate Localities with LocalityName
-            .exec();
+      // Fetch all zones with pagination and populate relevant fields
+      const zones = await ZoneModel.find()
+          .skip(skip)
+          .limit(limit)
+          .populate('CreatedBy', 'Email')  // Populate CreatedBy with Email
+          .populate('UpdatedBy', 'Email')  // Populate UpdatedBy with Email
+          .populate('Localities', 'LocalityName')  // Populate Localities with LocalityName
+          .exec();
 
-        const total = await ZoneModel.countDocuments().exec();
-        const totalPages = Math.ceil(total / limit);
+      // Get all city names that include the zones found
+      const cityIds = zones.map(zone => zone._id);
+      const cities = await CityModel.find({ ZoneIncluded: { $in: cityIds } })
+          .select('CityName ZoneIncluded')
+          .exec();
 
-        const prevPage = currentPage > 1;
-        const nextPage = currentPage < totalPages;
+// Map the cities to create a lookup for zone IDs
+const cityMap = cities.reduce((acc, city) => {
+  city.ZoneIncluded.forEach(zoneId => {
+      acc[zoneId.toString()] = city.CityName; // Convert ObjectId to string for mapping
+  });
+  return acc;
+}, {} as Record<string, string>);
 
-        responseHandler.out(req, res, {
-            status: true,
-            statusCode: 200,
-            message: 'Zones retrieved successfully',
-            data: {
-                total,
-                currentPage,
-                totalPages,
-                prevPage,
-                nextPage,
-                zones,
-            }
-        });
-    } catch (error) {
-        console.error(error);
-        responseHandler.out(req, res, {
-            status: false,
-            statusCode: 500,
-            message: 'Internal server error',
-        });
-    }
+// Attach city names to the zones
+const zonesWithCityNames = zones.map(zone => ({
+  ...zone.toObject(),
+  CityName: cityMap[zone._id.toString()] || null, // Convert ObjectId to string for lookup
+}));
+
+
+      const total = await ZoneModel.countDocuments().exec();
+      const totalPages = Math.ceil(total / limit);
+
+      const prevPage = currentPage > 1;
+      const nextPage = currentPage < totalPages;
+
+      responseHandler.out(req, res, {
+          status: true,
+          statusCode: 200,
+          message: 'Zones retrieved successfully',
+          data: {
+              total,
+              currentPage,
+              totalPages,
+              prevPage,
+              nextPage,
+              zones: zonesWithCityNames,
+          }
+      });
+  } catch (error) {
+      console.error(error);
+      responseHandler.out(req, res, {
+          status: false,
+          statusCode: 500,
+          message: 'Internal server error',
+      });
+  }
 };
+
 
 export const getZoneById = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -892,7 +918,8 @@ export const updateZoneServiceable = async (req: Request, res: Response) => {
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 200,
-            message: "Zone updated successfully"
+            message: "Zone updated successfully",
+            data:updatedZone
         });
     } catch (error) {
         return responseHandler.out(req, res, {
