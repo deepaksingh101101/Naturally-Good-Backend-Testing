@@ -25,7 +25,7 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
 
 
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'NFC@#$@#@@EDCRWVG#R@R@F$#R#$';
 
 export const loginSuperAdmin = async (req: Request, res: Response) => {
     const { Email, Password } = req.body;

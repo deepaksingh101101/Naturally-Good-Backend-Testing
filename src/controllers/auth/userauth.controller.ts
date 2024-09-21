@@ -6,7 +6,7 @@ import { responseHandler } from '../../utils/send-response';
 import { generateToken } from '../../config';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || '525557668529-0sv0893s4r5b5gqrh82d3f6ffqgsrg4e.apps.googleusercontent.com');
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'NFC@#$@#@@EDCRWVG#R@R@F$#R#$';
 
 export const LoginUserByGoogle = async (req: Request, res: Response): Promise<void> => {
     try {

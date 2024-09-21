@@ -250,4 +250,4 @@ export const handleUserFilter = async (req: Request, res: Response) => {
 // };
 
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'NFC@#$@#@@EDCRWVG#R@R@F$#R#$';

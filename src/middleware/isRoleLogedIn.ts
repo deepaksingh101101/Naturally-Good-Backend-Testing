@@ -5,7 +5,7 @@ import UserModel from '../models/user.model';
 import RoleModel from '../models/role.model';
 import { responseHandler } from '../utils/send-response';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'NFC@#$@#@@EDCRWVG#R@R@F$#R#$';
 
 export const isRoleLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;

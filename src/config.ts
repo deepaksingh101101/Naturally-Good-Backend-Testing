@@ -7,7 +7,7 @@ export const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1/naturally-goods";
 export const PORT = process.env.PORT || 3001;
 
-export const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_key";
+export const JWT_SECRET = process.env.JWT_SECRET || "NFC@#$@#@@EDCRWVG#R@R@F$#R#$";
 
 /**
  * Generates a JWT token with a given payload.

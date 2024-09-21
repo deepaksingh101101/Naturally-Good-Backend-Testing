@@ -4,7 +4,7 @@ import RoleModel from '../models/role.model';
 import PermissionModel from '../models/permission.model';
 import { responseHandler } from '../utils/send-response';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'NFC@#$@#@@EDCRWVG#R@R@F$#R#$';
 
 // Higher-order function that takes an action name and returns a middleware
 export const checkPermissions = (actionToCheck: string) => {
