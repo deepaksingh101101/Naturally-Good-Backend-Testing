@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { RosterModel, SeasonModel, SubscriptionTypeModel, FrequencyTypeModel, RoleTypeModel, ProductTypeModel, SourceOfCustomerModel, TypeOfCustomerModel } from '../models/dropdown.model';
+import { RosterModel, SeasonModel, SubscriptionTypeModel, FrequencyTypeModel, RoleTypeModel, ProductTypeModel, SourceOfCustomerModel, TypeOfCustomerModel, ProductPriorityModel, ProductGroupModel } from '../models/dropdown.model';
 import { responseHandler } from '../utils/send-response';
 
 // Common function to handle errors
@@ -1024,8 +1024,11 @@ export const createTypeOfCustomer = async (req: Request, res: Response) => {
       });
     }
 
-    const existingType = await TypeOfCustomerModel.findOne({ Name: { $regex: new RegExp(`^${Name}$`, 'i') } });
-    if (existingType) {
+    const trimmedName = Name.trim();
+    const existingType = await TypeOfCustomerModel.findOne({
+      Name: { $regex: new RegExp(`^${trimmedName}$`, 'i') }
+    });
+        if (existingType) {
       return responseHandler.out(req, res, {
         status: false,
         statusCode: 403,
@@ -1143,6 +1146,201 @@ export const editTypeOfCustomer = async (req: Request, res: Response) => {
       statusCode: 200,
       message: "Type of Customer updated successfully",
       data: existingType,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+
+
+// Product Priority
+export const createPriority = async (req: Request, res: Response) => {
+  try {
+    const { Name } = req.body;
+    const loggedInId = req['decodedToken'];
+
+    if (!Name) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: "Name is required",
+      });
+    }
+
+    const trimmedName = Name.trim();
+    const existingPriority = await ProductPriorityModel.findOne({
+      Name: { $regex: new RegExp(`^${trimmedName}$`, 'i') }
+    });
+
+    if (existingPriority) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 403,
+        message: "Priority type  already exists",
+      });
+    }
+
+    const newPriority = new ProductPriorityModel({ 
+      Name, 
+      CreatedBy: loggedInId, 
+      UpdatedBy: loggedInId 
+    });
+    await newPriority.save();
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 201,
+      message: "Priority Type created successfully",
+      data: newPriority,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Get all priority
+export const getPrioritys = async (req: Request, res: Response) => {
+  try {
+    const prioritys = await ProductPriorityModel.find();
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Priority fetched successfully",
+      data: prioritys,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Delete a SourceOfCustomer by ID
+export const deletePriority = async (req: Request, res: Response) => {
+  try {
+    const source = await ProductPriorityModel.findByIdAndDelete(req.params.id);
+    if (!source) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: "Source of Customer not found",
+      });
+    }
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Priority deleted successfully",
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+
+// Product Group
+export const createGroup = async (req: Request, res: Response) => {
+  try {
+    const { Name } = req.body;
+    const loggedInId = req['decodedToken'];
+
+    if (!Name) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: "Name is required",
+      });
+    }
+
+    const trimmedName = Name.trim();
+    const existingGroup = await ProductGroupModel.findOne({
+      Name: { $regex: new RegExp(`^${trimmedName}$`, 'i') }
+    });
+
+    if (existingGroup) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 403,
+        message: "Group  already exists",
+      });
+    }
+
+    const newPriority = new ProductGroupModel({ 
+      Name, 
+      CreatedBy: loggedInId, 
+      UpdatedBy: loggedInId 
+    });
+    await newPriority.save();
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 201,
+      message: "Group created successfully",
+      data: newPriority,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Get all Group
+export const getGroups = async (req: Request, res: Response) => {
+  try {
+    const Groups = await ProductGroupModel.find();
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Group fetched successfully",
+      data: Groups,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message
+    });
+  }
+};
+
+// Delete a Group by ID
+export const deleteGroup = async (req: Request, res: Response) => {
+  try {
+    const source = await ProductGroupModel.findByIdAndDelete(req.params.id);
+    if (!source) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: "Group not found",
+      });
+    }
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Group deleted successfully",
     });
   } catch (error) {
     return responseHandler.out(req, res, {

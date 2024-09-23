@@ -176,6 +176,45 @@ export class TypeOfCustomer {
   public UpdatedAt!: Date;
 }
 
+
+
+export class ProductPriority {
+  @prop({ type: String, required: true })
+  public Name!: string;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+}
+
+
+// Group of product 
+export class ProductGroup {
+  @prop({ type: String, required: true })
+  public Name!: string;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+}
+
+
 // Create models for each schema
 const ProductTypeModel = getModelForClass(ProductType);
 const SeasonModel = getModelForClass(Season);
@@ -185,5 +224,7 @@ const FrequencyTypeModel = getModelForClass(FrequencyType);
 const RoleTypeModel = getModelForClass(Role);
 const SourceOfCustomerModel = getModelForClass(SourceOfCustomer);
 const TypeOfCustomerModel = getModelForClass(TypeOfCustomer);
+const ProductPriorityModel = getModelForClass(ProductPriority);
+const ProductGroupModel = getModelForClass(ProductGroup);
 
-export {SourceOfCustomerModel,TypeOfCustomerModel, ProductTypeModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel,RoleTypeModel };
+export {ProductGroupModel,ProductPriorityModel,SourceOfCustomerModel,TypeOfCustomerModel, ProductTypeModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel,RoleTypeModel };

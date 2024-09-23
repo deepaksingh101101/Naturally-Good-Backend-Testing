@@ -930,6 +930,9 @@ export const updateZoneServiceable = async (req: Request, res: Response) => {
         });
     }
 };
+
+
+
 // Going for route
 export const createRoute = async (req: Request, res: Response) => {
     const LoggedInId = req['decodedToken'].id;
@@ -1632,7 +1635,7 @@ export const filterCities = async (req: Request, res: Response) => {
       }
 
       const currentPage = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const limit = parseInt(req.query.limit as string) ||  await CityModel.countDocuments().exec();
       const skip = (currentPage - 1) * limit;
       pipeline.push({ $skip: skip });
       pipeline.push({ $limit: limit });
@@ -1662,4 +1665,79 @@ export const filterCities = async (req: Request, res: Response) => {
   }
 };
 
+export const searchZones = async (req: Request, res: Response) => {
+  try {
+      const { CityId, ZoneName, page, limit } = req.query;
+
+      // Check if cityId is provided
+      if (!CityId) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 400,
+              message: 'City ID is required',
+          });
+      }
+
+      // Find city and populate zones
+      const city = await CityModel.findById(CityId).populate('ZoneIncluded');
+
+      // Check if city exists
+      if (!city) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: 'City not found',
+          });
+      }
+
+      const zonesFromCity = city.ZoneIncluded?.map((zone: any) => zone._id) || [];
+
+      const pipeline: any[] = [
+          { $match: { _id: { $in: zonesFromCity } } }  // Match only zones included in the city
+      ];
+
+      // Apply ZoneName filter if provided
+      if (ZoneName) {
+          pipeline.push({
+              $match: {
+                  ZoneName: { $regex: new RegExp(ZoneName as string, 'i') },
+              },
+          });
+      }
+
+      const currentPage = parseInt(page as string) || 1;
+      const limitValue = parseInt(limit as string) || await ZoneModel.countDocuments().exec();
+      const skip = (currentPage - 1) * limitValue;
+
+      pipeline.push({ $skip: skip });
+      pipeline.push({ $limit: limitValue });
+
+      const zones = await ZoneModel.aggregate(pipeline);
+
+      const total = await ZoneModel.countDocuments({ _id: { $in: zonesFromCity } });
+      const totalPages = Math.ceil(total / limitValue);
+
+      // Respond with the result using responseHandler.out
+      return responseHandler.out(req, res, {
+          status: true,
+          statusCode: 200,
+          message: 'Zones retrieved successfully',
+          data: {
+              total,
+              currentPage,
+              totalPages,
+              zones,
+          },
+      });
+  } catch (error) {
+      console.error("Error in searchZones:", error);
+      // Use responseHandler.out to send the error
+      return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 500,
+          message: 'Internal Server Error',
+          data: error.message,
+      });
+  }
+};
 

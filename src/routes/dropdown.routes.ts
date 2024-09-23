@@ -1,7 +1,7 @@
 import express from 'express';
 // import { createFrequencyType, createRole, createRoster, createSeason, createSubscriptionType, createType, deleteFrequencyType, deleteRole, deleteRoster, deleteSeason, deleteSubscriptionType, deleteType, getAllRoles, getFrequencyTypes, getRosters, getSeasons, getSubscriptionTypes, getTypes } from '../controllers/dropdown.controller';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
-import { createFrequencyType, createProductType, createRoster, createSeason, createSourceOfCustomer, createSubscriptionType, createTypeOfCustomer, deleteFrequencyType, deleteProductType, deleteRoster, deleteSeason, deleteSourceOfCustomer, deleteSubscriptionType, deleteTypeOfCustomer, editFrequencyType, editProductType, editRoster, editSeason, editSourceOfCustomer, editSubscriptionType, editTypeOfCustomer, getFrequencyTypes, getRosters, getSeasons, getSourceOfCustomers, getSubscriptionTypes, getTypeOfCustomers, getTypes } from '../controllers/dropdown.controller';
+import { createFrequencyType, createGroup, createPriority, createProductType, createRoster, createSeason, createSourceOfCustomer, createSubscriptionType, createTypeOfCustomer, deleteFrequencyType, deleteGroup, deletePriority, deleteProductType, deleteRoster, deleteSeason, deleteSourceOfCustomer, deleteSubscriptionType, deleteTypeOfCustomer, editFrequencyType, editProductType, editRoster, editSeason, editSourceOfCustomer, editSubscriptionType, editTypeOfCustomer, getFrequencyTypes, getGroups, getPrioritys, getRosters, getSeasons, getSourceOfCustomers, getSubscriptionTypes, getTypeOfCustomers, getTypes } from '../controllers/dropdown.controller';
 import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
 
 const router = express.Router();
@@ -68,4 +68,29 @@ router.put('/typeofcustomer/:id', isRoleLoggedIn, editTypeOfCustomer);
 // router.get('/role-types', adminMiddleware,getAllRoles );
 // router.post('/role-types', adminMiddleware, createRole);
 // router.delete('/role-types/:id', adminMiddleware, deleteRole);
+
+
+
+
+// Get all Priority of customers
+router.get('/prioritys', isRoleLoggedIn, getPrioritys);
+
+// Create a new Priority of product
+router.post('/priority', isRoleLoggedIn, createPriority);
+
+// Delete a Priority of product by ID
+router.delete('/priority/:id', isRoleLoggedIn, deletePriority);
+
+
+
+// Get all Priority of customers
+router.get('/groups', isRoleLoggedIn, getGroups);
+
+// Create a new Priority of product
+router.post('/group', isRoleLoggedIn, createGroup);
+
+// Delete a Priority of product by ID
+router.delete('/group/:id', isRoleLoggedIn, deleteGroup);
+
+
 export default router;
