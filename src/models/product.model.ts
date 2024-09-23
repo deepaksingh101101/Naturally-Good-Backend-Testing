@@ -1,7 +1,7 @@
 import { prop, getModelForClass, pre, Ref } from '@typegoose/typegoose';
 import { Admin } from './oldrole.model';
 import { Employee } from './employee.model';
-import { ProductType, Roster, Season } from './dropdown.model';
+import { ProductGroup, ProductPriority, ProductType, Roster, Season } from './dropdown.model';
 
 @pre<Product>('save', async function() {
   this.UpdatedAt = new Date();
@@ -17,14 +17,15 @@ export class Product {
   @prop({ ref: () => Season ,required:true})
   public Season!: Ref<Season>;
 
-  @prop({ type: String, required: true })
-  public Priority?: string;
+
+  @prop({ ref: () => ProductPriority,required:true })
+  public Priority!: Ref<ProductPriority>;
 
   @prop({ ref: () => Roster })
   public Roster!: Ref<Roster>;
 
-  @prop({ type: String, required: true })
-  public Group?: string;
+  @prop({ ref: () => ProductGroup,required:true })
+  public Group!: Ref<ProductGroup>;
 
   @prop({ type: String, required: true })
   public VeggieNameInHindi!: string;

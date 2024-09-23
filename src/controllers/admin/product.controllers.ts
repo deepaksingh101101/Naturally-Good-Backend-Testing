@@ -2,12 +2,12 @@ import { Request, Response } from 'express';
 import ProductModel from '../../models/product.model';
 import { CategoryType } from '../../models/category.model';
 import { responseHandler } from '../../utils/send-response';
-import { ProductTypeModel, RosterModel, SeasonModel } from '../../models/dropdown.model';
+import { ProductGroupModel, ProductPriorityModel, ProductTypeModel, RosterModel, SeasonModel } from '../../models/dropdown.model';
 
 export const createProduct = async (req: Request, res: Response) => {
     try {
         const loggedInId = req['decodedToken']?.id;
-        const { ProductName,Type, Season,Roster } = req.body;
+        const { ProductName,Type, Season,Roster,Group, Priority } = req.body;
 
 
         const isRosterExist=await RosterModel.findById(Roster)
@@ -32,6 +32,23 @@ export const createProduct = async (req: Request, res: Response) => {
                 status: false,
                 statusCode: 404,
                 message: 'Season  not found'
+            });
+        }
+
+        const isPriorityExist=await ProductPriorityModel.findById({_id:Priority})
+        if(!isPriorityExist){
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Priority not found'
+            });
+        }
+        const isGroupExist=await ProductGroupModel.findById({_id:Group})
+        if(!isGroupExist){
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 404,
+                message: 'Group not found'
             });
         }
 
