@@ -17,7 +17,6 @@ export class Product {
   @prop({ ref: () => Season ,required:true})
   public Season!: Ref<Season>;
 
-
   @prop({ ref: () => ProductPriority,required:true })
   public Priority!: Ref<ProductPriority>;
 
@@ -29,6 +28,9 @@ export class Product {
 
   @prop({ type: String, required: true })
   public VeggieNameInHindi!: string;
+
+  @prop({ type: String, required: true })
+  public UnitType!: string;
 
   @prop({ type: Number, required: true })
   public UnitQuantity!: number;

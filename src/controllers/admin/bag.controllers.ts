@@ -15,7 +15,7 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
             Status,
             BagImageUrl,
             BagDescription,
-            AllowedItems, // Array of Product IDs
+            AllowedItems, // Array of objects with `itemId`
         } = req.body;
 
         // Validate input
@@ -27,9 +27,12 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
             });
         }
 
-        // Validate allowedItems - check if all product IDs are valid
-        const products = await ProductModel.find({ _id: { $in: AllowedItems } });
-        if (products.length !== AllowedItems.length) {
+        // Extract itemId values from AllowedItems array
+        const productIds = AllowedItems.map((item: { itemId: string }) => item.itemId);
+
+        // Validate AllowedItems - check if all product IDs are valid
+        const products = await ProductModel.find({ _id: { $in: productIds } });
+        if (products.length !== productIds.length) {
             return responseHandler.out(req, res, {
                 status: false,
                 statusCode: 400,
@@ -37,18 +40,20 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
             });
         }
 
+        // Check if the Bag already exists
         const isBagExist = await BagModel.find({
-            BagName,AllowedItems,BagMaxWeight
+            BagName,
+            AllowedItems: productIds, // Use the extracted product IDs here
+            BagMaxWeight,
         });
-        
+
         if (isBagExist.length > 0) {
             return responseHandler.out(req, res, {
                 status: false,
                 statusCode: 403,
-                message: 'Bag already exist'
+                message: 'Bag already exists'
             });
         }
-        
 
         // Create a new Bag
         const bag = new BagModel({
@@ -58,14 +63,13 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
             Status,
             BagImageUrl,
             BagDescription,
-            AllowedItems,
+            AllowedItems: productIds, // Use the extracted product IDs here
             CreatedBy: loggedInId,
             UpdatedBy: loggedInId,
         });
 
-        console.log(bag)
-
         await bag.save();
+
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 201,
@@ -73,7 +77,7 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
             data: bag
         });
     } catch (error) {
-        console.log(error)
+        console.log(error);
         return responseHandler.out(req, res, {
             status: false,
             statusCode: 500,
@@ -81,6 +85,7 @@ export const createBagByAdmin = async (req: Request, res: Response) => {
         });
     }
 };
+
 
 export const getAllBags = async (req: Request, res: Response) => {
     try {

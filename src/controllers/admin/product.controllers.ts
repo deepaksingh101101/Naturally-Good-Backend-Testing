@@ -9,7 +9,6 @@ export const createProduct = async (req: Request, res: Response) => {
         const loggedInId = req['decodedToken']?.id;
         const { ProductName,Type, Season,Roster,Group, Priority } = req.body;
 
-
         const isRosterExist=await RosterModel.findById(Roster)
         if(!isRosterExist){
             return responseHandler.out(req, res, {
@@ -101,6 +100,8 @@ export const getAllProducts = async (req: Request, res: Response) => {
             .limit(limit)
             .populate('Type', 'Name')
             .populate('Season', 'Name')
+            .populate('Priority', 'Name')
+            .populate('Group', 'Name')
             .populate('Roster', 'Name')
             .populate('CreatedBy', 'Email')
             .populate('UpdatedBy', 'Email');
