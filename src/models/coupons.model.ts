@@ -56,8 +56,8 @@ export class Coupon {
   public EndDate: Date;
 
   // Number of Times a Coupon Can Be Applied Per User
-  @prop({ type: Number, default: 1 })
-  public NumberOfTimesCanBeAppliedPerUser?: number;
+  // @prop({ type: Number, default: 1 })
+  // public NumberOfTimesCanBeAppliedPerUser?: number;
 
   // Coupon Visibility - Enum
   @prop({ type: String, enum: ['Admin', 'Public', 'Private'], required: true, default: "Private" })
@@ -66,6 +66,10 @@ export class Coupon {
   // Description
   @prop({ type: String })
   public Description?: string;
+
+  // Description
+  @prop({ type: String })
+  public CouponsName?: string;
 
   // Image URL
   @prop({ type: String })

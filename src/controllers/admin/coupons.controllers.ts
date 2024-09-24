@@ -25,6 +25,7 @@ export const createCoupon = async (req: Request, res: Response) => {
         ImageUrl,
         AssignedTo,
         AssignedBy,
+        CouponsName,
         SubscriptionIds, // Changed from SubscriptionId to SubscriptionIds to reflect an array
       } = req.body;
   
@@ -75,8 +76,9 @@ export const createCoupon = async (req: Request, res: Response) => {
 
       // Check if the coupon code already exists (case insensitive)
       const existingCoupon = await CouponModel.findOne({
-        Code: { $regex: new RegExp(`^${Code}$`, 'i') },
+        Code: { $regex: new RegExp(`^${Code.trim()}$`, 'i') }, // Trims and applies case-insensitive search
       });
+      
       if (existingCoupon) {
         return responseHandler.out(req, res, {
           status: false,
@@ -96,6 +98,16 @@ export const createCoupon = async (req: Request, res: Response) => {
           });
         }
       }
+
+      if(CouponCategory==='SeasonSpecial'){
+            if(!CouponsName){
+                return responseHandler.out(req, res, {
+                    status: false,
+                    statusCode: 400,
+                    message: 'CouponsName is required when CouponCategory is SeasonSpecial',
+                  })
+            }
+      }
   
       // Create a new Coupon instance
       const coupon = new CouponModel({
@@ -104,6 +116,7 @@ export const createCoupon = async (req: Request, res: Response) => {
         DiscountType,
         DiscountPercentage,
         DiscountPrice,
+        CouponsName,
         ValidityType,
         StartDate,
         EndDate,
@@ -127,7 +140,6 @@ export const createCoupon = async (req: Request, res: Response) => {
         status: true,
         statusCode: 201,
         message: 'Coupon created successfully',
-        data: savedCoupon,
       });
     } catch (error) {
       console.error('Error creating coupon:', error); // Improved error logging
@@ -146,6 +158,7 @@ export const updateCoupon = async (req: Request, res: Response) => {
       const {
         CouponType,
         CouponCategory,
+        CouponsName,
         Code,
         DiscountType,
         DiscountPercentage,
@@ -160,7 +173,7 @@ export const updateCoupon = async (req: Request, res: Response) => {
         ImageUrl,
         AssignedTo,
         AssignedBy,
-        SubscriptionIds, // Should be an array
+        Subscriptions, // Should be an array
       } = req.body;
   
       // Validate coupon ID format
@@ -201,7 +214,7 @@ export const updateCoupon = async (req: Request, res: Response) => {
       }
   
       // Validate SubscriptionIds if CouponType is 'Subscription'
-      if (CouponType === 'Subscription' && (!Array.isArray(SubscriptionIds) || SubscriptionIds.length < 1)) {
+      if (CouponType === 'Subscription' && (!Array.isArray(Subscriptions) || Subscriptions.length < 1)) {
         return responseHandler.out(req, res, {
           status: false,
           statusCode: 400,
@@ -210,9 +223,9 @@ export const updateCoupon = async (req: Request, res: Response) => {
       }
   
       // Check if the referenced Subscriptions exist if CouponType is 'Subscription'
-      if (CouponType === 'Subscription' && Array.isArray(SubscriptionIds) && SubscriptionIds.length > 0) {
-        const subscriptions = await SubscriptionModel.find({ _id: { $in: SubscriptionIds } });
-        if (subscriptions.length !== SubscriptionIds.length) {
+      if (CouponType === 'Subscription' && Array.isArray(Subscriptions) && Subscriptions.length > 0) {
+        const subscriptions = await SubscriptionModel.find({ _id: { $in: Subscriptions } });
+        if (subscriptions.length !== Subscriptions.length) {
           return responseHandler.out(req, res, {
             status: false,
             statusCode: 400,
@@ -220,6 +233,16 @@ export const updateCoupon = async (req: Request, res: Response) => {
           });
         }
       }
+
+      if(CouponCategory==='SeasonSpecial'){
+        if(!CouponsName){
+            return responseHandler.out(req, res, {
+                status: false,
+                statusCode: 400,
+                message: 'CouponsName is required when CouponCategory is SeasonSpecial',
+              })
+        }
+  }
   
       // Prepare update data
       const updateData: any = {};
@@ -246,7 +269,8 @@ export const updateCoupon = async (req: Request, res: Response) => {
       if (ImageUrl) updateData.ImageUrl = ImageUrl;
       if (AssignedTo) updateData.AssignedTo = AssignedTo;
       if (AssignedBy) updateData.AssignedBy = AssignedBy;
-      if (CouponType === 'Subscription' && SubscriptionIds) updateData.Subscriptions = SubscriptionIds;
+      if (CouponsName) updateData.CouponsName = CouponsName;
+      if (CouponType === 'Subscription' && Subscriptions) updateData.Subscriptions = Subscriptions;
   
       if (CouponCategory === "FreeDelivery") {
         // Unset all discount-related fields
