@@ -287,55 +287,88 @@ export const updateVehicleStatus = async (req: Request, res: Response) => {
 //   Going for Locality 
 
 export const createLocality = async (req: Request, res: Response) => {
-    const LoggedInId = req['decodedToken'].id;
-  
-    if (!LoggedInId) {
-      return responseHandler.out(req, res, {
-        status: false,
-        statusCode: 401,
-        message: "Unauthorized",
-      });
-    }
-  
-    try {
-      // Check if a locality with the same name exists (case insensitive)
-      const localityName = req.body.LocalityName.trim(); // Trim the input
+  const LoggedInId = req['decodedToken'].id;
 
-      const existingLocality = await LocalityModel.findOne({
-        LocalityName: { $regex: new RegExp(`^${localityName}$`, 'i') }
-      });
-      
-  
-      if (existingLocality) {
-        return responseHandler.out(req, res, {
-          status: false,
-          statusCode: 400,
-          message: "Locality with the same name already exists",
-        });
-      }
-  
-      const newLocality = new LocalityModel({
-        ...req.body,
-        CreatedBy: LoggedInId,
-        UpdatedBy: LoggedInId,
-      });
-  
-      await newLocality.save();
-  
-      return responseHandler.out(req, res, {
-        status: true,
-        statusCode: 201,
-        message: "Locality created successfully",
-      });
-    } catch (error) {
+  if (!LoggedInId) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 401,
+      message: "Unauthorized",
+    });
+  }
+
+  try {
+    // Check if a locality with the same name and pin exists globally (case insensitive)
+    const localityName = req.body.LocalityName.trim(); // Trim the input
+    const existingLocality = await LocalityModel.findOne({
+      LocalityName: { $regex: new RegExp(`^${localityName}$`, 'i') },
+      Pin: req.body.Pin,
+    });
+
+    if (existingLocality) {
       return responseHandler.out(req, res, {
         status: false,
-        statusCode: 500,
-        message: 'Internal Server Error',
-        data: error.message,
+        statusCode: 403,
+        message: "Locality with the same name & Pin already exists globally",
       });
     }
-  };
+
+    // Create the new locality
+    const newLocality = new LocalityModel({
+      ...req.body,
+      CreatedBy: LoggedInId,
+      UpdatedBy: LoggedInId,
+    });
+
+    await newLocality.save();
+
+    // Find the Zone by the Zone ID
+    const zone = await ZoneModel.findById(req.body.Zone);
+
+    if (!zone) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: "Zone not found",
+      });
+    }
+
+    // Check if the locality already exists in the zone's Localities array
+    const localityExistsInZone = zone.Localities.some(
+      (localityId) => localityId.toString() === newLocality._id.toString()
+    );
+
+    if (localityExistsInZone) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 403,
+        message: "Locality already exists in the specified Zone",
+      });
+    }
+
+    // Push the new locality's reference into the Localities array of the zone
+    zone.Localities.push(newLocality._id);
+
+    // Save the updated Zone
+    await zone.save();
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 201,
+      message: "Locality created successfully and added to Zone",
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message,
+    });
+  }
+};
+
+
+
   // Get all Localities
   export const getAllLocalities = async (req: Request, res: Response) => {
     try {
@@ -371,7 +404,7 @@ export const createLocality = async (req: Request, res: Response) => {
                 totalPages,
                 prevPage,
                 nextPage,
-                localities,
+                localitys: localities,
             }
         });
     } catch (error) {
@@ -555,6 +588,7 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
         status: true,
         statusCode: 200,
         message: "Locality serviceable status updated successfully",
+        data:updatedLocality,
       });
     } catch (error) {
       return responseHandler.out(req, res, {
@@ -571,73 +605,87 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
 
   export const createZone = async (req: Request, res: Response) => {
     const LoggedInId = req['decodedToken'].id;
-
+  
     if (!LoggedInId) {
-        return responseHandler.out(req, res, {
-            status: false,
-            statusCode: 401,
-            message: "Unauthorized",
-        });
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 401,
+        message: "Unauthorized",
+      });
     }
-
+  
     try {
-        const { ZoneName,City } = req.body;
-
-
-
-        // Check if a zone with the same name exists (case insensitive)
-        const trimmedZoneName = ZoneName.trim();
-        const existingZone = await ZoneModel.findOne({
-            ZoneName: { $regex: new RegExp(`^${trimmedZoneName}$`, 'i') }
-        });
-
-        if (existingZone) {
-            return responseHandler.out(req, res, {
-                status: false,
-                statusCode: 403,
-                message: "Zone with the same name already exists",
-            });
-        }
-
-     let isCityExist=   await CityModel.findById({_id:City})
-
-     if(!isCityExist){
+      const { ZoneName, City } = req.body;
+  
+      // Check if a zone with the same name exists (case insensitive)
+      const trimmedZoneName = ZoneName.trim();
+      const existingZone = await ZoneModel.findOne({
+        ZoneName: { $regex: new RegExp(`^${trimmedZoneName}$`, 'i') },
+      });
+  
+      if (existingZone) {
         return responseHandler.out(req, res, {
-            status: false,
-            statusCode: 404,
-            message: "City not found",
+          status: false,
+          statusCode: 403,
+          message: "Zone with the same name already exists",
         });
-     }
-
-        const newZone = new ZoneModel({
-            ...req.body,
-            CreatedBy: LoggedInId,
-            UpdatedBy: LoggedInId,
-        });
-
-        
-        
-        await newZone.save();
-        await CityModel.findByIdAndUpdate(
-          City,
-          { $addToSet: { ZoneIncluded: newZone._id } }, // Add only if the ID is not already present
-          { new: true }
-        );
-        
+      }
+  
+      // Check if the city exists
+      const city = await CityModel.findById(City);
+      if (!city) {
         return responseHandler.out(req, res, {
-            status: true,
-            statusCode: 201,
-            message: "Zone created successfully",
+          status: false,
+          statusCode: 404,
+          message: "City not found",
         });
+      }
+  
+      // Check if the zone is already included in the city
+      const zoneExistsInCity = city.ZoneIncluded.some(
+        (zoneId) => zoneId.toString() === existingZone?._id.toString()
+      );
+  
+      if (zoneExistsInCity) {
+        return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 400,
+          message: "Zone already included in the City",
+        });
+      }
+  
+      // Create new zone
+      const newZone = new ZoneModel({
+        ZoneName: trimmedZoneName,
+        CreatedBy: LoggedInId,
+        UpdatedBy: LoggedInId,
+      });
+  
+      await newZone.save();
+  
+      // Add the zone to the city's ZoneIncluded field
+      await CityModel.findByIdAndUpdate(
+        City,
+        { $addToSet: { ZoneIncluded: newZone._id } }, // Add only if the ID is not already present
+        { new: true }
+      );
+  
+      return responseHandler.out(req, res, {
+        status: true,
+        statusCode: 201,
+        message: "Zone created successfully and added to the City",
+      });
+  
     } catch (error) {
-        return responseHandler.out(req, res, {
-            status: false,
-            statusCode: 500,
-            message: 'Internal Server Error',
-            data: error.message,
-        });
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 500,
+        message: 'Internal Server Error',
+        data: error.message,
+      });
     }
-};
+  };
+  
 
 export const getAllZones = async (req: Request, res: Response) => {
   try {
