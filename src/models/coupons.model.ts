@@ -7,9 +7,6 @@ import { User } from './user.model';
 class AssignedToSchema {
   @prop({ ref: () => User, required: true }) // Ensure that ref is specified correctly
   public Users!: Ref<User>;
-
-  @prop({ required: true })
-  public isUsed!: boolean;
 }
 
 @pre<Coupon>('save', async function() {
@@ -107,13 +104,6 @@ export class Coupon {
   @prop({ ref: () => Subscription, required: false })
   public Subscriptions!: Ref<Subscription>[];
 
-
-  // User IDs - Array of reference
-  // @prop({ ref: () => User })
-  // public AssignedTo?: Array<{
-  //   Users: Ref<User>;
-  //   isUsed: boolean;
-  // }>;
 
   @prop({ type: () => [AssignedToSchema] }) // Array of subdocuments
   public AssignedTo?: AssignedToSchema[];

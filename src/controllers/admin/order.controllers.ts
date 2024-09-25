@@ -26,6 +26,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
       PaymentType,
       SpecialInstruction,
       PaymentDate,
+      Status,
     } = req.body;
 
     const loggedInId = req['decodedToken']?.id;
@@ -124,6 +125,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
       SpecialInstruction: SpecialInstruction,
       CreatedBy: loggedInId,
       UpdatedBy: loggedInId,
+      Status: Status,
     });
 
     const isOrderCreated = await order.save();

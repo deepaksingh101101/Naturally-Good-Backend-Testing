@@ -599,3 +599,210 @@ export const AssignCouponsToCustomer = async (req: Request, res: Response) => {
   }
 };
 
+export const filterCoupons = async (req: Request, res: Response) => {
+  try {
+      const filters = req.query;
+      const pipeline: any[] = [];
+
+      // Pagination setup
+      const currentPage = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (currentPage - 1) * limit;
+
+      // CouponType filter using an exact match
+      if (filters.CouponType) {
+          pipeline.push({
+              $match: {
+                  CouponType: filters.CouponType as string,
+              },
+          });
+      }
+
+      // CouponCategory filter using an exact match
+      if (filters.CouponCategory) {
+          pipeline.push({
+              $match: {
+                  CouponCategory: filters.CouponCategory as string,
+              },
+          });
+      }
+
+      // Status filter
+      if (filters.Status) {
+          pipeline.push({
+              $match: {
+                  Status: filters.Status as string,
+              },
+          });
+      }
+
+      // Validity filter based on date range
+      if (filters.StartDate && filters.EndDate) {
+          pipeline.push({
+              $match: {
+                  StartDate: { $gte: new Date(filters.StartDate as string) },
+                  EndDate: { $lte: new Date(filters.EndDate as string) },
+              },
+          });
+      }
+
+      // CouponVisibility filter
+      if (filters.CouponVisibility) {
+          pipeline.push({
+              $match: {
+                  CouponVisibility: filters.CouponVisibility as string,
+              },
+          });
+      }
+
+      // Add pagination to the pipeline
+      pipeline.push({ $skip: skip });
+      pipeline.push({ $limit: limit });
+
+      // Execute the aggregation pipeline
+      const coupons = await CouponModel.aggregate(pipeline);
+
+      const total = await CouponModel.countDocuments(); // Total documents count for pagination
+      const totalPages = Math.ceil(total / limit); // Total number of pages
+
+      const prevPage = currentPage > 1;
+      const nextPage = currentPage < totalPages;
+
+      if (coupons.length === 0) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: 'No coupons found matching the criteria.',
+          });
+      }
+
+      responseHandler.out(req, res, {
+          status: true,
+          statusCode: 200,
+          message: 'Coupons retrieved successfully',
+          data: {
+              total,
+              currentPage,
+              totalPages,
+              prevPage,
+              nextPage,
+              coupons,
+          }
+      });
+  } catch (error) {
+      console.error(error);
+      responseHandler.out(req, res, {
+          status: false,
+          statusCode: 500,
+          message: 'Internal server error',
+      });
+  }
+};
+
+
+export const searchCouponsInOrder = async (req: Request, res: Response) => {
+  try {
+      const filters = req.query;
+      const userId = req.body.userId; // Assume the user ID is sent in the request body
+      const pipeline: any[] = [];
+
+      // Pagination setup
+      const currentPage = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+      const skip = (currentPage - 1) * limit;
+
+      // Initial match stage based on visibility and usage
+      const matchConditions: any[] = [];
+
+      // Filter for public coupons
+      matchConditions.push({
+          'CouponVisibility': 'Public',
+          'UsedBy': { $ne: userId } // Ensures the user hasn't used the coupon before
+      });
+
+      // Filter for private coupons assigned to the user and not used
+      matchConditions.push({
+          CouponVisibility: 'Private',
+          AssignedTo: {
+              $elemMatch: {
+                  Users: userId // Ensure the user is assigned
+              }
+          },
+          UsedBy: { $ne: userId } // Ensures the user hasn't used the coupon before
+      });
+
+      // Filter for admin coupons
+      matchConditions.push({
+          'CouponVisibility': 'Admin',
+          'UsedBy': { $ne: userId } // Ensures the user hasn't used the coupon before
+      });
+
+      // Combine all match conditions with an OR
+      if (matchConditions.length > 0) {
+          pipeline.push({
+              $match: { $or: matchConditions }
+          });
+      }
+
+      // Filter based on search term if provided
+      if (filters.term) {
+          const term = filters.term as string;
+          pipeline.push({
+              $match: {
+                  'Code': { $regex: new RegExp(term, 'i') },
+              },
+          });
+      }
+
+      // Add pagination to the pipeline
+      pipeline.push({ $skip: skip });
+      pipeline.push({ $limit: limit });
+
+      // Execute the aggregation pipeline
+      const coupons = await CouponModel.aggregate(pipeline);
+
+      // Count documents after filtering for total count
+      const countPipeline = [...pipeline];
+      countPipeline.pop(); // Remove limit stage for count
+      countPipeline.pop(); // Remove skip stage for count
+
+      const total = await CouponModel.aggregate([...countPipeline, { $count: 'total' }]);
+      const totalCount = total[0]?.total || 0;
+      const totalPages = Math.ceil(totalCount / limit);
+
+      const prevPage = currentPage > 1;
+      const nextPage = currentPage < totalPages;
+
+      if (coupons.length === 0) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: 'No Coupons found matching the criteria.',
+          });
+      }
+
+      responseHandler.out(req, res, {
+          status: true,
+          statusCode: 200,
+          message: 'Coupons retrieved successfully',
+          data: {
+              total: totalCount,
+              currentPage,
+              totalPages,
+              prevPage,
+              nextPage,
+              coupons,
+          },
+      });
+  } catch (error) {
+      console.error('Error occurred in searchCouponsInOrder:', error);
+      responseHandler.out(req, res, {
+          status: false,
+          statusCode: 500,
+          message: 'Internal server error',
+      });
+  }
+};
+
+
+
