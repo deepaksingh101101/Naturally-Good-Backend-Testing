@@ -51,8 +51,8 @@ export class Locality {
   @prop({ type: String, required: true })
   public LocalityName!: string;
 
-  @prop({ type: [String], default: [] })
-  public Pin!: string[];
+  @prop({ type: String, required: true })
+  public Pin!: string;
 
   @prop({ type: Boolean, default: false })
   public Serviceable!: boolean;

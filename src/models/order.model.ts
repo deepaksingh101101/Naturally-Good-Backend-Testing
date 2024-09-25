@@ -5,18 +5,18 @@ import { Subscription } from './subscription.model';
 import { Coupon } from './coupons.model';
 import { Delivery } from './delivery.model';
 
-export enum AllPaymentType {
-  Cash = 'cash',
-  Card = 'card',
-  Upi = 'upi',
-  NetBanking = 'netbanking',
-}
+// export enum AllPaymentType {
+//   Cash = 'cash',
+//   Card = 'card',
+//   Upi = 'upi',
+//   NetBanking = 'netbanking',
+// }
 
-export enum AllPaymentStatus {
-  Paid = 'paid',
-  Pending = 'pending',
-  Unpaid = 'unpaid',
-}
+// export enum AllPaymentStatus {
+//   Paid = 'paid',
+//   Pending = 'pending',
+//   Unpaid = 'unpaid',
+// }
 
 @pre<Order>('save', async function() {
   this.UpdatedAt = new Date();
@@ -53,11 +53,11 @@ export class Order {
   @prop({ type: Date })
   public PaymentDate?: Date;
 
-  @prop({ type: String, enum: AllPaymentStatus, required: true })
-  public PaymentStatus!: AllPaymentStatus;
+  @prop({ type: String, enum: ['paid','unpaid','pending'], required: false })
+  public PaymentStatus!: string;
 
-  @prop({ type: String, enum: AllPaymentType, required: true })
-  public PaymentType!: AllPaymentType;
+  @prop({ type: String,  enum: ['upi','netbanking','card','cash'], required: false })
+  public PaymentType!: string;
 
   @prop({ type: String })
   public SpecialInstruction?: string;
@@ -65,8 +65,8 @@ export class Order {
   @prop({ type: Boolean,default:false })
   public isCurrentOrder!: boolean;
 
-  @prop({ type: Boolean,default:true })
-  public Status!: boolean;
+  @prop({ type: String,  enum: ['Active','Inactive'], required: false })
+  public Status!: string;
 
   @prop({ ref: () => Delivery })
   public Deliveries!: Ref<Delivery>[];

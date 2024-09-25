@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import CouponModel from '../../models/coupons.model';
-import OrderModel, { AllPaymentStatus, AllPaymentType } from '../../models/order.model';
+import OrderModel from '../../models/order.model';
 import SubscriptionModel from '../../models/subscription.model';
 import { responseHandler } from '../../utils/send-response';
 import DeliveryModel from '../../models/delivery.model';
@@ -17,7 +17,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
       UserId,
       SubscriptionId,
       NetPrice,
-      Coupon,
+      Coupons,
       ManualDiscountPercentage,
       AmountReceived,
       BookingDate,
@@ -48,8 +48,8 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
 
     let validCoupon: any;
 
-    if (Coupon) {
-      validCoupon = await CouponModel.findById(Coupon);
+    if (Coupons) {
+      validCoupon = await CouponModel.findById(Coupons);
       if (!validCoupon) {
         return responseHandler.out(req, res, {
           status: false,
@@ -107,19 +107,18 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         });
       }
     }
-
     const amountDue = NetPrice - AmountReceived;
-
     const order = new OrderModel({
       UserId: UserId,
       SubscriptionId: SubscriptionId,
       NetPrice: NetPrice,
-      Coupons: Coupon,
+      Coupons: Coupons,
       ManualDiscountPercentage: ManualDiscountPercentage,
       AmountReceived: AmountReceived,
       AmountDue: amountDue,
       BookingDate: new Date(BookingDate),
       DeliveryStartDate: new Date(DeliveryStartDate),
+      PaymentDate: new Date(PaymentDate),
       PaymentStatus: PaymentStatus,
       PaymentType: PaymentType,
       SpecialInstruction: SpecialInstruction,
@@ -128,22 +127,16 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
       Status: Status,
     });
 
-    const isOrderCreated = await order.save();
-
-    if (isOrderCreated && Coupon) {
-      if (validCoupon.CouponVisibility === 'Public' || 'Admin') {
+    let isOrderCreated ;
+      isOrderCreated=await order.save(); // Save the order
+      console.log('Order successfully created:', isOrderCreated); // Log success message
+ 
+      if (isOrderCreated && Coupons) {
         validCoupon.UsedBy.push(UserId);
         await validCoupon.save();
-      }
-      if (validCoupon.CouponVisibility === 'Private') {
-        const userCoupon = validCoupon.AssignedTo.find((assigned) => assigned.Users.toString() === UserId.toString());
-        if (userCoupon) {
-          userCoupon.isUsed = true;
-          await validCoupon.save();
-        }
-      }
-      validCoupon.RevenueGenerated += NetPrice;
-      await validCoupon.save();
+      
+        validCoupon.RevenueGenerated = NetPrice+validCoupon?.RevenueGenerated;
+        await validCoupon.save();
     }
 
     if (isOrderCreated) {
@@ -682,3 +675,67 @@ export const getSingleOrderByUser = async (req: Request, res: Response) => {
 };
 
 
+
+
+// get delivery charge for order by userid
+export const getDeliveryChargeByUserId = async (req: Request, res: Response) => {
+  try {
+
+    const UserId = req.params.id;
+
+    if (!UserId) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'User ID is required',
+      });
+    }
+
+    const user=await UserModel.findById(UserId)
+
+    if (!user) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'User not found',
+      });
+    }
+
+
+    const isLocalityExist = await LocalityModel.findOne({ Pin: user?.Address?.ZipCode });
+
+    if (!isLocalityExist) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'Locality not found for this user.',
+      });
+    }
+    
+    // Now check if this locality exists in any Zone's Localities array
+    const isZoneExist = await ZoneModel.findOne({ Localities: isLocalityExist._id });
+    
+    if (!isZoneExist) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'No zone found with this locality.',
+      });
+    }
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: `Zone Delivery charge ${isZoneExist?.DeliveryCost}`,
+      data:  isZoneExist?.DeliveryCost ,
+
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: error.message,
+    });
+  }
+};

@@ -81,7 +81,7 @@ export class Coupon {
   public ReferredBy?: boolean;
 
   // Revenue Generated
-  @prop({ type: Number })
+  @prop({ type: Number,default:0 })
   public RevenueGenerated?: number;
 
   // Number of Times Used
