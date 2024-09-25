@@ -1606,66 +1606,75 @@ export const updateServiceableStatus = async (req: Request, res: Response) => {
 
 export const filterCities = async (req: Request, res: Response) => {
   try {
-      const filters = req.query;
-      const pipeline: any[] = [];
+    const filters = req.query;
+    const pipeline: any[] = [];
 
-      // Ensure query parameters are correctly passed
-      if (filters.CityName) {
-          pipeline.push({
-              $match: {
-                  CityName: { $regex: new RegExp(filters.CityName as string, 'i') },
-              },
-          });
-      }
+    // Ensure query parameters are correctly passed
+    if (filters.CityName) {
+      pipeline.push({
+        $match: {
+          CityName: { $regex: new RegExp(filters.CityName as string, 'i') },
+        },
+      });
+    }
 
-      if (filters.SortOrder) {
-          const sortOrder = parseInt(filters.SortOrder as string);
-          if (!isNaN(sortOrder)) {
-              pipeline.push({
-                  $match: {
-                      SortOrder: sortOrder,
-                  },
-              });
-          } else {
-              return res.status(400).json({
-                  status: false,
-                  message: 'Invalid SortOrder value',
-              });
-          }
-      }
-
-      const currentPage = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) ||  await CityModel.countDocuments().exec();
-      const skip = (currentPage - 1) * limit;
-      pipeline.push({ $skip: skip });
-      pipeline.push({ $limit: limit });
-
-      const cities = await CityModel.aggregate(pipeline);
-
-      const total = await CityModel.countDocuments();
-      const totalPages = Math.ceil(total / limit);
-
-      res.status(200).json({
-          status: true,
-          message: 'Cities retrieved successfully',
-          data: {
-              total,
-              currentPage,
-              totalPages,
-              cities,
+    if (filters.SortOrder) {
+      const sortOrder = parseInt(filters.SortOrder as string);
+      if (!isNaN(sortOrder)) {
+        pipeline.push({
+          $match: {
+            SortOrder: sortOrder,
           },
-      });
-  } catch (error) {
-      console.error("Error in filterCities:", error);
-      res.status(500).json({
+        });
+      } else {
+        return res.status(400).json({
           status: false,
-          message: 'Internal Server Error',
-          data: error.message,
-      });
+          message: 'Invalid SortOrder value',
+        });
+      }
+    }
+
+    // Exclude the 'ZoneIncluded' and 'RouteIncluded' fields
+    pipeline.push({
+      $project: {
+        ZoneIncluded: 0, // Excludes ZoneIncluded field
+        RouteIncluded: 0, // Optionally exclude RouteIncluded field as well
+      },
+    });
+
+    const currentPage = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || await CityModel.countDocuments().exec();
+    const skip = (currentPage - 1) * limit;
+
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    const cities = await CityModel.aggregate(pipeline);
+
+    const total = await CityModel.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).json({
+      status: true,
+      message: 'Cities retrieved successfully',
+      data: {
+        total,
+        currentPage,
+        totalPages,
+        cities,
+      },
+    });
+  } catch (error) {
+    console.error("Error in filterCities:", error);
+    res.status(500).json({
+      status: false,
+      message: 'Internal Server Error',
+      data: error.message,
+    });
   }
 };
 
-export const searchZones = async (req: Request, res: Response) => {
+export const searchZonesInCreation = async (req: Request, res: Response) => {
   try {
       const { CityId, ZoneName, page, limit } = req.query;
 
