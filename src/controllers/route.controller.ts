@@ -646,13 +646,13 @@ export const getAllZones = async (req: Request, res: Response) => {
       const skip = (currentPage - 1) * limit;
 
       // Fetch all zones with pagination and populate relevant fields
-      const zones = await ZoneModel.find()
-          .skip(skip)
-          .limit(limit)
-          .populate('CreatedBy', 'Email')  // Populate CreatedBy with Email
-          .populate('UpdatedBy', 'Email')  // Populate UpdatedBy with Email
-          .populate('Localities', 'LocalityName')  // Populate Localities with LocalityName
-          .exec();
+     const zones = await ZoneModel.find({}, '-Localities')  // Exclude Localities field
+  .skip(skip)  // Apply pagination
+  .limit(limit)  // Set limit for pagination
+  .populate('CreatedBy', 'Email')  // Populate CreatedBy with Email
+  .populate('UpdatedBy', 'Email')  // Populate UpdatedBy with Email
+  .exec();
+
 
       // Get all city names that include the zones found
       const cityIds = zones.map(zone => zone._id);
