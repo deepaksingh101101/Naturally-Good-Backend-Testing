@@ -1,12 +1,13 @@
 import { Router, Request, Response } from "express";
 import { createTask, deleteTask, getTaskById, getTasks, updateTask } from "../controllers/task.controller";
-import { createCity, createLocality, createRoute, createVehicle, createZone, deleteVehicle, filterCities, getAllCity, getAllLocalities, getAllRoutes, getAllVehicles, getAllZones, getCity, getLocalityById, getRouteById, getVehicleById, getZoneById, searchZonesInCreation, toggleRouteStatus, updateCity, updateLocality, updateLocalityServiceable, updateRoute, updateServiceableStatus, updateVehicle, updateVehicleStatus, updateZone, updateZoneServiceable } from "../controllers/route.controller";
+import { createCity, createLocality, createRoute, createVehicle, createZone, deleteVehicle, filterCities, filterVehicle, filterZone, getAllCity, getAllLocalities, getAllRoutes, getAllVehicles, getAllZones, getCity, getLocalityById, getRouteById, getVehicleById, getZoneById, searchZonesInCreation, toggleRouteStatus, updateCity, updateLocality, updateLocalityServiceable, updateRoute, updateServiceableStatus, updateVehicle, updateVehicleStatus, updateZone, updateZoneServiceable } from "../controllers/route.controller";
 import { checkPermissions } from "../middleware/checkPermission";
 
 
 const router = Router();
 
 router.get('/vehicles',checkPermissions('View Route'), getAllVehicles);
+router.get('/vehicle/filter',checkPermissions('View Route'), filterVehicle);
 router.get('/vehicle/:id',checkPermissions('View Route'), getVehicleById);
 router.post('/vehicle/',checkPermissions('Create Route'), createVehicle);
 router.put('/vehicle/:id',checkPermissions('Edit Route'), updateVehicle);
@@ -22,6 +23,8 @@ router.put('/locality/toggle/:id',checkPermissions('Toggle Route'), updateLocali
 
 router.get('/zones',checkPermissions('View Route'), getAllZones);
 router.get('/zone/filter',checkPermissions('View Route'), searchZonesInCreation);
+router.get('/zone/route/filter',checkPermissions('View Route'), filterZone);
+
 router.get('/zone/:id',checkPermissions('View Route'), getZoneById);
 router.post('/zone',checkPermissions('Create Route'), createZone);
 router.put('/zone/:id',checkPermissions('Edit Route'), updateZone);

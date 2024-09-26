@@ -998,8 +998,12 @@ export const createRoute = async (req: Request, res: Response) => {
 
         // Check if the route name already exists (case-insensitive)
         const existingRoute = await RouteModel.findOne({
-            RouteName: { $regex: new RegExp(`^${RouteName}$`, 'i') }
-        });
+          RouteName: { 
+              $regex: new RegExp(`^${RouteName.trim()}$`, 'i') // Trim and use case-insensitive regex
+          }
+      });
+
+      
 
         if (existingRoute) {
             return responseHandler.out(req, res, {
@@ -1798,3 +1802,104 @@ export const searchZonesInCreation = async (req: Request, res: Response) => {
   }
 };
 
+
+export const filterVehicle = async (req: Request, res: Response) => {
+  try {
+    const filters = req.query;
+    const pipeline: any[] = [];
+
+    console.log(filters.VehicleName)
+    // Ensure query parameters are correctly passed
+    if (filters.VehicleName) {
+      pipeline.push({
+        $match: {
+          VehicleName: { $regex: new RegExp(filters.VehicleName as string, 'i') },
+          Status:true,
+        },
+      });
+    }
+    if (filters.Classification) {
+      pipeline.push({
+        $match: {
+          Classification: { $regex: new RegExp(filters.Classification as string, 'i') },
+          Status:true,
+        },
+      });
+    }
+
+    const currentPage = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || await VehicleModel.countDocuments().exec();
+    const skip = (currentPage - 1) * limit;
+
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    const vehicles = await VehicleModel.aggregate(pipeline);
+
+    const total = await VehicleModel.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).json({
+      status: true,
+      message: 'Vehicle retrieved successfully',
+      data: {
+        total,
+        currentPage,
+        totalPages,
+        vehicles,
+      },
+    });
+  } catch (error) {
+    console.error("Error in filterCities:", error);
+    res.status(500).json({
+      status: false,
+      message: 'Internal Server Error',
+      data: error.message,
+    });
+  }
+};
+
+export const filterZone = async (req: Request, res: Response) => {
+  try {
+    const filters = req.query;
+    const pipeline: any[] = [];
+    // Ensure query parameters are correctly passed
+    if (filters.ZoneName) {
+      pipeline.push({
+        $match: {
+          ZoneName: { $regex: new RegExp(filters.ZoneName as string, 'i') },
+          Serviceable:true,
+        },
+      });
+    }
+ 
+    const currentPage = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || await VehicleModel.countDocuments().exec();
+    const skip = (currentPage - 1) * limit;
+
+    pipeline.push({ $skip: skip });
+    pipeline.push({ $limit: limit });
+
+    const zones = await ZoneModel.aggregate(pipeline);
+
+    const total = await ZoneModel.countDocuments();
+    const totalPages = Math.ceil(total / limit);
+
+    res.status(200).json({
+      status: true,
+      message: 'Zone retrieved successfully',
+      data: {
+        total,
+        currentPage,
+        totalPages,
+        zones,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: 'Internal Server Error',
+      data: error.message,
+    });
+  }
+};
