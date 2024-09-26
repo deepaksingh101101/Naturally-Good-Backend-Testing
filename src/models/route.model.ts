@@ -114,6 +114,15 @@ class ZoneInfo {
   public DeliverySequence!: number;
 }
 // Route Model
+enum DaysOfWeek {
+  Monday = 'Monday',
+  Tuesday = 'Tuesday',
+  Wednesday = 'Wednesday',
+  Thursday = 'Thursday',
+  Friday = 'Friday',
+  Saturday = 'Saturday',
+  Sunday = 'Sunday',
+}
 @pre<Route>('save', function () {
   this.UpdatedAt = new Date();
 })
@@ -128,7 +137,9 @@ export class Route {
 @prop({ type: () => [ZoneInfo], default: [] })
 public ZonesIncluded!: ZoneInfo[];
 
-  
+@prop({ type: () => String, enum: DaysOfWeek, default: [] })
+public Days!: DaysOfWeek[];
+
   @prop({ ref: () => Vehicle })
   public VehicleTagged?: Ref<Vehicle[]>;
 
