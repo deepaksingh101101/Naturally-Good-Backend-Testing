@@ -40,7 +40,7 @@ export class Delivery {
   @prop({ ref: () => User, required: true })
   public UserId!: Ref<User>;
 
-  @prop({ type: Date, required: true })
+  @prop({ type: Date, required: true,index: true })
   public DeliveryDate!: Date;
 
   @prop({ type: String, required: false })

@@ -274,29 +274,44 @@ export const getAllOrdersByAdmin = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (currentPage - 1) * limit;
 
-    const orders = await OrderModel.find()
-      .skip(skip)
-      .limit(limit)
-      .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
-      .populate({
-        path: 'SubscriptionId',
-        select: 'SubscriptionTypeId FrequencyId', // Select the fields you want
-        populate: [
-          {
-            path: 'SubscriptionTypeId',
-            select: 'Name', // Populate SubscriptionType name
-          },
-          {
-            path: 'FrequencyId',
-            select: 'Name', // Populate Frequency name
-          },
-        ],
-      })
-      .populate('Coupons', 'Code DiscountPercentage DiscountPrice DiscountType Status') // Populate coupon details if applicable
-      .populate('Deliveries') // Populate delivery details if applicable
-      .populate('CreatedBy', 'FirstName LastName Email Phone')
-      .populate('UpdatedBy', 'FirstName LastName Email Phone');
+    const now = new Date(); // Current date
 
+    const orders = await OrderModel.find()
+        .skip(skip)
+        .limit(limit)
+        .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
+        .populate({
+            path: 'SubscriptionId',
+            select: 'SubscriptionTypeId FrequencyId Bag',
+            populate: [
+                {
+                    path: 'SubscriptionTypeId',
+                    select: 'Name',
+                },
+                {
+                    path: 'FrequencyId',
+                    select: 'Name',
+                },
+                {
+                    path: 'Bag',
+                    select: 'BagName BagMaxWeight',
+                },
+            ],
+        })
+        .populate('Coupons', 'Code DiscountPercentage DiscountPrice DiscountType Status') // Populate coupon details
+        .populate({
+            path: 'Deliveries',
+            match: { DeliveryDate: { $gte: now } }, // Match upcoming deliveries
+            options: { limit: 4 }, // Limit to the next 4 upcoming deliveries
+            select: 'Name AssignedRoute DeliveryDate Status DeliveryTime', // Select the fields you want
+            populate: {
+                path: 'AssignedRoute',
+                select: 'RouteName',
+            },
+        })
+        .populate('CreatedBy', 'FirstName LastName Email Phone')
+        .populate('UpdatedBy', 'FirstName LastName Email Phone');
+    
     const total = await OrderModel.countDocuments();
     const totalPages = Math.ceil(total / limit);
 
