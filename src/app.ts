@@ -19,6 +19,7 @@ import bagRoutes from "./routes/bag.routes";
 import routeRoutes from "./routes/route.routes";
 import planRoutes from "./routes/plans.routes";
 import dropDownRoutes from "./routes/dropdown.routes";
+import deliveryRoutes from "./routes/delivery.routes";
 import { setupSwagger } from "./swaggerConfig";
 
 dotenv.config();
@@ -63,6 +64,7 @@ export class Application {
     this.app.use("/coupons", couponsRoutes);
     this.app.use("/subscription", subscriptionRoutes);
     this.app.use("/order", orderRoutes);
+    this.app.use("/delivery", deliveryRoutes);
 
 
 

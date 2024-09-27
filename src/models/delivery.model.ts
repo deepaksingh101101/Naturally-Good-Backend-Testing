@@ -76,6 +76,10 @@ export class Delivery {
   @prop({ ref: () => Employee })
   public UpdatedBy!: Ref<Employee>;
 
+  @prop({ type: String, required: false })
+  public SpecialInstruction!: string;
+
+
 }
 
 const DeliveryModel = getModelForClass(Delivery);

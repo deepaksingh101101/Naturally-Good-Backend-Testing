@@ -230,6 +230,8 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
             Status: 'pending',
             Bag: [{ BagID: bagId, BagWeight: 0 }],
             AssignedRoute: route._id,
+            SpecialInstruction: SpecialInstruction,
+
           });
           return await delivery.save();
         });
@@ -277,41 +279,47 @@ export const getAllOrdersByAdmin = async (req: Request, res: Response) => {
     const now = new Date(); // Current date
 
     const orders = await OrderModel.find()
-        .skip(skip)
-        .limit(limit)
-        .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
-        .populate({
-            path: 'SubscriptionId',
-            select: 'SubscriptionTypeId FrequencyId Bag',
-            populate: [
-                {
-                    path: 'SubscriptionTypeId',
-                    select: 'Name',
-                },
-                {
-                    path: 'FrequencyId',
-                    select: 'Name',
-                },
-                {
-                    path: 'Bag',
-                    select: 'BagName BagMaxWeight',
-                },
-            ],
-        })
-        .populate('Coupons', 'Code DiscountPercentage DiscountPrice DiscountType Status') // Populate coupon details
-        .populate({
-            path: 'Deliveries',
-            match: { DeliveryDate: { $gte: now } }, // Match upcoming deliveries
-            options: { limit: 4 }, // Limit to the next 4 upcoming deliveries
-            select: 'Name AssignedRoute DeliveryDate Status DeliveryTime', // Select the fields you want
-            populate: {
-                path: 'AssignedRoute',
-                select: 'RouteName',
-            },
-        })
-        .populate('CreatedBy', 'FirstName LastName Email Phone')
-        .populate('UpdatedBy', 'FirstName LastName Email Phone');
-    
+      .skip(skip)
+      .limit(limit)
+      .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
+      .populate({
+        path: 'SubscriptionId',
+        select: 'SubscriptionTypeId FrequencyId Bag',
+        populate: [
+          {
+            path: 'SubscriptionTypeId',
+            select: 'Name',
+          },
+          {
+            path: 'FrequencyId',
+            select: 'Name',
+          },
+          {
+            path: 'Bag',
+            select: 'BagName BagMaxWeight',
+          },
+        ],
+      })
+      .populate('Coupons', 'Code DiscountPercentage DiscountPrice DiscountType Status') // Populate coupon details
+      .populate({
+        path: 'Deliveries',
+        match: { DeliveryDate: { $gte: now } }, // Match upcoming deliveries
+        select: 'Name AssignedRoute DeliveryDate Status DeliveryTime', // Select the fields you want
+        populate: {
+          path: 'AssignedRoute',
+          select: 'RouteName',
+        },
+      })
+      .populate('CreatedBy', 'FirstName LastName Email Phone')
+      .populate('UpdatedBy', 'FirstName LastName Email Phone');
+
+    // Limit the number of deliveries to 4 after populating
+    orders.forEach(order => {
+      if (order.Deliveries) {
+        order.Deliveries = order.Deliveries.slice(0, 4); // Limit to 4 deliveries
+      }
+    });
+
     const total = await OrderModel.countDocuments();
     const totalPages = Math.ceil(total / limit);
 
@@ -322,7 +330,7 @@ export const getAllOrdersByAdmin = async (req: Request, res: Response) => {
       status: true,
       statusCode: 200,
       message: 'Orders retrieved successfully',
-      data:{
+      data: {
         total,
         currentPage,
         totalPages,
@@ -340,6 +348,7 @@ export const getAllOrdersByAdmin = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 // Toggle status of order by admin
 export const updateOrderStatus = async (req: Request, res: Response) => {
