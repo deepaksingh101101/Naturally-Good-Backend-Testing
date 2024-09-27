@@ -68,7 +68,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         if (!isCouponAssignedToUser) {
           return responseHandler.out(req, res, {
             status: false,
-            statusCode: 400,
+            statusCode: 403,
             message: `Coupon ${validCoupon.Code} is not assigned or already used by the user`
           });
         }
@@ -76,7 +76,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         if (currentDate < validCoupon.StartDate || currentDate > validCoupon.EndDate) {
           return responseHandler.out(req, res, {
             status: false,
-            statusCode: 400,
+            statusCode: 403,
             message: `Coupon ${validCoupon.Code} is expired`
           });
         }
@@ -85,7 +85,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         if (isCouponUsedByUser) {
           return responseHandler.out(req, res, {
             status: false,
-            statusCode: 400,
+            statusCode: 403,
             message: `Coupon ${validCoupon.Code} is already used by the user`
           });
         }
@@ -93,7 +93,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
         if (currentDate < validCoupon.StartDate || currentDate > validCoupon.EndDate) {
           return responseHandler.out(req, res, {
             status: false,
-            statusCode: 400,
+            statusCode: 403,
             message: `Coupon ${validCoupon.Code} is expired`
           });
         }
@@ -102,7 +102,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
       if (validCoupon.CouponType === 'Subscription' && !validCoupon.Subscriptions.includes(SubscriptionId)) {
         return responseHandler.out(req, res, {
           status: false,
-          statusCode: 400,
+          statusCode: 403,
           message: `Coupon ${validCoupon.Code} is not valid for the given subscription`
         });
       }
@@ -129,7 +129,6 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
 
     let isOrderCreated ;
       isOrderCreated=await order.save(); // Save the order
-      console.log('Order successfully created:', isOrderCreated); // Log success message
  
       if (isOrderCreated && Coupons) {
         validCoupon.UsedBy.push(UserId);
@@ -237,6 +236,13 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
 
         const deliveries = await Promise.all(deliveryPromises);
 
+        // Extract delivery IDs from the saved deliveries
+const deliveryIds = deliveries.map((delivery) => delivery._id);
+
+// Update the order with the list of delivery IDs
+await OrderModel.findByIdAndUpdate(order._id, {
+  $set: { Deliveries: deliveryIds },
+});
         return responseHandler.out(req, res, {
           status: true,
           statusCode: 201,

@@ -86,7 +86,7 @@ export class Zone {
   @prop({ type: Number, required: true})
   public DeliveryCost?: number;
 
-  @prop(  { ref: () => Locality , required:true} )
+  @prop(  { ref: () => Locality , required:false} )
   public Localities!: Ref<Locality>[];
 
   @prop({ type: Date, default: Date.now })
@@ -141,7 +141,8 @@ public ZonesIncluded!: ZoneInfo[];
 public Days!: DaysOfWeek[];
 
   @prop({ ref: () => Vehicle })
-  public VehicleTagged?: Ref<Vehicle[]>;
+  public VehicleTagged?: Ref<Vehicle>[];
+
 
   @prop({ type: Date, default: Date.now })
   public CreatedAt!: Date;

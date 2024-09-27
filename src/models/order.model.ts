@@ -62,8 +62,8 @@ export class Order {
   @prop({ type: String })
   public SpecialInstruction?: string;
 
-  @prop({ type: Boolean,default:false })
-  public isCurrentOrder!: boolean;
+  @prop({ type: Boolean,default:true })
+  public IsCurrentOrder!: boolean;
 
   @prop({ type: String,  enum: ['Active','Inactive'], required: false })
   public Status!: string;

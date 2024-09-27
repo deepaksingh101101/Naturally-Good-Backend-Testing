@@ -288,6 +288,8 @@ export const updateVehicleStatus = async (req: Request, res: Response) => {
 
 export const createLocality = async (req: Request, res: Response) => {
   const LoggedInId = req['decodedToken'].id;
+  const localityName = req.body.LocalityName.trim(); // Trim the input
+  const pin = req.body.Pin;
 
   if (!LoggedInId) {
     return responseHandler.out(req, res, {
@@ -297,13 +299,20 @@ export const createLocality = async (req: Request, res: Response) => {
     });
   }
 
+
   try {
     // Check if a locality with the same name and pin exists globally (case insensitive)
-    const localityName = req.body.LocalityName.trim(); // Trim the input
     const existingLocality = await LocalityModel.findOne({
-      LocalityName: { $regex: new RegExp(`^${localityName}$`, 'i') },
-      Pin: req.body.Pin,
+      $or: [
+        { LocalityName: { $regex: new RegExp(`^${localityName}$`, 'i') } },
+        { Pin: pin },
+      ],
     });
+    
+    // If a match is found, return an error
+    if (existingLocality) {
+      return res.status(400).json({ error: 'Locality name or pin already exists.' });
+    }
 
     if (existingLocality) {
       return responseHandler.out(req, res, {
@@ -350,7 +359,8 @@ export const createLocality = async (req: Request, res: Response) => {
     zone.Localities.push(newLocality._id);
 
     // Save the updated Zone
-    await zone.save();
+  const newZone=  await zone.save();
+  console.log(newZone)
 
     return responseHandler.out(req, res, {
       status: true,
@@ -615,7 +625,7 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
     }
   
     try {
-      const { ZoneName, City } = req.body;
+      const { ZoneName, City,Serviceable,DeliveryCost } = req.body;
   
       // Check if a zone with the same name exists (case insensitive)
       const trimmedZoneName = ZoneName.trim();
@@ -642,7 +652,7 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
       }
   
       // Check if the zone is already included in the city
-      const zoneExistsInCity = city.ZoneIncluded.some(
+      const zoneExistsInCity = city?.ZoneIncluded?.some(
         (zoneId) => zoneId.toString() === existingZone?._id.toString()
       );
   
@@ -659,6 +669,8 @@ export const updateLocalityServiceable = async (req: Request, res: Response) => 
         ZoneName: trimmedZoneName,
         CreatedBy: LoggedInId,
         UpdatedBy: LoggedInId,
+        Serviceable: Serviceable,
+        DeliveryCost:DeliveryCost
       });
   
       await newZone.save();
@@ -994,7 +1006,7 @@ export const createRoute = async (req: Request, res: Response) => {
     }
 
     try {
-        const { RouteName, ZonesIncluded } = req.body;  // Expecting Zones as an array of { ZoneId, DeliverySequence }
+        const { RouteName, ZonesIncluded,Days,VehicleTagged } = req.body;  // Expecting Zones as an array of { ZoneId, DeliverySequence }
 
         // Check if the route name already exists (case-insensitive)
         const existingRoute = await RouteModel.findOne({
@@ -1031,8 +1043,11 @@ export const createRoute = async (req: Request, res: Response) => {
             ZonesIncluded: ZonesIncluded,
             CreatedBy: LoggedInId,
             UpdatedBy: LoggedInId,
+            Days:Days,
+            VehicleTagged
         });
 
+        console.log(newRoute)
 
         await newRoute.save();
 
@@ -1040,6 +1055,7 @@ export const createRoute = async (req: Request, res: Response) => {
             status: true,
             statusCode: 201,
             message: "Route created successfully",
+            
         });
     } catch (error) {
         return responseHandler.out(req, res, {
@@ -1269,7 +1285,7 @@ export const getAllRoutes = async (req: Request, res: Response) => {
         const routes = await RouteModel.find()
             .skip(skip)
             .limit(limit)
-            .populate('VehicleTagged', 'VehicleName')  // Adjust field as needed
+            .populate('VehicleTagged')  // Adjust field as needed
             .populate('ZonesIncluded', 'ZoneName DeliverySequence')  // Adjust fields as needed
             .populate('CreatedBy', 'FirstName LastName Email')  // Adjust fields as needed
             .populate('UpdatedBy', 'FirstName LastName Email')  // Adjust fields as needed
