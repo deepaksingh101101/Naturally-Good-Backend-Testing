@@ -8,6 +8,9 @@ import DeliveryModel from '../../models/delivery.model';
 export const getDeliveryByDate = async (req: Request, res: Response) => {
   try {
     const { StartDate, EndDate } = req.body;
+    const currentPage = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const skip = (currentPage - 1) * limit;
 
     // Check if StartDate is provided
     if (!StartDate) {
@@ -48,6 +51,8 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
 
     // Find deliveries based on the constructed query
     const deliveries = await DeliveryModel.find(query)
+      .skip(skip)
+      .limit(limit)
       .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
       .populate('AssignedRoute', 'RouteName') // Populate assigned route details
       .populate({
@@ -57,7 +62,7 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
       .exec();
 
     // Group deliveries by UserId and format response
-    const deliveriesGroupedByUser = deliveries.reduce((acc: any, delivery:any) => {
+    const deliveriesGroupedByUser = deliveries.reduce((acc: any, delivery: any) => {
       // Convert UserId to string before using it as a key
       const userId = delivery.UserId._id.toString(); // Convert ObjectId to string
 
@@ -97,12 +102,27 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
     // Format response as an array of objects, each with UserId and Deliveries
     const formattedResponse = Object.values(deliveriesGroupedByUser);
 
+    // Get total count of documents matching the query
+    const total = await DeliveryModel.countDocuments(query); // Count based on query
+    const totalPages = Math.ceil(total / limit);
+
+    // Determine previous and next page numbers
+    const prevPage = currentPage > 1 ? currentPage - 1 : null;
+    const nextPage = currentPage < totalPages ? currentPage + 1 : null;
+
     // Return the formatted deliveries
     return responseHandler.out(req, res, {
       status: true,
       statusCode: 200,
       message: 'Deliveries fetched successfully',
-      data: formattedResponse,
+      data: {
+        total,
+        currentPage,
+        totalPages,
+        prevPage,
+        nextPage,
+        formattedResponse,
+      },
     });
   } catch (error) {
     return responseHandler.out(req, res, {
@@ -113,5 +133,6 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
     });
   }
 };
+
 
 
