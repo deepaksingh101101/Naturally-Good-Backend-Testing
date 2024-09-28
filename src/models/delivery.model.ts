@@ -1,9 +1,8 @@
 import { getModelForClass, ModelOptions, pre, prop, Ref } from '@typegoose/typegoose';
 import { Bag } from './bag.model';
-import { Product } from './product.model';
+import ProductModel, { Product } from './product.model';
 import { Route, Vehicle } from './route.model';
 import { Employee } from './employee.model';
-import { Complaints } from './complaints.model';
 import { User } from './user.model';
 
 export enum DeliveryStatus {
@@ -18,6 +17,10 @@ class BagDetails {
 
   @prop({ type: Number, required: true })
   public BagWeight!: number;
+
+  @prop({ ref: () => Product, required: true })
+  public Items!: Ref<Product>[];
+  
 }
 
 class AddonDetails {

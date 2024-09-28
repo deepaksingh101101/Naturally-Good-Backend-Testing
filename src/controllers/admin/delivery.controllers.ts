@@ -121,7 +121,7 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
         totalPages,
         prevPage,
         nextPage,
-        formattedResponse,
+        deliverys:formattedResponse,
       },
     });
   } catch (error) {
@@ -133,6 +133,93 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
     });
   }
 };
+
+
+export const getDeliveryDetails = async (req: Request, res: Response) => {
+  try {
+    // Get UserId and DeliveryDate from query parameters
+    const { UserId, DeliveryDate } = req.query;
+
+
+    // Check if UserId or DeliveryDate is missing
+    if (!UserId || !DeliveryDate) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Missing UserId or DeliveryDate in the request query parameters.',
+      });
+    }
+
+    // Convert DeliveryDate to a Date object
+    const deliveryDateObject = new Date(DeliveryDate as string);
+
+    // Validate DeliveryDate
+    if (isNaN(deliveryDateObject.getTime())) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Invalid DeliveryDate format. Please provide a valid date.',
+      });
+    }
+
+    // Convert the date to ISO string in the format of YYYY-MM-DD without time
+    const dateStart = new Date(
+      deliveryDateObject.getFullYear(),
+      deliveryDateObject.getMonth(),
+      deliveryDateObject.getDate()
+    );
+
+    const dateEnd = new Date(
+      deliveryDateObject.getFullYear(),
+      deliveryDateObject.getMonth(),
+      deliveryDateObject.getDate() + 1
+    );
+
+    // Find orders by UserId and populate necessary fields
+    const allOrders = await OrderModel.find({ UserId: UserId })
+      .populate('UserId')
+      .populate('SubscriptionId')
+      .populate({
+        path: 'Deliveries',
+        match: { DeliveryDate: { $gte: dateStart, $lt: dateEnd } }, // Match the date range
+        select: 'DeliveryDate DeliveryTime',
+        populate: [
+          { path: 'AssignedRoute' },
+          {
+            path: 'Bag.BagID',
+            select: 'bagName bagType AllowedItems', // Select fields to return from BagID
+            populate: {
+              path: 'AllowedItems',
+              populate: [
+                { path: 'Type', select: 'Name SortOrder' }, // Populate Type field
+                { path: 'Season', select: 'Name' }, // Populate Season field
+                { path: 'Roster', select: 'Name SortOrder' } // Populate Roster field
+              ]
+            },
+          },
+        ],
+      })
+      .exec();
+
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'Order retrieved successfully',
+      data: allOrders,
+    });
+  } catch (error) {
+    console.error('Error in getDeliveryDetails:', error);
+
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: error.message,
+    });
+  }
+};
+
 
 
 
