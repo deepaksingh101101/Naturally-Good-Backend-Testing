@@ -228,7 +228,7 @@ export const createOrderByAdmin = async (req: Request, res: Response) => {
             UserId,
             DeliveryDate: date,
             Status: 'pending',
-            Bag: [{ BagID: bagId, BagWeight: 0 }],
+            Bag: { BagID: bagId, BagWeight: 0 },
             AssignedRoute: route._id,
             SpecialInstruction: SpecialInstruction,
 

@@ -26,84 +26,131 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
 
     // Handle case where only StartDate is provided
     if (StartDate && !EndDate) {
-      const start = new Date(StartDate);
-      start.setUTCHours(0, 0, 0, 0); // Start of the day
-      const end = new Date(StartDate);
-      end.setUTCHours(23, 59, 59, 999); // End of the day
+      try {
+        const start = new Date(StartDate);
+        start.setUTCHours(0, 0, 0, 0); // Start of the day
+        const end = new Date(StartDate);
+        end.setUTCHours(23, 59, 59, 999); // End of the day
 
-      query.DeliveryDate = {
-        $gte: start,
-        $lte: end,
-      };
+        query.DeliveryDate = {
+          $gte: start,
+          $lte: end,
+        };
+      } catch (error) {
+        return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 400,
+          message: 'Invalid StartDate format.',
+          data: error.message,
+        });
+      }
     }
 
     // Handle case where both StartDate and EndDate are provided
     if (StartDate && EndDate) {
-      const start = new Date(StartDate);
-      const end = new Date(EndDate);
-      end.setUTCHours(23, 59, 59, 999); // End of the end day
+      try {
+        const start = new Date(StartDate);
+        const end = new Date(EndDate);
+        end.setUTCHours(23, 59, 59, 999); // End of the end day
 
-      query.DeliveryDate = {
-        $gte: start,
-        $lte: end,
-      };
+        query.DeliveryDate = {
+          $gte: start,
+          $lte: end,
+        };
+      } catch (error) {
+        return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 400,
+          message: 'Invalid date format for StartDate or EndDate.',
+          data: error.message,
+        });
+      }
     }
 
-    // Find deliveries based on the constructed query
-    const deliveries = await DeliveryModel.find(query)
-      .skip(skip)
-      .limit(limit)
-      .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
-      .populate('AssignedRoute', 'RouteName') // Populate assigned route details
-      .populate({
-        path: 'Bag.BagID', // Populate BagID within Bag array
-        select: 'BagName BagMaxWeight', // Select only specific fields of BagID
-      })
-      .exec();
-
+    // Fetch deliveries based on query
+    let deliveries;
+    try {
+      deliveries = await DeliveryModel.find(query)
+        .skip(skip)
+        .limit(limit)
+        .populate('UserId', 'FirstName LastName Email Phone') // Populate user details
+        .populate({
+          path: 'AssignedRoute',
+          select: 'RouteName', // Specify the fields you want to populate
+        })
+        .populate({
+          path: 'Bag.BagID', // Populate BagID within Bag array
+          select: 'BagName BagMaxWeight', // Select only specific fields of BagID
+        })
+        .exec();
+    } catch (error) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 500,
+        message: 'Error fetching deliveries from the database.',
+        data: error.message,
+      });
+    }
     // Group deliveries by UserId and format response
-    const deliveriesGroupedByUser = deliveries.reduce((acc: any, delivery: any) => {
-      // Convert UserId to string before using it as a key
-      const userId = delivery.UserId._id.toString(); // Convert ObjectId to string
+    let deliveriesGroupedByUser;
+    try {
+      deliveriesGroupedByUser = deliveries.reduce((acc: any, delivery: any) => {
+        // Convert UserId to string before using it as a key
+        const userId = delivery.UserId._id.toString(); // Convert ObjectId to string
 
-      // Use type assertion to tell TypeScript the expected type after population
-      const assignedRoute = delivery.AssignedRoute as any | null; // Assume AssignedRoute is of type Route
+        // Use type assertion to tell TypeScript the expected type after population
+        const assignedRoute = delivery.AssignedRoute as any | null; // Assume AssignedRoute is of type Route
 
-      // Format the bag details
-      const bagDetails = delivery.Bag.map((bag) => ({
-        BagID: bag.BagID,
-        BagWeight: bag.BagWeight,
-        _id: bag._id,
-      }));
+        // Format the bag details
+        const bagDetails = delivery.Bag;
 
-      // Format the delivery information
-      const deliveryInfo = {
-        DeliveryDate: delivery.DeliveryDate.toISOString().split('T')[0], // Format date as YYYY-MM-DD
-        DeliveryTimeSlot: delivery.DeliveryTime || 'N/A', // Add time slot if available
-        DeliveryStatus: delivery.Status,
-        AssignedRoutes: assignedRoute ? assignedRoute.RouteName : 'N/A', // Use route name if available
-        Bag: bagDetails, // Add the bag details array
-        SpecialInstruction: delivery.SpecialInstruction, // Add special instruction if available
-      };
-
-      // If the userId is not in the accumulator, create an array for the user
-      if (!acc[userId]) {
-        acc[userId] = {
-          UserId: delivery.UserId,
-          Deliveries: [],
+        // Format the delivery information
+        const deliveryInfo = {
+          DeliveryDate: delivery.DeliveryDate.toISOString().split('T')[0], // Format date as YYYY-MM-DD
+          DeliveryTimeSlot: delivery.DeliveryTime || 'N/A', // Add time slot if available
+          DeliveryStatus: delivery.Status,
+          AssignedRoutes: assignedRoute ? assignedRoute : 'N/A', // Use route name if available
+          Bag: bagDetails, // Add the bag details array
+          SpecialInstruction: delivery.SpecialInstruction, // Add special instruction if available
         };
-      }
 
-      // Push the deliveryInfo object into the user's deliveries array
-      acc[userId].Deliveries.push(deliveryInfo);
-      return acc;
-    }, {});
+        // If the userId is not in the accumulator, create an array for the user
+        if (!acc[userId]) {
+          acc[userId] = {
+            UserId: delivery.UserId,
+            Deliveries: [],
+          };
+        }
+
+        // Push the deliveryInfo object into the user's deliveries array
+        acc[userId].Deliveries.push(deliveryInfo);
+        return acc;
+      }, {});
+    } catch (error) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 500,
+        message: 'Error grouping deliveries by user.',
+        data: error.message,
+      });
+    }
 
     // Format response as an array of objects, each with UserId and Deliveries
     const formattedResponse = Object.values(deliveriesGroupedByUser);
 
     // Get total count of documents matching the query
-    const total = await DeliveryModel.countDocuments(query); // Count based on query
+    let total;
+    try {
+      total = await DeliveryModel.countDocuments(query); // Count based on query
+    } catch (error) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 500,
+        message: 'Error counting total documents.',
+        data: error.message,
+      });
+    }
+    
     const totalPages = Math.ceil(total / limit);
 
     // Determine previous and next page numbers
@@ -121,7 +168,7 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
         totalPages,
         prevPage,
         nextPage,
-        deliverys:formattedResponse,
+        deliverys: formattedResponse,
       },
     });
   } catch (error) {
@@ -135,11 +182,11 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
 };
 
 
+
 export const getDeliveryDetails = async (req: Request, res: Response) => {
   try {
     // Get UserId and DeliveryDate from query parameters
     const { UserId, DeliveryDate } = req.query;
-
 
     // Check if UserId or DeliveryDate is missing
     if (!UserId || !DeliveryDate) {
@@ -175,13 +222,14 @@ export const getDeliveryDetails = async (req: Request, res: Response) => {
       deliveryDateObject.getDate() + 1
     );
 
+
     // Find orders by UserId and populate necessary fields
     const allOrders = await OrderModel.find({ UserId: UserId })
       .populate('UserId')
       .populate('SubscriptionId')
       .populate({
         path: 'Deliveries',
-        match: { DeliveryDate: { $gte: dateStart, $lt: dateEnd } }, // Match the date range
+        match: { DeliveryDate: dateEnd}, // Match the date range
         select: 'DeliveryDate DeliveryTime',
         populate: [
           { path: 'AssignedRoute' },

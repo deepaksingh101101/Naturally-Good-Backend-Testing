@@ -18,10 +18,19 @@ class BagDetails {
   @prop({ type: Number, required: true })
   public BagWeight!: number;
 
+}
+
+
+class ProductDetails {
+
+  @prop({ type: Number, required: true })
+  public ItemWeight!: number;
+
   @prop({ ref: () => Product, required: true })
-  public Items!: Ref<Product>[];
+  public Item!: Ref<Product>;
   
 }
+
 
 class AddonDetails {
   @prop({ ref: () => Product, required: true })
@@ -55,10 +64,13 @@ export class Delivery {
   @prop({ ref: () => Route, required: false })
   public AssignedRoute!: Ref<Route>;
 
-  @prop({ type: () => [BagDetails], required: true })
-  public Bag!: BagDetails[];
+  @prop({ type: () => BagDetails, required: true })
+  public Bag!: BagDetails;
 
-  @prop({ type: () => [AddonDetails], required: true })
+  @prop({ type: () => [ProductDetails], required: false })
+  public Product!: ProductDetails[];
+
+  @prop({ type: () => [AddonDetails], required: false })
   public Addons!: AddonDetails[];
 
   @prop({ type: String })
