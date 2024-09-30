@@ -1006,7 +1006,7 @@ export const createRoute = async (req: Request, res: Response) => {
     }
 
     try {
-        const { RouteName, ZonesIncluded,Days,VehicleTagged } = req.body;  // Expecting Zones as an array of { ZoneId, DeliverySequence }
+        const { City,RouteName, ZonesIncluded,Days,VehicleTagged } = req.body;  // Expecting Zones as an array of { ZoneId, DeliverySequence }
 
         // Check if the route name already exists (case-insensitive)
         const existingRoute = await RouteModel.findOne({
@@ -1050,6 +1050,12 @@ export const createRoute = async (req: Request, res: Response) => {
         console.log(newRoute)
 
         await newRoute.save();
+
+        await CityModel.findByIdAndUpdate(
+          City,
+          { $addToSet: { RouteIncluded: newRoute._id } }, // Add only if the ID is not already present
+          { new: true }
+        );
 
         return responseHandler.out(req, res, {
             status: true,
@@ -1917,5 +1923,83 @@ export const filterZone = async (req: Request, res: Response) => {
       message: 'Internal Server Error',
       data: error.message,
     });
+  }
+};
+
+
+export const searchRouteInCreation = async (req: Request, res: Response) => {
+  try {
+      const { CityId, RouteName, page, limit } = req.query;
+
+      // Check if cityId is provided
+      if (!CityId) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 400,
+              message: 'City ID is required',
+          });
+      }
+
+      // Find city and populate zones
+      const city = await CityModel.findById(CityId).populate('RouteIncluded');
+
+      // Check if city exists
+      if (!city) {
+          return responseHandler.out(req, res, {
+              status: false,
+              statusCode: 404,
+              message: 'City not found',
+          });
+      }
+      console.log(city)
+
+      const routesFromCity = city.RouteIncluded?.map((route: any) => route._id) || [];
+
+      const pipeline: any[] = [
+          { $match: { _id: { $in: routesFromCity } } }  // Match only zones included in the city
+      ];
+
+      // Apply ZoneName filter if provided
+      if (RouteName) {
+          pipeline.push({
+              $match: {
+                  RouteName: { $regex: new RegExp(RouteName as string, 'i') },
+              },
+          });
+      }
+
+      const currentPage = parseInt(page as string) || 1;
+      const limitValue = parseInt(limit as string) || await RouteModel.countDocuments().exec();
+      const skip = (currentPage - 1) * limitValue;
+
+      pipeline.push({ $skip: skip });
+      pipeline.push({ $limit: limitValue });
+
+      const routes = await RouteModel.aggregate(pipeline);
+
+      const total = await RouteModel.countDocuments({ _id: { $in: routesFromCity } });
+      const totalPages = Math.ceil(total / limitValue);
+
+      // Respond with the result using responseHandler.out
+      return responseHandler.out(req, res, {
+          status: true,
+          statusCode: 200,
+          message: 'Route retrieved successfully',
+          data: {
+              total,
+              currentPage,
+              totalPages,
+              routes,
+          },
+      });
+  } catch (error) {
+      console.error("Error in search routes:", error);
+      // Use responseHandler.out to send the error
+      return responseHandler.out(req, res, {
+          status: false,
+          statusCode: 500,
+          message: 'Internal Server Error',
+          data: error.message,
+      });
   }
 };

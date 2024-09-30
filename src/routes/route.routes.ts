@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { createTask, deleteTask, getTaskById, getTasks, updateTask } from "../controllers/task.controller";
-import { createCity, createLocality, createRoute, createVehicle, createZone, deleteVehicle, filterCities, filterVehicle, filterZone, getAllCity, getAllLocalities, getAllRoutes, getAllVehicles, getAllZones, getCity, getLocalityById, getRouteById, getVehicleById, getZoneById, searchZonesInCreation, toggleRouteStatus, updateCity, updateLocality, updateLocalityServiceable, updateRoute, updateServiceableStatus, updateVehicle, updateVehicleStatus, updateZone, updateZoneServiceable } from "../controllers/route.controller";
+import { createCity, createLocality, createRoute, createVehicle, createZone, deleteVehicle, filterCities, filterVehicle, filterZone, getAllCity, getAllLocalities, getAllRoutes, getAllVehicles, getAllZones, getCity, getLocalityById, getRouteById, getVehicleById, getZoneById, searchRouteInCreation, searchZonesInCreation, toggleRouteStatus, updateCity, updateLocality, updateLocalityServiceable, updateRoute, updateServiceableStatus, updateVehicle, updateVehicleStatus, updateZone, updateZoneServiceable } from "../controllers/route.controller";
 import { checkPermissions } from "../middleware/checkPermission";
 
 
@@ -32,6 +32,7 @@ router.put('/zone/toggle/:id',checkPermissions('Toggle Route'), updateZoneServic
 
 
 router.get('/routes',checkPermissions('View Route'), getAllRoutes);
+router.get('/route/search',checkPermissions('View Route'), searchRouteInCreation);
 router.get('/route/:id',checkPermissions('View Route'), getRouteById);
 router.post('/route',checkPermissions('Create Route'), createRoute);
 router.put('/route/:id',checkPermissions('Edit Route'), updateRoute);

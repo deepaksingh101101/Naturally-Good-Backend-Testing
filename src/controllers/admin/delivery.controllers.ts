@@ -368,11 +368,32 @@ export const getDeliveryById = async (req: Request, res: Response) => {
       });
     }
 
+ // Find the order that contains the specified DeliveryId in the Deliveries array
+ const order = await OrderModel.findOne({
+  Deliveries: DeliveryId,
+})
+  .populate({
+    path: 'SubscriptionId',
+    populate: [
+      { path: 'FrequencyId',
+       }, // Populate FrequencyId from Subscription
+      { path: 'SubscriptionTypeId' } // Populate SubscriptionTypeId from Subscription
+    ]
+  });
+
+if (!order) {
+  return res.status(404).json({
+    status: false,
+    message: 'No subscription found for the specified DeliveryId.',
+  });
+}
+
+
     return responseHandler.out(req, res, {
       status: true,
       statusCode: 200,
       message: 'Delivery fetched successfully.',
-      data: delivery,
+      data: {delivery,order},
     });
 
   } catch (error) {

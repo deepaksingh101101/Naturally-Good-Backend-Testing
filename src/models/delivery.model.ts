@@ -24,7 +24,7 @@ class BagDetails {
 class ProductDetails {
 
   @prop({ type: Number, required: true })
-  public ItemWeight!: number;
+  public RequiredUnits!: number;
 
   @prop({ ref: () => Product, required: true })
   public Item!: Ref<Product>;
