@@ -5,7 +5,7 @@ import { checkPermissions } from '../middleware/checkPermission';
 import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
 import { createOrderByAdmin, getAllOrdersByAdmin, getAllOrdersByUser, getDeliveryChargeByUserId, getOrderByIdByAdmin } from '../controllers/admin/order.controllers';
 import { isUserLoggedIn } from '../middleware/isUserLogedIn';
-import { getDeliveryByDate, getDeliveryDetails } from '../controllers/admin/delivery.controllers';
+import { getDeliveryByDate, getDeliveryById, getDeliveryDetails } from '../controllers/admin/delivery.controllers';
 
 const router = Router();
 
@@ -13,6 +13,7 @@ const router = Router();
 // router.post('/', checkPermissions('Create Order'), createOrderByAdmin);
 router.post('/list', checkPermissions('View Order'), getDeliveryByDate);
 router.get('/details',checkPermissions('View Order'), getDeliveryDetails);
+router.get('/',checkPermissions('View Order'), getDeliveryById);
 
 
 

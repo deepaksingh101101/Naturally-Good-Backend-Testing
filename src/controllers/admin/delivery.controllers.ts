@@ -271,3 +271,123 @@ export const getDeliveryDetails = async (req: Request, res: Response) => {
 
 
 
+
+export const getDeliveryById = async (req: Request, res: Response) => {
+  try {
+    const { DeliveryId } = req.query;
+
+    if (!DeliveryId) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Missing DeliveryId in the request query parameters.',
+      });
+    }
+
+    const delivery:any = await DeliveryModel.findById(DeliveryId)
+      .populate({
+        path: 'UserId',
+        model: 'User',
+      })
+      .populate({
+        path: 'AssignedRoute',
+        model: 'Route',
+        select: 'RouteName',
+      })
+      .populate({
+        path: 'Bag.BagID',
+        model: 'Bag',
+        populate: {
+          path: 'AllowedItems',
+          model: 'Product',
+          populate: [
+            {
+              path: 'Type',
+              model: 'ProductType',
+              select: 'Name SortOrder',
+            },
+            {
+              path: 'Season',
+              model: 'Season',
+              select: 'Name',
+            },
+            {
+              path: 'Priority',
+              model: 'ProductPriority',
+              select: 'Name',
+            },
+            {
+              path: 'Roster',
+              model: 'Roster',
+              select: 'Name SortOrder',
+            },
+            {
+              path: 'Group',
+              model: 'ProductGroup',
+              select: 'Name SortOrder',
+            },
+          ]
+        },
+      })
+      .populate({
+        path: 'Product.Item',
+        model: 'Product',
+      })
+      .populate({
+        path: 'Addons.ProductId',
+        model: 'Product',
+      })
+      .populate({
+        path: 'CreatedBy UpdatedBy',
+        model: 'Employee',
+        select: 'FirstName LastName Phone Email',
+      });
+
+    if (!delivery) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'Delivery not found.',
+      });
+    }
+
+    // Ensure AllowedItems is defined before sorting
+    if (delivery.Bag.BagID && delivery.Bag.BagID.AllowedItems) {
+      delivery.Bag.BagID.AllowedItems.sort((a, b) => {
+        const rosterSortA = a.Roster?.SortOrder || Infinity; // Fallback to Infinity if undefined
+        const rosterSortB = b.Roster?.SortOrder || Infinity;
+        const typeSortA = a.Type?.SortOrder || Infinity;
+        const typeSortB = b.Type?.SortOrder || Infinity;
+
+        // Sort by Roster SortOrder first, then by Type SortOrder
+        if (rosterSortA === rosterSortB) {
+          return typeSortA - typeSortB; // Ascending order
+        }
+        return rosterSortA - rosterSortB; // Ascending order
+      });
+    }
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'Delivery fetched successfully.',
+      data: delivery,
+    });
+
+  } catch (error) {
+    console.error('Error in getDeliveryById:', error);
+
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: error.message,
+    });
+  }
+};
+
+
+
+
+
+
