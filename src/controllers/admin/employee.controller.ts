@@ -39,11 +39,15 @@ export const createSuperAdmin = async (req: Request, res: Response) => {
                 }))
             }));
 
+            console.log("Hello"+mappedPermissions)
+
+
             superadminRole = new RoleModel({
                 roleName: "Superadmin",
                 permissions: mappedPermissions,
             });
 
+            console.log(superadminRole)
             // Save the new role
             await superadminRole.save();
         }
@@ -407,6 +411,7 @@ export const getPermissionByEmployeeId = async (req: Request, res: Response) => 
     const id = req['decodedToken']; // Get employee ID from the request parameters
     try {
         // Find the employee by ID
+  
         const employee = await EmployeeModel.findById(id) as DocumentType<Employee>;
         if (!employee) {
             return responseHandler.out(req, res, {
@@ -417,7 +422,8 @@ export const getPermissionByEmployeeId = async (req: Request, res: Response) => 
         }
 
         // Find the role associated with the employee
-        const role = await RoleModel.findById(employee.Role).populate({
+        const role = await RoleModel.findById(employee.Role)
+        .populate({
             path: 'permissions.permission',
             model: PermissionModel, // Ensure that this is the correct path to the Permission model
             select: 'moduleName' // Only select the moduleName field
@@ -460,7 +466,7 @@ export const getPermissionByEmployeeId = async (req: Request, res: Response) => 
         return responseHandler.out(req, res, {
             status: true,
             statusCode: 200,
-            message: "Permissions fetched successfully",
+            message: "Permissions fetched successfully bhai",
             data: {permissions:permissions,
                     employee:employee
             }
