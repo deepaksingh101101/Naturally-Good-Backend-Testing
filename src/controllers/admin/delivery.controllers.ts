@@ -106,6 +106,7 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
 
         // Format the delivery information
         const deliveryInfo = {
+          _id: delivery._id,
           DeliveryDate: delivery.DeliveryDate.toISOString().split('T')[0], // Format date as YYYY-MM-DD
           DeliveryTimeSlot: delivery.DeliveryTime || 'N/A', // Add time slot if available
           DeliveryStatus: delivery.Status,
