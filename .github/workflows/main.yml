@@ -1,0 +1,69 @@
+name: CI for NestJS
+
+on:
+  push:
+    branches:
+      - deepak
+  pull_request:
+    branches:
+      - deepak
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [21]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install dependencies
+      run: npm i --force
+
+    - name: build artifact
+      run: npm run build
+      
+    - name: Set up SSH agent and add private key
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Add server SSH key to known_hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+        # Display known_hosts for debugging
+        cat ~/.ssh/known_hosts
+    - name: Start SSH agent and add key
+      run: |
+        eval "$(ssh-agent -s)"
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > private_key
+        chmod 600 private_key
+        ssh-add private_key
+    - name: Sync files to server using rsync
+      run: |
+        echo "Starting rsync to the server..."
+        #rsync -avz --delete --exclude 'node_modules' ./* ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SSH_USER }}/naturally-rest-api-deepak || { echo "rsync failed"; exit 1; }
+        rsync -avz --no-times --delete --exclude 'node_modules' ./* ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/home/ubuntu/naturally-rest-api-deepak
+
+    - name: Run npm install and restart app with pm2 on server
+      run: |
+        echo "Running commands on remote server..."
+        ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+        set -e
+        source $HOME/.nvm/nvm.sh     # Source nvm to load it into the environment
+        nvm use node                 # Use the default node version or specify the version, e.g., nvm use 16
+        cd /home/ubuntu/naturally-rest-api-deepak || exit
+        npm i --force
+        npm run build
+        pm2 restart 0
+        EOF
