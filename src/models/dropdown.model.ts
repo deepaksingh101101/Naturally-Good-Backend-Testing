@@ -215,6 +215,28 @@ export class ProductGroup {
 }
 
 
+// Modal for delivery time slot
+export class DeliveryTimeSlot {
+  @prop({ type: String, required: true })
+  public Start!: string;
+
+  @prop({ type: String, required: true })
+  public End!: string;
+
+  @prop({ type: Date, default: Date.now })
+  public CreatedAt!: Date;
+
+  @prop({ ref: () => Employee, required: false })
+  public CreatedBy!: Ref<Employee>;
+
+  @prop({ ref: () => Employee, required: false })
+  public UpdatedBy!: Ref<Employee>;
+
+  @prop({ type: Date, default: Date.now })
+  public UpdatedAt!: Date;
+}
+
+
 // Create models for each schema
 const ProductTypeModel = getModelForClass(ProductType);
 const SeasonModel = getModelForClass(Season);
@@ -226,5 +248,6 @@ const SourceOfCustomerModel = getModelForClass(SourceOfCustomer);
 const TypeOfCustomerModel = getModelForClass(TypeOfCustomer);
 const ProductPriorityModel = getModelForClass(ProductPriority);
 const ProductGroupModel = getModelForClass(ProductGroup);
+const DeliveryTimeSlotModel = getModelForClass(DeliveryTimeSlot);
 
-export {ProductGroupModel,ProductPriorityModel,SourceOfCustomerModel,TypeOfCustomerModel, ProductTypeModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel,RoleTypeModel };
+export {DeliveryTimeSlotModel,ProductGroupModel,ProductPriorityModel,SourceOfCustomerModel,TypeOfCustomerModel, ProductTypeModel, SeasonModel, RosterModel, SubscriptionTypeModel, FrequencyTypeModel,RoleTypeModel };

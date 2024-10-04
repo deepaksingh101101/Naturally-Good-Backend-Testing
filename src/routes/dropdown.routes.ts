@@ -1,7 +1,7 @@
 import express from 'express';
 // import { createFrequencyType, createRole, createRoster, createSeason, createSubscriptionType, createType, deleteFrequencyType, deleteRole, deleteRoster, deleteSeason, deleteSubscriptionType, deleteType, getAllRoles, getFrequencyTypes, getRosters, getSeasons, getSubscriptionTypes, getTypes } from '../controllers/dropdown.controller';
 import { adminMiddleware } from '../middleware/adminIdMiddleware';
-import { createFrequencyType, createGroup, createPriority, createProductType, createRoster, createSeason, createSourceOfCustomer, createSubscriptionType, createTypeOfCustomer, deleteFrequencyType, deleteGroup, deletePriority, deleteProductType, deleteRoster, deleteSeason, deleteSourceOfCustomer, deleteSubscriptionType, deleteTypeOfCustomer, editFrequencyType, editProductType, editRoster, editSeason, editSourceOfCustomer, editSubscriptionType, editTypeOfCustomer, getFrequencyTypes, getGroups, getPrioritys, getRosters, getSeasons, getSourceOfCustomers, getSubscriptionTypes, getTypeOfCustomers, getTypes } from '../controllers/dropdown.controller';
+import { createDeliveryTimeSlot, createFrequencyType, createGroup, createPriority, createProductType, createRoster, createSeason, createSourceOfCustomer, createSubscriptionType, createTypeOfCustomer, deleteDeliveryTimeSlot, deleteFrequencyType, deleteGroup, deletePriority, deleteProductType, deleteRoster, deleteSeason, deleteSourceOfCustomer, deleteSubscriptionType, deleteTypeOfCustomer, editFrequencyType, editProductType, editRoster, editSeason, editSourceOfCustomer, editSubscriptionType, editTypeOfCustomer, getDeliveryTimeSlots, getFrequencyTypes, getGroups, getPrioritys, getRosters, getSeasons, getSourceOfCustomers, getSubscriptionTypes, getTypeOfCustomers, getTypes } from '../controllers/dropdown.controller';
 import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
 
 const router = express.Router();
@@ -91,6 +91,19 @@ router.post('/group', isRoleLoggedIn, createGroup);
 
 // Delete a Priority of product by ID
 router.delete('/group/:id', isRoleLoggedIn, deleteGroup);
+
+
+
+// Get all time 
+router.get('/times', isRoleLoggedIn, getDeliveryTimeSlots);
+
+// Create a new time 
+router.post('/time', isRoleLoggedIn, createDeliveryTimeSlot);
+
+// Delete a time
+router.delete('/time/:id', isRoleLoggedIn, deleteDeliveryTimeSlot);
+
+
 
 
 export default router;

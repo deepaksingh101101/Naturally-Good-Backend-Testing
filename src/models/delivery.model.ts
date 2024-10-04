@@ -4,6 +4,7 @@ import ProductModel, { Product } from './product.model';
 import { Route, Vehicle } from './route.model';
 import { Employee } from './employee.model';
 import { User } from './user.model';
+import { DeliveryTimeSlot } from './dropdown.model';
 
 export enum DeliveryStatus {
   Pending = 'pending',
@@ -27,7 +28,10 @@ class ProductDetails {
   public RequiredUnits!: number;
 
   @prop({ ref: () => Product, required: true })
-  public Item!: Ref<Product>;
+  public ProductId!: Ref<Product>;
+
+  @prop({ type: Number, required: true })
+  public Weight!: number;
   
 }
 
@@ -40,7 +44,11 @@ class AddonDetails {
   public RequiredUnits!: number;
 
   @prop({ type: Number, required: true })
-  public TotalPrice!: number;
+  public Price!: number;
+
+  @prop({ type: Number, required: true })
+  public Weight!: number;
+
 }
 
 @pre<Delivery>('save', async function() {
@@ -55,8 +63,8 @@ export class Delivery {
   @prop({ type: Date, required: true,index: true })
   public DeliveryDate!: Date;
 
-  @prop({ type: String, required: false })
-  public DeliveryTime!: string;
+  @prop({ ref: () => DeliveryTimeSlot, required: false })
+  public DeliveryTime!: Ref<DeliveryTimeSlot>;
 
   @prop({ type: String, enum: DeliveryStatus, required: true, default: DeliveryStatus.Pending })
   public Status!: DeliveryStatus;
@@ -75,9 +83,6 @@ export class Delivery {
 
   @prop({ type: String })
   public Note?: string;
-
-  // @prop({ ref: () => Complaints})
-  // public AnyComplained: Ref<Complaints>;
 
   @prop({ type: Date, default: Date.now })
   public UpdatedAt!: Date;

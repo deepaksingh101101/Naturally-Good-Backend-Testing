@@ -9,7 +9,14 @@ export const getDeliveryByDate = async (req: Request, res: Response) => {
   try {
     const { StartDate, EndDate } = req.body;
     const currentPage = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const limit = parseInt(req.query.limit as string);
+
+    // If limit is not provided or is invalid (NaN), use a very large number
+    const documentsLimit = isNaN(limit) ? await DeliveryModel.countDocuments() : limit;
+    
+    // Query the documents with the determined limit
+    const documents = await DeliveryModel.find().limit(documentsLimit);
+
     const skip = (currentPage - 1) * limit;
 
     // Check if StartDate is provided
@@ -273,6 +280,151 @@ export const getDeliveryDetails = async (req: Request, res: Response) => {
 
 
 
+// export const getDeliveryById = async (req: Request, res: Response) => {
+//   try {
+//     const { DeliveryId } = req.query;
+
+//     if (!DeliveryId) {
+//       return responseHandler.out(req, res, {
+//         status: false,
+//         statusCode: 400,
+//         message: 'Missing DeliveryId in the request query parameters.',
+//       });
+//     }
+
+//     const delivery:any = await DeliveryModel.findById(DeliveryId)
+//     .populate({
+//       path: 'UserId',
+//       model: 'User', // Explicitly specify the User model
+//       populate: {
+//         path: 'Address.City', // Populate the City field within Address
+//         model: 'City', // Explicitly specify the City model (if necessary)
+//         select:'CityName'
+//       },
+//     })
+//       .populate({
+//         path: 'AssignedRoute',
+//         model: 'Route',
+//         select: 'RouteName',
+//       })
+//       .populate({
+//         path: 'DeliveryTime',
+//         model: 'DeliveryTimeSlot',
+//       })
+//       .populate({
+//         path: 'Bag.BagID',
+//         model: 'Bag',
+//         populate: {
+//           path: 'AllowedItems',
+//           model: 'Product',
+//           populate: [
+//             {
+//               path: 'Type',
+//               model: 'ProductType',
+//               select: 'Name SortOrder',
+//             },
+//             {
+//               path: 'Season',
+//               model: 'Season',
+//               select: 'Name',
+//             },
+//             {
+//               path: 'Priority',
+//               model: 'ProductPriority',
+//               select: 'Name',
+//             },
+//             {
+//               path: 'Roster',
+//               model: 'Roster',
+//               select: 'Name SortOrder',
+//             },
+//             {
+//               path: 'Group',
+//               model: 'ProductGroup',
+//               select: 'Name SortOrder',
+//             },
+//           ]
+//         },
+//       })
+//       .populate({
+//         path: 'Product.ProductId',
+//         model: 'Product',
+//       })
+//       .populate({
+//         path: 'Addons.ProductId',
+//         model: 'Product',
+//       })
+//       .populate({
+//         path: 'CreatedBy UpdatedBy',
+//         model: 'Employee',
+//         select: 'FirstName LastName Phone Email',
+//       });
+
+//     if (!delivery) {
+//       return responseHandler.out(req, res, {
+//         status: false,
+//         statusCode: 404,
+//         message: 'Delivery not found.',
+//       });
+//     }
+
+//     // Ensure AllowedItems is defined before sorting
+//     if (delivery.Bag.BagID && delivery.Bag.BagID.AllowedItems) {
+//       delivery.Bag.BagID.AllowedItems.sort((a, b) => {
+//         const rosterSortA = a.Roster?.SortOrder || Infinity; // Fallback to Infinity if undefined
+//         const rosterSortB = b.Roster?.SortOrder || Infinity;
+//         const typeSortA = a.Type?.SortOrder || Infinity;
+//         const typeSortB = b.Type?.SortOrder || Infinity;
+
+//         // Sort by Roster SortOrder first, then by Type SortOrder
+//         if (rosterSortA === rosterSortB) {
+//           return typeSortA - typeSortB; // Ascending order
+//         }
+//         return rosterSortA - rosterSortB; // Ascending order
+//       });
+//     }
+
+//  // Find the order that contains the specified DeliveryId in the Deliveries array
+//  const order = await OrderModel.findOne({
+//   Deliveries: DeliveryId,
+// })
+//   .populate({
+//     path: 'SubscriptionId',
+//     populate: [
+//       { path: 'FrequencyId',
+//        }, // Populate FrequencyId from Subscription
+//       { path: 'SubscriptionTypeId' } // Populate SubscriptionTypeId from Subscription
+//     ]
+//   });
+
+// if (!order) {
+//   return res.status(404).json({
+//     status: false,
+//     message: 'No subscription found for the specified DeliveryId.',
+//   });
+// }
+
+
+//     return responseHandler.out(req, res, {
+//       status: true,
+//       statusCode: 200,
+//       message: 'Delivery fetched successfully.',
+//       data: {delivery,order},
+//     });
+
+//   } catch (error) {
+//     console.error('Error in getDeliveryById:', error);
+
+//     return responseHandler.out(req, res, {
+//       status: false,
+//       statusCode: 500,
+//       message: 'Internal server error',
+//       data: error.message,
+//     });
+//   }
+// };
+
+
 export const getDeliveryById = async (req: Request, res: Response) => {
   try {
     const { DeliveryId } = req.query;
@@ -285,15 +437,24 @@ export const getDeliveryById = async (req: Request, res: Response) => {
       });
     }
 
-    const delivery:any = await DeliveryModel.findById(DeliveryId)
+    const delivery: any = await DeliveryModel.findById(DeliveryId)
       .populate({
         path: 'UserId',
         model: 'User',
+        populate: {
+          path: 'Address.City',
+          model: 'City',
+          select: 'CityName',
+        },
       })
       .populate({
         path: 'AssignedRoute',
         model: 'Route',
         select: 'RouteName',
+      })
+      .populate({
+        path: 'DeliveryTime',
+        model: 'DeliveryTimeSlot',
       })
       .populate({
         path: 'Bag.BagID',
@@ -327,11 +488,11 @@ export const getDeliveryById = async (req: Request, res: Response) => {
               model: 'ProductGroup',
               select: 'Name SortOrder',
             },
-          ]
+          ],
         },
       })
       .populate({
-        path: 'Product.Item',
+        path: 'Product.ProductId',
         model: 'Product',
       })
       .populate({
@@ -352,8 +513,9 @@ export const getDeliveryById = async (req: Request, res: Response) => {
       });
     }
 
-    // Ensure AllowedItems is defined before sorting
+    // Ensure AllowedItems is defined before sorting and filtering
     if (delivery.Bag.BagID && delivery.Bag.BagID.AllowedItems) {
+      // Sort AllowedItems first
       delivery.Bag.BagID.AllowedItems.sort((a, b) => {
         const rosterSortA = a.Roster?.SortOrder || Infinity; // Fallback to Infinity if undefined
         const rosterSortB = b.Roster?.SortOrder || Infinity;
@@ -366,34 +528,35 @@ export const getDeliveryById = async (req: Request, res: Response) => {
         }
         return rosterSortA - rosterSortB; // Ascending order
       });
+
+      // Filter out AllowedItems with Roster SortOrder of 0
+      delivery.Bag.BagID.AllowedItems = delivery.Bag.BagID.AllowedItems.filter(item => item.Roster?.SortOrder !== 0);
     }
 
- // Find the order that contains the specified DeliveryId in the Deliveries array
- const order = await OrderModel.findOne({
-  Deliveries: DeliveryId,
-})
-  .populate({
-    path: 'SubscriptionId',
-    populate: [
-      { path: 'FrequencyId',
-       }, // Populate FrequencyId from Subscription
-      { path: 'SubscriptionTypeId' } // Populate SubscriptionTypeId from Subscription
-    ]
-  });
+    // Find the order that contains the specified DeliveryId in the Deliveries array
+    const order = await OrderModel.findOne({
+      Deliveries: DeliveryId,
+    })
+      .populate({
+        path: 'SubscriptionId',
+        populate: [
+          { path: 'FrequencyId' }, // Populate FrequencyId from Subscription
+          { path: 'SubscriptionTypeId' }, // Populate SubscriptionTypeId from Subscription
+        ],
+      });
 
-if (!order) {
-  return res.status(404).json({
-    status: false,
-    message: 'No subscription found for the specified DeliveryId.',
-  });
-}
-
+    if (!order) {
+      return res.status(404).json({
+        status: false,
+        message: 'No subscription found for the specified DeliveryId.',
+      });
+    }
 
     return responseHandler.out(req, res, {
       status: true,
       statusCode: 200,
       message: 'Delivery fetched successfully.',
-      data: {delivery,order},
+      data: { delivery, order },
     });
 
   } catch (error) {
@@ -411,5 +574,133 @@ if (!order) {
 
 
 
+export const UpdateDeliveryBag = async (req: Request, res: Response) => {
+  try {
+    const { DeliveryId } = req.params; // Assuming DeliveryId is in the URL parameters
+    const {updateData} = req.body; // The data to update the delivery bag
 
 
+    // Validate DeliveryId
+    if (!DeliveryId) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Missing DeliveryId in the request parameters.',
+      });
+    }
+
+    // Find the delivery document
+    const delivery = await DeliveryModel.findById(DeliveryId);
+
+    // Check if delivery exists
+    if (!delivery) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'Delivery not found.',
+      });
+    }
+
+    // Update delivery bag details
+    if (updateData.Bag) {
+      delivery.Bag = {
+        ...delivery.Bag, // Retain existing Bag properties
+        ...updateData.Bag, // Update with new Bag data
+      };
+    }
+
+    // Update other fields if provided
+    if (updateData.Product) {
+      delivery.Product = updateData.Product; // Replace products with the new array
+    }
+
+    if (updateData.Addons) {
+      delivery.Addons = updateData.Addons; // Replace addons with the new array
+    }
+    if (updateData.DeliveryTime) {
+      delivery.DeliveryTime = updateData.DeliveryTime; // Replace addons with the new array
+    }
+    if (updateData.Note) {
+      delivery.Note = updateData.Note; // Replace addons with the new array
+    }
+    if (updateData.AssignedRoute) {
+      delivery.AssignedRoute = updateData.AssignedRoute; // Replace addons with the new array
+    }
+
+
+    // Save the updated delivery document
+    const updatedDelivery = await delivery.save();
+
+    // Respond with the updated delivery
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'Delivery bag updated successfully.',
+      data: updatedDelivery, // Return the updated delivery data
+    });
+
+  } catch (error) {
+    console.error('Error in UpdateDeliveryBag:', error);
+
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: error.message,
+    });
+  }
+};
+
+
+// Toggle status of a delivery
+export const UpdateDeliveryStatus = async (req: Request, res: Response) => {
+  try {
+    const { DeliveryId } = req.params; // Assuming DeliveryId is in the URL parameters
+    const { DeliveryStatus } = req.body; // The status to update the delivery
+
+    // Validate DeliveryId and DeliveryStatus
+    if (!DeliveryId || DeliveryStatus === undefined) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: 'Missing required parameters.',
+      });
+    }
+
+    // Find the delivery document
+    const delivery = await DeliveryModel.findById(DeliveryId);
+
+    // Check if delivery exists
+    if (!delivery) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: 'Delivery not found.',
+      });
+    }
+
+    // Update the delivery status
+    delivery.Status = DeliveryStatus; // Update the status directly
+
+    // Save the updated delivery document
+    const updatedDelivery = await delivery.save();
+
+    // Respond with the updated delivery
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: 'Delivery Status updated successfully.',
+      data: updatedDelivery, // Return the updated delivery data
+    });
+
+  } catch (error) {
+    console.error('Error in Updating Status:', error);
+
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal server error',
+      data: error.message,
+    });
+  }
+};

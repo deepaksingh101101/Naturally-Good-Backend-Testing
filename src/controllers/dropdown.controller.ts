@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { RosterModel, SeasonModel, SubscriptionTypeModel, FrequencyTypeModel, RoleTypeModel, ProductTypeModel, SourceOfCustomerModel, TypeOfCustomerModel, ProductPriorityModel, ProductGroupModel } from '../models/dropdown.model';
+import { RosterModel, SeasonModel, SubscriptionTypeModel, FrequencyTypeModel, RoleTypeModel, ProductTypeModel, SourceOfCustomerModel, TypeOfCustomerModel, ProductPriorityModel, ProductGroupModel, DeliveryTimeSlotModel } from '../models/dropdown.model';
 import { responseHandler } from '../utils/send-response';
 
 // Common function to handle errors
@@ -1348,6 +1348,94 @@ export const deleteGroup = async (req: Request, res: Response) => {
       statusCode: 500,
       message: 'Internal Server Error',
       data: error.message
+    });
+  }
+};
+
+
+// Time slot
+// Create Delivery Time Slot
+export const createDeliveryTimeSlot = async (req: Request, res: Response) => {
+  try {
+    const { Start, End } = req.body;
+    const loggedInId = req['decodedToken'];
+
+    if (!Start || !End) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 400,
+        message: "Start and End times are required",
+      });
+    }
+
+    const newTimeSlot = new DeliveryTimeSlotModel({
+      Start,
+      End,
+      CreatedBy: loggedInId,
+      UpdatedBy: loggedInId,
+    });
+    await newTimeSlot.save();
+
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 201,
+      message: "Delivery time slot created successfully",
+      data: newTimeSlot,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message,
+    });
+  }
+};
+
+
+// Get All Delivery Time Slots
+export const getDeliveryTimeSlots = async (req: Request, res: Response) => {
+  try {
+    const timeSlots = await DeliveryTimeSlotModel.find();
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Delivery time slots fetched successfully",
+      data: timeSlots,
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message,
+    });
+  }
+};
+
+
+// Delete Delivery Time Slot by ID
+export const deleteDeliveryTimeSlot = async (req: Request, res: Response) => {
+  try {
+    const timeSlot = await DeliveryTimeSlotModel.findByIdAndDelete(req.params.id);
+    if (!timeSlot) {
+      return responseHandler.out(req, res, {
+        status: false,
+        statusCode: 404,
+        message: "Delivery time slot not found",
+      });
+    }
+    return responseHandler.out(req, res, {
+      status: true,
+      statusCode: 200,
+      message: "Delivery time slot deleted successfully",
+    });
+  } catch (error) {
+    return responseHandler.out(req, res, {
+      status: false,
+      statusCode: 500,
+      message: 'Internal Server Error',
+      data: error.message,
     });
   }
 };

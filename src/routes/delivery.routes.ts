@@ -5,15 +5,17 @@ import { checkPermissions } from '../middleware/checkPermission';
 import { isRoleLoggedIn } from '../middleware/isRoleLogedIn';
 import { createOrderByAdmin, getAllOrdersByAdmin, getAllOrdersByUser, getDeliveryChargeByUserId, getOrderByIdByAdmin } from '../controllers/admin/order.controllers';
 import { isUserLoggedIn } from '../middleware/isUserLogedIn';
-import { getDeliveryByDate, getDeliveryById, getDeliveryDetails } from '../controllers/admin/delivery.controllers';
+import { getDeliveryByDate, getDeliveryById, getDeliveryDetails, UpdateDeliveryBag, UpdateDeliveryStatus } from '../controllers/admin/delivery.controllers';
 
 const router = Router();
 
 // Create order for admin
 // router.post('/', checkPermissions('Create Order'), createOrderByAdmin);
+router.get('/',checkPermissions('View Order'), getDeliveryById);
 router.post('/list', checkPermissions('View Order'), getDeliveryByDate);
 router.get('/details',checkPermissions('View Order'), getDeliveryDetails);
-router.get('/',checkPermissions('View Order'), getDeliveryById);
+router.put('/:DeliveryId',checkPermissions('View Order'), UpdateDeliveryBag);
+router.put('/status/:DeliveryId',checkPermissions('View Order'), UpdateDeliveryStatus);
 
 
 
